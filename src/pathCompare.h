@@ -12,13 +12,13 @@ private:
     static const char delimiter = '/';
 
 public:
-    static auto splitToVector(const String &a) -> std::vector<PosLen>
+    static auto splitToVector(const String &path) -> std::vector<PosLen>
     {
         std::vector<PosLen> v;
         size_t p = 0, i = 1;
-        for (; i < a.length(); i++)
+        for (; i < path.length(); i++)
         {
-            if (a.charAt(i) == delimiter)
+            if (path.charAt(i) == delimiter)
             {
                 v.push_back({p, i - p});
                 p = i;
@@ -32,7 +32,7 @@ public:
 
     static auto match(const String &b, const std::vector<PosLen> &bv,
                       const String &a, const std::vector<PosLen> &av,
-                      std::map<String, String> &p) -> bool
+                      std::map<String, String> &params) -> bool
     {
         if (av.size() != bv.size())
             return false;
@@ -42,11 +42,11 @@ public:
             const auto &ave = av[i];
             const auto &bve = bv[i];
 
-            if (b.charAt(bve.pos + 1) == ':')
+            if (b.charAt(bve.pos + 1) == ':') // Note: : comes right after /
             {
                 const auto &name = b.substring(bve.pos + 2, bve.pos + bve.len);  // Note: + 2 to offset /:
                 const auto &value = a.substring(ave.pos + 1, ave.pos + ave.len); // Note +1 to offset /
-                p[name] = value;
+                params[name] = value;
             }
             else
             {
