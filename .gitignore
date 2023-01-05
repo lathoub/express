@@ -12,6 +12,7 @@
 # Visual Studio cache/options directory
 .vs/
 
+# Arduino IDE 2 files
 debug.cfg
 debug_custom.json
 esp32.svd
