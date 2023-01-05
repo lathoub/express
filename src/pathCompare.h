@@ -25,7 +25,6 @@ public:
             }
         }
         v.push_back({p, i - p});
-        p = i;
 
         return v;
     }
