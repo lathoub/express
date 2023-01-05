@@ -17,11 +17,6 @@ void setup() {
 
   Ethernet.init(5);
 
-  digitalWrite(15, LOW);
-  delayMicroseconds(500);
-  digitalWrite(15, HIGH);
-  delay(400);
-
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("Failed DHCP, check network cable & reboot"));
     for (;;)

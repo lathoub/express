@@ -12,3 +12,6 @@
 # Visual Studio cache/options directory
 .vs/
 
+debug.cfg
+debug_custom.json
+esp32.svd
