@@ -57,7 +57,8 @@ public:
         item.method = HttpMethod::GET;
         item.uri = uri;
         item.fptr = fptr;
-        item.indices = PathCompareAndExtractParams::splitToVector(uri);
+        // cache path splitting (avoid doing this for every request * number of paths)
+        item.indices = PathCompareAndExtractParams::splitToVector(uri); 
 
         routes.push_back(item);
     };
@@ -68,7 +69,8 @@ public:
         item.method = HttpMethod::POST;
         item.uri = uri;
         item.fptr = fptr;
-        item.indices = PathCompareAndExtractParams::splitToVector(uri);
+        // cache path splitting (avoid doing this for every request * number of paths)
+        item.indices = PathCompareAndExtractParams::splitToVector(uri); 
 
         routes.push_back(item);
     };

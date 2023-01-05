@@ -14,42 +14,42 @@ private:
 public:
     static auto splitToVector(const String &path) -> std::vector<PosLen>
     {
-        std::vector<PosLen> v;
+        std::vector<PosLen> pathItems;
         size_t p = 0, i = 1;
         for (; i < path.length(); i++)
         {
             if (path.charAt(i) == delimiter)
             {
-                v.push_back({p, i - p});
+                pathItems.push_back({p, i - p});
                 p = i;
             }
         }
-        v.push_back({p, i - p});
+        pathItems.push_back({p, i - p});
 
-        return v;
+        return pathItems;
     }
 
-    static auto match(const String &b, const std::vector<PosLen> &bv,
-                      const String &a, const std::vector<PosLen> &av,
+    static auto match(const String &path, const std::vector<PosLen> &pathItems,
+                      const String &requestPath, const std::vector<PosLen> &requestPathItems,
                       std::map<String, String> &params) -> bool
     {
-        if (av.size() != bv.size())
+        if (requestPathItems.size() != pathItems.size())
             return false;
 
-        for (size_t i = 0; i < av.size(); i++)
+        for (size_t i = 0; i < requestPathItems.size(); i++)
         {
-            const auto &ave = av[i];
-            const auto &bve = bv[i];
+            const auto &ave = requestPathItems[i];
+            const auto &bve = pathItems[i];
 
-            if (b.charAt(bve.pos + 1) == ':') // Note: : comes right after /
+            if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
             {
-                const auto &name = b.substring(bve.pos + 2, bve.pos + bve.len);  // Note: + 2 to offset /:
-                const auto &value = a.substring(ave.pos + 1, ave.pos + ave.len); // Note +1 to offset /
+                const auto &name = path.substring(bve.pos + 2, bve.pos + bve.len);  // Note: + 2 to offset /:
+                const auto &value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
                 params[name] = value;
             }
             else
             {
-                if (a.substring(ave.pos, ave.pos + ave.len) != b.substring(bve.pos, bve.pos + bve.len))
+                if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len))
                     return false;
             }
         }
