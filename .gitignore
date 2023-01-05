@@ -1,32 +1,14 @@
-# Prerequisites
-*.d
+# Visual Studio Code cache/options directory
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Local History for Visual Studio Code
+.history/
 
-# Precompiled Headers
-*.gch
-*.pch
+# Visual Studio cache/options directory
+.vs/
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
