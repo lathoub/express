@@ -1,3 +1,7 @@
+// Copied and modified from https://github.com/khoih-prog/EthernetWebServer/blob/master/src/Parsing-impl.h
+// Copyright (c) 2019 Khoi Hoang under MIT license
+// (now in public archieve (jan 2023))
+
 #pragma once
 
 #include <map>
