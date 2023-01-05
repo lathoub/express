@@ -55,6 +55,7 @@ struct HttpResponse
 {
     String body;
     uint16_t status = 404;
+    std::map<String, String> headers;
 };
 
 using requestCallback = void (*)(HttpRequest &req, HttpResponse &res);

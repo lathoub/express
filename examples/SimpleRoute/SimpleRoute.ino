@@ -38,6 +38,7 @@ void setup() {
 
   express.get("/", [](EXPRESS_NAMESPACE::HttpRequest &req, EXPRESS_NAMESPACE::HttpResponse &res) {
     res.body = "<!doctype html><meta charset=utf-8><title>shortest html5</title>";
+    res.headers["content-type"] = "text/html;charset=utf-8";
     EX_DBG(req.uri);
     res.status = 200;
   });
