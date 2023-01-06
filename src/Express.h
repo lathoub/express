@@ -2,6 +2,7 @@
 
 #include <Ethernet.h>
 #include <vector>
+#include <list>
 
 // #define DEBUG Serial
 
@@ -30,6 +31,8 @@ private:
     friend class HttpRequestHandler;
     HttpRequestParser _httpRequestParser;
 
+    std::list<middlewareCallback> _middlewares;
+
 private:
     HttpResponse res;
 
@@ -57,8 +60,10 @@ private:
 
 public:
     // middleware
-    //    void use(String prefix) {
-    //    }
+    void use(middlewareCallback middleware)
+    {
+        _middlewares.push_back(middleware);
+    }
 
     //   Express & prefix(String prefix) {
     //       _prefix = prefix;
@@ -102,24 +107,32 @@ public:
             {
                 if (_httpRequestParser.parseRequest(client))
                 {
+                    auto it = _middlewares.begin();
+                    while (it != _middlewares.end())
+                    {
+                        HttpRequest req;
+                        HttpResponse res;
+                        if ((*it)(req, res)) it++; else break;
+                    }
+
                     HttpRequest &req = _httpRequestParser.request();
+                    /*
+                                        EX_DBG("method", req.method);
+                                        EX_DBG("uri", req.uri);
+                                        EX_DBG("version", req.version);
+                                        EX_DBG("host", req.host);
+                                        EX_DBG(F("headers:"));
+                                        for (auto [first, second] : req.headers)
+                                        {
+                                            EX_DBG(F("key:"), first, F("value:"), second);
+                                        }
 
-                    EX_DBG("method", req.method);
-                    EX_DBG("uri", req.uri);
-                    EX_DBG("version", req.version);
-                    EX_DBG("host", req.host);
-                    EX_DBG(F("headers:"));
-                    for (auto [first, second] : req.headers)
-                    {
-                        EX_DBG(F("key:"), first, F("value:"), second);
-                    }
-
-                    EX_DBG(F("arguments:"));
-                    for (auto [first, second] : req.arguments)
-                    {
-                        EX_DBG(F("key:"), first, F("value:"), second);
-                    }
-
+                                        EX_DBG(F("arguments:"));
+                                        for (auto [first, second] : req.arguments)
+                                        {
+                                            EX_DBG(F("key:"), first, F("value:"), second);
+                                        }
+                    */
                     HttpResponse &res = evaluate(req);
 
                     client.print("HTTP/1.1 ");
@@ -132,10 +145,10 @@ public:
                     }
                     if (!res.body.isEmpty())
                     {
-                        client.print("Content-Length: ");
+                        client.print("content-length: ");
                         client.println(res.body.length());
                     }
-                    client.println("Connection: close");
+                    client.println("connection: close");
                     client.println("");
                     // send content length *or* close the connection (spec 7.2.2)
                     if (!res.body.isEmpty())

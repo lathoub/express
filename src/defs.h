@@ -60,6 +60,7 @@ struct HttpResponse
 };
 
 using requestCallback = void (*)(HttpRequest &req, HttpResponse &res);
+using middlewareCallback = bool (*)(HttpRequest &req, HttpResponse &res);
 
 class IHttpRequestParser
 {

@@ -77,11 +77,10 @@ public:
         String searchStr = "";
         auto hasSearch = url.indexOf('?');
 
-        if (hasSearch != -1)
+        if (hasSearch != -1) // TODO arguments or params ??
         {
             searchStr = url.substring(hasSearch + 1);
             url = url.substring(0, hasSearch);
-            EX_DBG("searchStr", searchStr);
         }
 
         req.uri = url;
@@ -155,7 +154,6 @@ public:
 
         if (!isForm)
         {
-            EX_DBG(F("reading body:"));
             if (!readBytesWithTimeout(client, req, 3000))
             {
                 EX_DBG(F("failed:"));
