@@ -17,14 +17,12 @@ void setup() {
 
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("Failed DHCP, check network cable & reboot"));
-    for (;;)
-      ;
+    for (;;) ;
   }
   Serial.print("IP address is ");
   Serial.println(Ethernet.localIP());
 
   express.get("/helloworld", [](HttpRequest &req, HttpResponse &res) {
-    EX_DBG(req.uri);
     res.status = 204;
   });
 
