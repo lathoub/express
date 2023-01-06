@@ -43,8 +43,9 @@ public:
 
             if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
             {
-                const auto &name = path.substring(bve.pos + 2, bve.pos + bve.len);  // Note: + 2 to offset /:
-                const auto &value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
+                auto name = path.substring(bve.pos + 2, bve.pos + bve.len);  // Note: + 2 to offset /:
+                name.toLowerCase();
+                const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
                 params[name] = value;
             }
             else

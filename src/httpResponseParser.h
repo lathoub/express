@@ -115,6 +115,7 @@ public:
                 break;
 
             auto headerName = reqStr.substring(0, headerDiv);
+            headerName.toLowerCase();
             auto headerValue = reqStr.substring(headerDiv + 2);
             req.headers[headerName] = headerValue;
 
@@ -217,6 +218,7 @@ public:
             }
 
             String key = urlDecode(data.substring(pos, equal_sign_index));
+            key.toLowerCase();
             String value = urlDecode(data.substring(equal_sign_index + 1, next_arg_index));
             req.arguments[key] = value;
 
