@@ -42,7 +42,7 @@ void setup() {
   });
 
   express.post("/firmware", [](HttpRequest &req, HttpResponse &res) {
-    EX_DBG(req.uri);
+    // body in req.body
     res.status = 201;
   });
 
