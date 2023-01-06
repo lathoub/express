@@ -34,13 +34,14 @@ private:
     HttpResponse &evaluate(HttpRequest &req)
     {
         res.status = 404;
+        auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri);
 
         for (auto [method, uri, fptr, indices] : routes)
         {
             if (req.method == method && PathCompareAndExtractParams::match(
-                uri, indices,
-                req.uri, PathCompareAndExtractParams::splitToVector(req.uri), 
-                req.params))
+                                            uri, indices,
+                                            req.uri, req_indices,
+                                            req.params))
             {
                 res.status = 0;
                 fptr(req, res);
@@ -58,7 +59,7 @@ public:
         item.uri = uri;
         item.fptr = fptr;
         // cache path splitting (avoid doing this for every request * number of paths)
-        item.indices = PathCompareAndExtractParams::splitToVector(uri); 
+        item.indices = PathCompareAndExtractParams::splitToVector(uri);
 
         routes.push_back(item);
     };
@@ -70,7 +71,7 @@ public:
         item.uri = uri;
         item.fptr = fptr;
         // cache path splitting (avoid doing this for every request * number of paths)
-        item.indices = PathCompareAndExtractParams::splitToVector(uri); 
+        item.indices = PathCompareAndExtractParams::splitToVector(uri);
 
         routes.push_back(item);
     };
