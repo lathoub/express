@@ -15,8 +15,6 @@ void setup() {
   delay(1500);
   Serial.println("booting...");
 
-  Ethernet.init(5);
-
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("Failed DHCP, check network cable & reboot"));
     for (;;)
