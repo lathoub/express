@@ -15,36 +15,30 @@ void setup() {
   delay(1500);
   Serial.println("booting...");
 
-  Ethernet.init(5);
-
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("Failed DHCP, check network cable & reboot"));
-    for (;;)
-      ;
+    for (;;) ;
   }
   Serial.print("IP address is ");
   Serial.println(Ethernet.localIP());
 
-  express.get("/helloworld", [](EXPRESS_NAMESPACE::HttpRequest &req, EXPRESS_NAMESPACE::HttpResponse &res) {
-    EX_DBG(req.uri);
+  express.get("/helloworld", [](HttpRequest &req, HttpResponse &res) {
     res.status = 204;
   });
 
-  express.get("/helloworld/:name", [](EXPRESS_NAMESPACE::HttpRequest &req, EXPRESS_NAMESPACE::HttpResponse &res) {
-    EX_DBG(req.uri);
-    EX_DBG(req.params["name"]);
+  express.get("/helloworld/:name", [](HttpRequest &req, HttpResponse &res) {
+    Serial.println(req.params["name"]);
     res.status = 204;
   });
 
-  express.get("/", [](EXPRESS_NAMESPACE::HttpRequest &req, EXPRESS_NAMESPACE::HttpResponse &res) {
+  express.get("/", [](HttpRequest &req, HttpResponse &res) {
     res.body = "<!doctype html><meta charset=utf-8><title>shortest html5</title>";
     res.headers["content-type"] = "text/html;charset=utf-8";
-    EX_DBG(req.uri);
     res.status = 200;
   });
 
-  express.post("/firmware", [](EXPRESS_NAMESPACE::HttpRequest &req, EXPRESS_NAMESPACE::HttpResponse &res) {
-    EX_DBG(req.uri);
+  express.post("/firmware", [](HttpRequest &req, HttpResponse &res) {
+    Serial.println(req.body);
     res.status = 201;
   });
 
