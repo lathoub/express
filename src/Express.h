@@ -124,6 +124,12 @@ public:
 
                     client.print("HTTP/1.1 ");
                     client.println(res.status);
+                    for (auto [first, second] : res.headers)
+                    {
+                        client.print(first);
+                        client.print(": ");
+                        client.println(second);
+                    }
                     if (!res.body.isEmpty())
                     {
                         client.print("Content-Length: ");
