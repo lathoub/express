@@ -3,7 +3,7 @@
 #include <Ethernet.h>
 #include <vector>
 
-//#define DEBUG Serial
+// #define DEBUG Serial
 
 #include "debug.h"
 #include "defs.h"
@@ -23,20 +23,24 @@ private:
         std::vector<PosLen> indices;
     };
 
-    std::vector<Route> routes;
+    std::vector<Route> _routes;
+
+    String _prefix;
 
     friend class HttpRequestHandler;
-    HttpRequestParser httpRequestParser;
+    HttpRequestParser _httpRequestParser;
 
 private:
     HttpResponse res;
 
     HttpResponse &evaluate(HttpRequest &req)
     {
+        res.body = "";
         res.status = 404;
+        res.headers.clear();
         auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri);
 
-        for (auto [method, uri, fptr, indices] : routes)
+        for (auto [method, uri, fptr, indices] : _routes)
         {
             if (req.method == method && PathCompareAndExtractParams::match(
                                             uri, indices,
@@ -52,28 +56,42 @@ private:
     }
 
 public:
-    void get(String uri, requestCallback fptr)
+    // middleware
+    //    void use(String prefix) {
+    //    }
+
+    //   Express & prefix(String prefix) {
+    //       _prefix = prefix;
+    //
+    //      return *this;
+    //}
+
+    Express &get(String uri, requestCallback fptr)
     {
         Route item{};
         item.method = HttpMethod::GET;
-        item.uri = uri;
+        item.uri = _prefix + uri;
         item.fptr = fptr;
         // cache path splitting (avoid doing this for every request * number of paths)
         item.indices = PathCompareAndExtractParams::splitToVector(uri);
 
-        routes.push_back(item);
+        _routes.push_back(item);
+
+        return *this;
     };
 
-    void post(String uri, requestCallback fptr)
+    Express &post(String uri, requestCallback fptr)
     {
         Route item{};
         item.method = HttpMethod::POST;
-        item.uri = uri;
+        item.uri = _prefix + uri;
         item.fptr = fptr;
         // cache path splitting (avoid doing this for every request * number of paths)
         item.indices = PathCompareAndExtractParams::splitToVector(uri);
 
-        routes.push_back(item);
+        _routes.push_back(item);
+
+        return *this;
     };
 
     void run(EthernetClient &client)
@@ -82,9 +100,9 @@ public:
         {
             if (client.available())
             {
-                if (httpRequestParser.parseRequest(client))
+                if (_httpRequestParser.parseRequest(client))
                 {
-                    HttpRequest &req = httpRequestParser.request();
+                    HttpRequest &req = _httpRequestParser.request();
 
                     EX_DBG("method", req.method);
                     EX_DBG("uri", req.uri);
@@ -103,6 +121,7 @@ public:
                     }
 
                     HttpResponse &res = evaluate(req);
+
                     client.print("HTTP/1.1 ");
                     client.println(res.status);
                     if (!res.body.isEmpty())

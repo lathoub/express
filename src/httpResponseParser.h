@@ -47,10 +47,11 @@ public:
         client.readStringUntil('\n');
 
         req.method = HttpMethod::UNDEFINED;
-        req.uri[0] = '\0';
-        req.version[0] = '\0';
-        req.host[0] = '\0';
+        req.version = "";
+        req.uri= "";
+        req.host= "";
         req.contentLength = 0;
+        req.params.clear();
         req.headers.clear();
         req.arguments.clear();
 
