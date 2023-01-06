@@ -11,9 +11,17 @@ BEGIN_EXPRESS_NAMESPACE
 
 class HttpRequestParser : public IHttpRequestParser
 {
-    static bool readBytesWithTimeout(EthernetClient &client, size_t maxLength, int timeout_ms)
+    static bool readBytesWithTimeout(EthernetClient &client, HttpRequest &req, int timeout_ms)
     {
-        while (maxLength > 0)
+        // TODO: use a download handler
+
+        auto maxLength = req.contentLength;
+        if (!req.body.reserve(maxLength + 1))
+            return false;
+
+        req.body[0] = 0;
+
+        while (req.body.length() < maxLength)
         {
             int tries = timeout_ms;
             size_t avail;
@@ -24,19 +32,14 @@ class HttpRequestParser : public IHttpRequestParser
             if (!avail)
                 break;
 
+            if (req.body.length() + avail > maxLength)
+                avail = maxLength - req.body.length();
+
             while (avail--)
-            {
-                auto c = (char)client.read();
-                // TDOO Do something with c
-                maxLength--;
-            }
+                req.body += (char)client.read();
         }
 
-        return (maxLength == 0);
-    }
-
-    static void clearReq(HttpRequest req)
-    {
+        return req.body.length() == maxLength;
     }
 
 public:
@@ -48,8 +51,9 @@ public:
 
         req.method = HttpMethod::UNDEFINED;
         req.version = "";
-        req.uri= "";
-        req.host= "";
+        req.uri = "";
+        req.host = "";
+        req.body = "";
         req.contentLength = 0;
         req.params.clear();
         req.headers.clear();
@@ -151,12 +155,11 @@ public:
         if (!isForm)
         {
             EX_DBG(F("reading body:"));
-            if (!readBytesWithTimeout(client, req.contentLength, 3000))
+            if (!readBytesWithTimeout(client, req, 3000))
             {
                 EX_DBG(F("failed:"));
                 return false;
             }
-            //
         }
 
         if (isEncoded)

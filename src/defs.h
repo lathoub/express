@@ -45,6 +45,7 @@ struct HttpRequest
     String version;
     String uri;
     String host;
+    String body;
     int contentLength;
     std::map<String, String> params;
     std::map<String, String> headers;
