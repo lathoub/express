@@ -1,5 +1,5 @@
 # Express
-Fast, unopinionated, minimalist web framework for Arduino
+Fast, unopinionated, (very) minimalist web framework for Arduino
 
 ## Hello World
 
