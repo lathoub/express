@@ -30,3 +30,26 @@ void loop() {
     express.run(client);
 }
 ```
+
+## Routing Parameters
+
+```cpp
+express.get("/collections/:collectionId", [](HttpRequest &req, HttpResponse &res) {
+    // req.params["collectionId"]
+    res.status = 200;
+  });
+```
+
+## http methods
+
+```cpp
+  express.get("/blabla", [](HttpRequest &req, HttpResponse &res) {
+    res.status = 200;
+  });
+  
+  express.put("/blabla", [](HttpRequest &req, HttpResponse &res) {
+    // body in req.body
+    res.status = 200;
+  });
+
+```
