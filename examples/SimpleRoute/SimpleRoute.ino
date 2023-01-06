@@ -29,20 +29,18 @@ void setup() {
   });
 
   express.get("/helloworld/:name", [](HttpRequest &req, HttpResponse &res) {
-    EX_DBG(req.uri);
-    EX_DBG(req.params["name"]);
+    Serial.println(req.params["name"]);
     res.status = 204;
   });
 
   express.get("/", [](HttpRequest &req, HttpResponse &res) {
     res.body = "<!doctype html><meta charset=utf-8><title>shortest html5</title>";
     res.headers["content-type"] = "text/html;charset=utf-8";
-    EX_DBG(req.uri);
     res.status = 200;
   });
 
   express.post("/firmware", [](HttpRequest &req, HttpResponse &res) {
-    // body in req.body
+    Serial.println(req.body);
     res.status = 201;
   });
 
