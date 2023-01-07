@@ -1,7 +1,7 @@
 # Express
 Fast, unopinionated, (very) minimalist web framework for Arduino
 
-## Hello World
+## Getting started
 
 ```cpp
 #include <Express.h>
@@ -30,38 +30,4 @@ void setup() {
 void loop() {
   express.run();
 }
-```
-
-## Routing Parameters
-
-```cpp
-express.get("/collections/:collectionId", [](HttpRequest &req, Response &res) {
-    // req.params["collectionId"]
-     res.status(204);
-  });
-```
-
-## http methods
-
-```cpp
-  express.get("/blabla", [](HttpRequest &req, Response &res) {
-     res.status(204);
-  });
-  
-  express.put("/blabla", [](HttpRequest &req, Response &res) {
-    // body in req.body
-    res.status(204);
-  });
-
-```
-
-## Middleware(s)
-```cpp
-bool middleware1(HttpRequest &req, HttpResponse &res) {
-  req.headers["aa"] = "aa"; // add something to the header
-  return true; 
-}
-...
-  express.use("/v1"); // prefix all paths with /v1
-  express.use(middleware1);
 ```
