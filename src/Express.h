@@ -17,10 +17,12 @@ BEGIN_EXPRESS_NAMESPACE
 class Express
 {
 private:
-    struct Route
+    class Route
     {
+    private:
+    public:
         Method method = Method::UNDEFINED;
-        String uri{};
+        String path{};
         requestCallback fptr = nullptr;
         // cache path splitting (avoid doing this for every request * number of paths)
         std::vector<PosLen> indices{};
@@ -36,8 +38,14 @@ private:
     EthernetServer *server_{}; // TODO: singleton
 
     String mount_path_{};
-    
-    std::map<String, Express*> mount_paths_{};
+
+    std::map<String, Express *> mount_paths_{};
+
+    /// @brief Application Settings
+    std::map<String, bool> settings_{};
+
+    /// @brief
+    Express *parent_ = nullptr;
 
 private:
     /// @brief
@@ -45,16 +53,16 @@ private:
     /// @param res
     bool evaluate(Request &req, Response &res)
     {
-        res.body_ = "";
+        res.body = "";
         res.status_ = 404;
         res.headers_.clear();
-        const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri);
+        const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri_);
 
         for (auto [method, uri, fptr, indices] : routes_)
         {
             if (req.method == method && PathCompareAndExtractParams::match(
                                             uri, indices,
-                                            req.uri, req_indices,
+                                            req.uri_, req_indices,
                                             req.params))
             {
                 res.status_ = 0;
@@ -72,8 +80,30 @@ private:
         return false;
     }
 
+    /// @brief
+    /// @param uri
+    /// @param fptr
+    /// @return
+    void METHOD(Method method, String path, const requestCallback fptr)
+    {
+        if (path == "/")
+            path = "";
+
+        path = mount_path_ + path;
+
+        Route item{};
+        item.method = method;
+        item.path = path;
+        item.fptr = fptr;
+        item.indices = PathCompareAndExtractParams::splitToVector(item.path);
+
+        routes_.push_back(item);
+    }
+
 public:
     uint16_t port{};
+
+    /// Methods
 
     /// @brief
     /// @param middleware
@@ -90,6 +120,7 @@ public:
     void use(String mount_path, Express &other)
     {
         other.mount_path_ = mount_path;
+        other.parent_ = this;
         mount_paths_[other.mount_path_] = &other;
     }
 
@@ -101,45 +132,122 @@ public:
         mount_path_ = mount_path;
     }
 
+    /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
+    /// @param uri
+    /// @param fptr
+    void all(String path, const requestCallback fptr)
+    {
+        // TODO: not implemented
+    }
+
+    /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
+    /// For more information, see the routing guide.
+    /// @param uri
+    /// @param fptr
+    void Delete(String path, const requestCallback fptr)
+    {
+        METHOD(Method::DELETE, path, fptr);
+    }
+
+    /// @brief Sets the Boolean setting name to false, where name is one of the properties from
+    /// the app settings table. Calling app.set('foo', false) for a Boolean property is the
+    /// same as calling app.disable('foo').
+    /// @param uri
+    void disable(String name)
+    {
+        settings_[name] = false;
+    }
+
+    /// @brief Returns true if the Boolean setting name is disabled (false), where name is one
+    /// of the properties from the app settings table.
+    /// @param name
+    /// @return
+    bool disabled(String name)
+    {
+        return settings_[name];
+    }
+
+    /// @brief Sets the Boolean setting name to true, where name is one of the properties from the
+    /// app settings table. Calling app.set('foo', true) for a Boolean property is the same as
+    /// calling app.enable('foo').
+    /// @param name
+    void enable(String name)
+    {
+        settings_[name] = true;
+    }
+
+    /// @brief Returns true if the setting name is enabled (true), where name is one of the
+    /// properties from the app settings table.
+    /// @param name
+    /// @return
+    bool enabled(String name)
+    {
+        return settings_[name];
+    }
+
+    /// @brief Returns the value of name app setting, where name is one of the strings in
+    /// the app settings table. For example:
+    /// @param name
+    /// @return
+    String get(String name)
+    {
+        // TODO
+        return "";
+    }
+
+    /// @brief Assigns setting name to value. You may store any value that you want, but 
+    // certain names can be used to configure the behavior of the server. These special 
+    /// names are listed in the app settings table.
+    /// @param name 
+    /// @param value 
+    void set(String name, String value)
+    {
+        // TODO
+    }
+
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void get(String uri, const requestCallback fptr)
+    void get(String path, const requestCallback fptr)
     {
-        if (uri == "/")
-            uri = "";
-
-        uri = mount_path_ + uri;
-
-        Route item{};
-        item.method = Method::GET;
-        item.uri = uri;
-        item.fptr = fptr;
-        item.indices = PathCompareAndExtractParams::splitToVector(item.uri);
-
-        routes_.push_back(item);
+        METHOD(Method::GET, path, fptr);
     };
 
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void post(String uri, const requestCallback fptr)
+    void post(String path, const requestCallback fptr)
     {
-        if (uri == "/")
-            uri = "";
-
-        uri = mount_path_ + uri;
-
-        Route item{};
-        item.method = Method::POST;
-        item.uri = uri;
-        item.fptr = fptr;
-        item.indices = PathCompareAndExtractParams::splitToVector(item.uri);
-
-        routes_.push_back(item);
+        METHOD(Method::POST, path, fptr);
     };
+
+    /// @brief
+    /// @param uri
+    /// @param fptr
+    /// @return
+    void put(String path, const requestCallback fptr)
+    {
+        METHOD(Method::PUT, path, fptr);
+    };
+
+    /// @brief Returns the canonical path of the app, a string.
+    /// @return
+    String path()
+    {
+        // TODO: noy sure
+        return (parent_ == nullptr) ? mount_path_ : parent_->mount_path_;
+    }
+
+    /// @brief Returns an instance of a single route, which you can then use to handle
+    /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
+    /// (and thus typo errors).
+    Route &route()
+    {
+        // TODO
+        return nullptr;
+    }
 
     /// @brief
     void listen(uint16_t port, const StartedCallback fptr = nullptr)
@@ -172,9 +280,9 @@ public:
 
                 if (req.method != Method::ERROR)
                 {
-	                Response res;
+                    Response res;
 
-	                auto it = middlewares_.begin();
+                    auto it = middlewares_.begin();
                     while (it != middlewares_.end())
                     {
                         if ((*it)(req, res))
@@ -210,16 +318,16 @@ public:
                         client.print(": ");
                         client.println(second);
                     }
-                    if (!res.body_.isEmpty())
+                    if (!res.body.isEmpty())
                     {
                         client.print("content-length: ");
-                        client.println(res.body_.length());
+                        client.println(res.body.length());
                     }
                     client.println("connection: close");
                     client.println("");
                     // send content length *or* close the connection (spec 7.2.2)
-                    if (!res.body_.isEmpty())
-                        client.println(res.body_.c_str());
+                    if (!res.body.isEmpty())
+                        client.println(res.body.c_str());
                     client.stop();
                 }
             }

@@ -41,10 +41,17 @@ void setup() {
   express.use(middleware2);
 
   express.get("/hello", [](Request &req, Response &res) {
+    EX_DBG(req.ip);
     res.status(200).json("{'route': 'v0'}");
   });
 
+  express.Delete("/hello", [](Request &req, Response &res) {
+    EX_DBG(express.path());
+    res.status(204);
+  });
+
   v1.get("/hello", [](Request &req, Response &res) {
+    EX_DBG(v1.path());
     res.status(200).json("{'route': 'v1'}");
   });
 

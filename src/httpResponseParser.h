@@ -22,7 +22,7 @@ class HttpRequestParser : public IHttpRequestParser
     {
         // TODO: use a download handler
 
-        auto max_length = req.contentLength;
+        auto max_length = req.contentLength_;
         if (!req.body.reserve(max_length + 1))
             return false;
 
@@ -59,16 +59,20 @@ public:
         String reqStr = client.readStringUntil('\r');
         client.readStringUntil('\n');
 
-        // clean
+        // TODO: clean
         req_.method = Method::UNDEFINED;
-        req_.version = "";
-        req_.uri = "";
-        req_.host = "";
+        req_.version_ = "";
+        req_.uri_ = "";
+        req_.hostname = "";
         req_.body = "";
-        req_.contentLength = 0;
+        req_.contentLength_ = 0;
         req_.params.clear();
-        req_.headers.clear();
-        req_.arguments.clear();
+        req_.headers_.clear();
+        req_.query.clear();
+
+        req_.protocol = "http";
+        req_.secure = (req_.protocol == "https");
+        req_.ip = client.remoteIP();
 
         // First line of HTTP request looks like "GET /path HTTP/1.1"
         // Retrieve the "/path" part by finding the spaces
@@ -95,7 +99,7 @@ public:
             url = url.substring(0, has_search);
         }
 
-        req_.uri = url;
+        req_.uri_ = url;
 
         req_.method = Method::GET;
         if (method_str == "HEAD")
@@ -128,10 +132,10 @@ public:
             auto header_name = reqStr.substring(0, header_div);
             header_name.toLowerCase();
             auto header_value = reqStr.substring(header_div + 2);
-            req_.headers[header_name] = header_value;
+            req_.headers_[header_name] = header_value;
 
             if (header_name.equalsIgnoreCase(F("Host")))
-                req_.host = header_value;
+                req_.hostname = header_value;
         }
 
         parseArguments(search_str);
@@ -141,7 +145,7 @@ public:
         String boundary_str;
         if (req_.method == Method::POST || req_.method == Method::PUT || req_.method == Method::PATCH || req_.method == Method::DELETE)
         {
-            for (auto [key, value] : req_.headers)
+            for (auto [key, value] : req_.headers_)
             {
                 if (key.equalsIgnoreCase("Content-Type"))
                 {
@@ -159,7 +163,7 @@ public:
                 }
                 else if (key.equalsIgnoreCase("Content-Length"))
                 {
-                    req_.contentLength = value.toInt();
+                    req_.contentLength_ = value.toInt();
                 }
             }
         }
@@ -182,7 +186,7 @@ public:
         if (is_form)
         {
             EX_DBG(F("reading form:"));
-            if (!parseForm(client, boundary_str, req_.contentLength))
+            if (!parseForm(client, boundary_str, req_.contentLength_))
             {
                 EX_DBG(F("failed parseForm"));
                 req_.method = Method::ERROR;
@@ -234,7 +238,7 @@ public:
             String key = urlDecode(data.substring(pos, equal_sign_index));
             key.toLowerCase();
             String value = urlDecode(data.substring(equal_sign_index + 1, next_arg_index));
-            req_.arguments[key] = value;
+            req_.query[key] = value;
 
             ++iarg;
 

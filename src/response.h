@@ -7,7 +7,7 @@ class Response
     friend class Express;
 
 private:
-    String body_{};
+    String body{};
     uint16_t status_ = 404;
     std::map<String, String> headers_{};
 
@@ -70,7 +70,7 @@ public: /* Methods*/
     /// @return
     void json(String body)
     {
-        body_ = body;
+        body = body;
 
         set("content-type", body);
         // QUESTION: set content-length here?
@@ -80,6 +80,10 @@ public: /* Methods*/
 
     /// @brief Renders a view and sends the rendered HTML string to the client.
     /// Optional parameters:
+    ///    * locals, an object whose properties define local variables for the view.
+    ///    * callback, a callback function. If provided, the method returns both the 
+    ///      possible error and rendered string, but does not perform an automated response.
+    ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
     void render(String view)
     {
@@ -90,14 +94,16 @@ public: /* Methods*/
     /// @param view
     void send(String body)
     {
+        body = body;
     }
 
     /// @brief Sets the response HTTP status code to statusCode and sends the
     ///  registered status message as the text response body. If an unknown
     // status code is specified, the response body will just be the code number.
     /// @param statusCode
-    void sendStatus(int statusCode)
+    void sendStatus(uint16_t statusCode)
     {
+        status_ = statusCode;
     }
 
     /// @brief Sets the response’s HTTP header field to value
