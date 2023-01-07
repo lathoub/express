@@ -37,7 +37,7 @@ void loop() {
 ```cpp
 express.get("/collections/:collectionId", [](HttpRequest &req, Response &res) {
     // req.params["collectionId"]
-    res.status = 200;
+     res.status(204);
   });
 ```
 
@@ -45,12 +45,12 @@ express.get("/collections/:collectionId", [](HttpRequest &req, Response &res) {
 
 ```cpp
   express.get("/blabla", [](HttpRequest &req, Response &res) {
-    res.status = 200;
+     res.status(204);
   });
   
   express.put("/blabla", [](HttpRequest &req, Response &res) {
     // body in req.body
-    res.status = 200;
+    res.status(204);
   });
 
 ```
@@ -58,11 +58,10 @@ express.get("/collections/:collectionId", [](HttpRequest &req, Response &res) {
 ## Middleware(s)
 ```cpp
 bool middleware1(HttpRequest &req, HttpResponse &res) {
-  req.headers["aa"] = "aa";
+  req.headers["aa"] = "aa"; // add something to the header
   return true; 
 }
 ...
   express.use("/v1"); // prefix all paths with /v1
   express.use(middleware1);
-
 ```
