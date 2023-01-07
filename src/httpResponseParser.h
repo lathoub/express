@@ -67,7 +67,7 @@ public:
         req_.body = "";
         req_.contentLength_ = 0;
         req_.params.clear();
-        req_.headers_.clear();
+        req_.headers.clear();
         req_.query.clear();
 
         req_.protocol = "http";
@@ -132,7 +132,7 @@ public:
             auto header_name = reqStr.substring(0, header_div);
             header_name.toLowerCase();
             auto header_value = reqStr.substring(header_div + 2);
-            req_.headers_[header_name] = header_value;
+            req_.headers[header_name] = header_value;
 
             if (header_name.equalsIgnoreCase(F("Host")))
                 req_.hostname = header_value;
@@ -145,7 +145,7 @@ public:
         String boundary_str;
         if (req_.method == Method::POST || req_.method == Method::PUT || req_.method == Method::PATCH || req_.method == Method::DELETE)
         {
-            for (auto [key, value] : req_.headers_)
+            for (auto [key, value] : req_.headers)
             {
                 if (key.equalsIgnoreCase("Content-Type"))
                 {

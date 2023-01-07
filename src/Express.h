@@ -303,24 +303,8 @@ public:
                             break;
                     }
 
-                    /*
-                                        EX_DBG("method", req.method);
-                                        EX_DBG("uri", req.uri);
-                                        EX_DBG("version", req.version);
-                                        EX_DBG("host", req.host);
-                                        EX_DBG(F("headers:"));
-                                        for (auto [first, second] : req.headers)
-                                        {
-                                            EX_DBG(F("key:"), first, F("value:"), second);
-                                        }
-
-                                        EX_DBG(F("arguments:"));
-                                        for (auto [first, second] : req.arguments)
-                                        {
-                                            EX_DBG(F("key:"), first, F("value:"), second);
-                                        }
-                    */
-                    evaluate(req, res);
+                    if (!(it != middlewares_.end()))
+                        evaluate(req, res);
 
                     client.print("HTTP/1.1 ");
                     client.println(res.status_);

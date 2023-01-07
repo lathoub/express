@@ -15,9 +15,6 @@ private:
 
     int contentLength_;
 
-    /// @brief 
-    std::map<String, String> headers_;
-
 public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
@@ -40,6 +37,9 @@ public:
     /// @brief Contains the remote IP address of the request.
     IPAddress ip;
 
+    /// @brief 
+    std::map<String, String> headers;
+
     /// @brief Contains the path part of the request URL.
     String path;
 
@@ -58,9 +58,9 @@ public: /* Methods*/
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    void accepts()
+    bool accepts(String types)
     {
-        // TODO
+        return false;
     }
 
     /// @brief Returns the specified HTTP request header field (case-insensitive match). 
@@ -68,7 +68,7 @@ public: /* Methods*/
     /// @return
     String get(String field)
     {
-        for (auto [key, header] : headers_)
+        for (auto [key, header] : headers)
         {
             if (field.equalsIgnoreCase(key))
                 return header;
