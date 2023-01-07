@@ -4,30 +4,31 @@ Fast, unopinionated, (very) minimalist web framework for Arduino
 ## Hello World
 
 ```cpp
-#include <Ethernet.h>
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-EthernetServer server(80);
 Express express;
 
 void setup() {
-  Ethernet.begin(mac); // checks not included for brevity
-  
-  express.get("/", [](HttpRequest &req, Response &res) {
-    res.body = "<!doctype html><meta charset=utf-8><title>Arduino Express</title>Hello World";
-    res.headers["content-type"] = "text/html;charset=utf-8";
-    res.status = 200;
+  Serial.begin(115200);
+  while (!Serial) { }  delay(1500);
+
+  Ethernet.begin(mac); // no check for brevity
+
+  express.get("/", [](Request &req, Response &res) {
+    res.status(200).json("{'value': 42}");
   });
 
-  server.begin();
+  express.listen(80, []() {
+    Serial.print("Webserver listening on port:");
+    Serial.println(express.port);
+  });
 }
 
 void loop() {
-  if (EthernetClient client = server.available())
-    express.run(client);
+  express.run();
 }
 ```
 
