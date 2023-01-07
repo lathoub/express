@@ -1,6 +1,8 @@
 #pragma once
 #include <map>
 
+class Express;
+
 class Request
 {
     friend class Express;
@@ -17,6 +19,10 @@ private:
     std::map<String, String> headers_;
 
 public:
+
+    /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
+    /// @return 
+    Express* app = nullptr;
 
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
     Method method;

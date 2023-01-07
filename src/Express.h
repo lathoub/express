@@ -104,7 +104,7 @@ private:
 public:
     uint16_t port{};
 
-    /// @brief The app.mountpath property contains the path patterns 
+    /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
 
@@ -200,11 +200,11 @@ public:
         return "";
     }
 
-    /// @brief Assigns setting name to value. You may store any value that you want, but 
-    // certain names can be used to configure the behavior of the server. These special 
+    /// @brief Assigns setting name to value. You may store any value that you want, but
+    // certain names can be used to configure the behavior of the server. These special
     /// names are listed in the app settings table.
-    /// @param name 
-    /// @param value 
+    /// @param name
+    /// @param value
     void set(String name, String value)
     {
         // TODO
@@ -281,10 +281,12 @@ public:
             if (client.available())
             {
                 Request &req = http_request_parser_.parseRequest(client);
+                req.app = this;
 
                 if (req.method != Method::ERROR)
                 {
                     Response res;
+                    res.app = this;
 
                     auto it = middlewares_.begin();
                     while (it != middlewares_.end())

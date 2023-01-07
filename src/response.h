@@ -8,10 +8,17 @@ class Response
 
 private:
     String body{};
+
     uint16_t status_ = 404;
+
     std::map<String, String> headers_{};
 
 public: /* Methods*/
+
+    /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
+    /// @return 
+    Express* app;
+
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value
     /// parameter can be a string or an array.
