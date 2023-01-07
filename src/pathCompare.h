@@ -12,6 +12,9 @@ private:
     static const char delimiter = '/';
 
 public:
+    /// @brief 
+    /// @param path 
+    /// @return 
     static auto splitToVector(const String &path) -> std::vector<PosLen>
     {
         std::vector<PosLen> pathItems;
@@ -29,6 +32,13 @@ public:
         return pathItems;
     }
 
+    /// @brief 
+    /// @param path 
+    /// @param pathItems 
+    /// @param requestPath 
+    /// @param requestPathItems 
+    /// @param params 
+    /// @return 
     static auto match(const String &path, const std::vector<PosLen> &pathItems,
                       const String &requestPath, const std::vector<PosLen> &requestPathItems,
                       std::map<String, String> &params) -> bool

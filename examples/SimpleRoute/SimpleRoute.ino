@@ -1,12 +1,11 @@
 #include <Ethernet.h>
 #include <Express.h>
-using namespace EXPRESS_NAMESPACE; 
+using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
 
-EthernetServer server(80);
 Express express;
 
 void setup() {
@@ -18,37 +17,35 @@ void setup() {
 
   if (Ethernet.begin(mac) == 0) {
     Serial.println(F("Failed DHCP, check network cable & reboot"));
-    for (;;) ;
+    for (;;);
   }
-  Serial.print("IP address is ");
-  Serial.println(Ethernet.localIP());
 
-  express.get("/helloworld", [](HttpRequest &req, HttpResponse &res) {
-    res.status = 204;
+  express.get("/helloworld", [](Request &req, Response &res) {
+    res.status(204);
   });
 
-  express.get("/helloworld/:name", [](HttpRequest &req, HttpResponse &res) {
+  express.get("/helloworld/:name", [](Request &req, Response &res) {
     Serial.println(req.params["name"]);
-    res.status = 204;
+    res.status(204);
   });
 
-  express.get("/", [](HttpRequest &req, HttpResponse &res) {
-    res.body = "<!doctype html><meta charset=utf-8><title>shortest html5</title>";
-    res.headers["content-type"] = "text/html;charset=utf-8";
-    res.status = 200;
+  express.get("/", [](Request &req, Response &res) {
+    //   res.body = "<!doctype html><meta charset=utf-8><title>shortest html5</title>";
+    // res.headers["content-type"] = "text/html;charset=utf-8";
+    res.render("");
+    res.status(200);
   });
 
-  express.post("/firmware", [](HttpRequest &req, HttpResponse &res) {
+  express.post("/firmware", [](Request &req, Response &res) {
     Serial.println(req.body);
-    res.status = 201;
+    res.status(201);
   });
 
-  server.begin();
-  Serial.print("Webserver listening on port ");
-  Serial.println(80);
+  express.listen(80, []() {
+    EX_DBG("Webserver on IP:", Ethernet.localIP(), "listening on port:", express.port);
+  });
 }
 
 void loop() {
-  if (EthernetClient client = server.available())
-    express.run(client);
+  express.run();
 }

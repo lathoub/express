@@ -11,56 +11,64 @@ BEGIN_EXPRESS_NAMESPACE
 
 class HttpRequestParser : public IHttpRequestParser
 {
-    HttpRequest _req;
+    Request req_;
 
-    static bool readBytesWithTimeout(EthernetClient &client, HttpRequest &req, int timeout_ms)
+    /// @brief 
+    /// @param client 
+    /// @param req 
+    /// @param timeout_ms 
+    /// @return 
+    static bool bodyParser(EthernetClient &client, Request &req, const int timeout_ms)
     {
         // TODO: use a download handler
 
-        auto maxLength = req.contentLength;
-        if (!req.body.reserve(maxLength + 1))
+        auto max_length = req.contentLength;
+        if (!req.body.reserve(max_length + 1))
             return false;
 
         req.body[0] = 0;
 
-        while (req.body.length() < maxLength)
+        while (req.body.length() < max_length)
         {
             int tries = timeout_ms;
             size_t avail;
 
-            while (!(avail = client.available()) && tries--)
+            while (!((avail = client.available())) && tries--)
                 delay(1);
 
             if (!avail)
                 break;
 
-            if (req.body.length() + avail > maxLength)
-                avail = maxLength - req.body.length();
+            if (req.body.length() + avail > max_length)
+                avail = max_length - req.body.length();
 
             while (avail--)
-                req.body += (char)client.read();
+                req.body += static_cast<char>(client.read());
         }
 
-        return req.body.length() == maxLength;
+        return req.body.length() == max_length;
     }
 
 public:
-    HttpRequest &parseRequest(EthernetClient &client)
+    /// @brief 
+    /// @param client 
+    /// @return 
+    Request &parseRequest(EthernetClient &client) override
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');
         client.readStringUntil('\n');
 
         // clean
-        _req.method = HttpMethod::UNDEFINED;
-        _req.version = "";
-        _req.uri = "";
-        _req.host = "";
-        _req.body = "";
-        _req.contentLength = 0;
-        _req.params.clear();
-        _req.headers.clear();
-        _req.arguments.clear();
+        req_.method = Method::UNDEFINED;
+        req_.version = "";
+        req_.uri = "";
+        req_.host = "";
+        req_.body = "";
+        req_.contentLength = 0;
+        req_.params.clear();
+        req_.headers.clear();
+        req_.arguments.clear();
 
         // First line of HTTP request looks like "GET /path HTTP/1.1"
         // Retrieve the "/path" part by finding the spaces
@@ -70,38 +78,38 @@ public:
         if (addr_start == -1 || addr_end == -1)
         {
             EX_DBG(F("_parseRequest: Invalid request: "), reqStr);
-            _req.method = HttpMethod::ERROR;
-            return _req;
+            req_.method = Method::ERROR;
+            return req_;
         }
 
-        String methodStr = reqStr.substring(0, addr_start);
+        String method_str = reqStr.substring(0, addr_start);
         String url = reqStr.substring(addr_start + 1, addr_end);
-        String versionEnd = reqStr.substring(addr_end + 8);
+        String version_end = reqStr.substring(addr_end + 8);
         //  req.version = atoi(versionEnd.c_str());
-        String searchStr = "";
-        auto hasSearch = url.indexOf('?');
+        String search_str = "";
+        auto has_search = url.indexOf('?');
 
-        if (hasSearch != -1) // TODO arguments or params ??
+        if (has_search != -1) // TODO arguments or params ??
         {
-            searchStr = url.substring(hasSearch + 1);
-            url = url.substring(0, hasSearch);
+            search_str = url.substring(has_search + 1);
+            url = url.substring(0, has_search);
         }
 
-        _req.uri = url;
+        req_.uri = url;
 
-        _req.method = HttpMethod::GET;
-        if (methodStr == "HEAD")
-            _req.method = HttpMethod::HEAD;
-        else if (methodStr == "POST")
-            _req.method = HttpMethod::POST;
-        else if (methodStr == "DELETE")
-            _req.method = HttpMethod::DELETE;
-        else if (methodStr == "OPTIONS")
-            _req.method = HttpMethod::OPTIONS;
-        else if (methodStr == "PUT")
-            _req.method = HttpMethod::PUT;
-        else if (methodStr == "PATCH")
-            _req.method = HttpMethod::PATCH;
+        req_.method = Method::GET;
+        if (method_str == "HEAD")
+            req_.method = Method::HEAD;
+        else if (method_str == "POST")
+            req_.method = Method::POST;
+        else if (method_str == "DELETE")
+            req_.method = Method::DELETE;
+        else if (method_str == "OPTIONS")
+            req_.method = Method::OPTIONS;
+        else if (method_str == "PUT")
+            req_.method = Method::PUT;
+        else if (method_str == "PATCH")
+            req_.method = Method::PATCH;
 
         // parse headers
         while (true)
@@ -112,89 +120,89 @@ public:
             if (reqStr == "")
                 break; // no more headers
 
-            auto headerDiv = reqStr.indexOf(':');
+            auto header_div = reqStr.indexOf(':');
 
-            if (headerDiv == -1)
+            if (header_div == -1)
                 break;
 
-            auto headerName = reqStr.substring(0, headerDiv);
-            headerName.toLowerCase();
-            auto headerValue = reqStr.substring(headerDiv + 2);
-            _req.headers[headerName] = headerValue;
+            auto header_name = reqStr.substring(0, header_div);
+            header_name.toLowerCase();
+            auto header_value = reqStr.substring(header_div + 2);
+            req_.headers[header_name] = header_value;
 
-            if (headerName.equalsIgnoreCase(F("Host")))
-                _req.host = headerValue;
+            if (header_name.equalsIgnoreCase(F("Host")))
+                req_.host = header_value;
         }
 
-        parseArguments(searchStr);
+        parseArguments(search_str);
 
-        bool isForm = false;
-        bool isEncoded = false;
-        String boundaryStr;
-        if (_req.method == HttpMethod::POST || _req.method == HttpMethod::PUT || _req.method == HttpMethod::PATCH || _req.method == HttpMethod::DELETE)
+        bool is_form = false;
+        bool is_encoded = false;
+        String boundary_str;
+        if (req_.method == Method::POST || req_.method == Method::PUT || req_.method == Method::PATCH || req_.method == Method::DELETE)
         {
-            for (auto [key, value] : _req.headers)
+            for (auto [key, value] : req_.headers)
             {
                 if (key.equalsIgnoreCase("Content-Type"))
                 {
                     if (value.startsWith("application/x-www-form-urlencoded"))
                     {
-                        isForm = false;
-                        isEncoded = true;
+                        is_form = false;
+                        is_encoded = true;
                     }
                     else if (value.startsWith("multipart/"))
                     {
-                        boundaryStr = value.substring(value.indexOf('=') + 1);
-                        boundaryStr.replace("\"", "");
-                        isForm = true;
+                        boundary_str = value.substring(value.indexOf('=') + 1);
+                        boundary_str.replace("\"", "");
+                        is_form = true;
                     }
                 }
                 else if (key.equalsIgnoreCase("Content-Length"))
                 {
-                    _req.contentLength = value.toInt();
+                    req_.contentLength = value.toInt();
                 }
             }
         }
 
-        if (!isForm)
+        if (!is_form)
         {
-            if (!readBytesWithTimeout(client, _req, 3000))
+            if (!bodyParser(client, req_, 3000)) // TODO: can be overwritten
             {
                 EX_DBG(F("failed:"));
-                _req.method = HttpMethod::ERROR;
-                return _req;
+                req_.method = Method::ERROR;
+                return req_;
             }
         }
 
-        if (isEncoded)
+        if (is_encoded)
         {
             // TODO
         }
 
-        if (isForm)
+        if (is_form)
         {
             EX_DBG(F("reading form:"));
-            if (!parseForm(client, boundaryStr, _req.contentLength))
+            if (!parseForm(client, boundary_str, req_.contentLength))
             {
                 EX_DBG(F("failed parseForm"));
-                _req.method = HttpMethod::ERROR;
-                return _req;
+                req_.method = Method::ERROR;
+                return req_;
             }
         }
 
         client.flush();
 
-        return _req;
+        return req_;
     }
 
     /// @brief
     /// @param data
-    void parseArguments(const String &data)
+    auto parseArguments(const String& data) -> void
     {
         if (data.length() == 0)
             return;
 
-        int argCount = 1;
+        int arg_count = 1;
 
         for (int i = 0; i < static_cast<int>(data.length());)
         {
@@ -204,12 +212,12 @@ public:
                 break;
 
             ++i;
-            ++argCount;
+            ++arg_count;
         }
 
         int pos = 0;
 
-        for (int iarg = 0; iarg < argCount;)
+        for (int iarg = 0; iarg < arg_count;)
         {
             int equal_sign_index = data.indexOf('=', pos);
             int next_arg_index = data.indexOf('&', pos);
@@ -226,7 +234,7 @@ public:
             String key = urlDecode(data.substring(pos, equal_sign_index));
             key.toLowerCase();
             String value = urlDecode(data.substring(equal_sign_index + 1, next_arg_index));
-            _req.arguments[key] = value;
+            req_.arguments[key] = value;
 
             ++iarg;
 
@@ -237,7 +245,12 @@ public:
         }
     }
 
-    bool parseForm(EthernetClient &client, const String &boundary, uint32_t len)
+    /// @brief 
+    /// @param client 
+    /// @param boundary 
+    /// @param len 
+    /// @return 
+    auto parseForm(EthernetClient& client, const String& boundary, uint32_t len) -> bool
     {
         EX_DBG(F("boundary"), boundary);
         EX_DBG(F("len"), len);
@@ -258,12 +271,10 @@ public:
         {
             while (true)
             {
-                String argName;
-                String argValue;
-                String argType;
-                String argFilename;
-
-                bool argIsFile = false;
+                String arg_name;
+                String arg_value;
+                String arg_type;
+                String arg_filename;
 
                 line = client.readStringUntil('\r');
                 client.readStringUntil('\n');
@@ -272,24 +283,25 @@ public:
                 {
                     EX_DBG(F("line:"), line);
 
-                    auto nameStart = line.indexOf('=');
+                    auto name_start = line.indexOf('=');
 
-                    if (nameStart != -1)
+                    if (name_start != -1)
                     {
-                        argName = line.substring(nameStart + 2);
-                        nameStart = argName.indexOf('=');
+	                    bool arg_is_file = false;
+	                    arg_name = line.substring(name_start + 2);
+                        name_start = arg_name.indexOf('=');
 
-                        if (nameStart == -1)
+                        if (name_start == -1)
                         {
-                            argName = argName.substring(0, argName.length() - 1);
+                            arg_name = arg_name.substring(0, arg_name.length() - 1);
                         }
                         else
                         {
-                            argFilename = argName.substring(nameStart + 2, argName.length() - 1);
-                            argName = argName.substring(0, argName.indexOf('"'));
-                            argIsFile = true;
+                            arg_filename = arg_name.substring(name_start + 2, arg_name.length() - 1);
+                            arg_name = arg_name.substring(0, arg_name.indexOf('"'));
+                            arg_is_file = true;
 
-                            EX_DBG(F("PostArg FileName: "), argFilename);
+                            EX_DBG(F("PostArg FileName: "), arg_filename);
 
                             // use GET to set the filename if uploading using blob
                             //    if (argFilename == F("blob") && hasArg("filename"))
@@ -301,13 +313,13 @@ public:
 
                         if (line.length() > 12 && line.substring(0, 12).equalsIgnoreCase("Content-Type"))
                         {
-                            argType = line.substring(line.indexOf(':') + 2);
+                            arg_type = line.substring(line.indexOf(':') + 2);
                             // skip next line
                             client.readStringUntil('\r');
                             client.readStringUntil('\n');
                         }
 
-                        if (!argIsFile)
+                        if (!arg_is_file)
                         {
                             while (true)
                             {
@@ -317,15 +329,15 @@ public:
                                 if (line.startsWith("--" + boundary))
                                     break;
 
-                                if (argValue.length() > 0)
-                                    argValue += "\n";
+                                if (arg_value.length() > 0)
+                                    arg_value += "\n";
 
-                                argValue += line;
+                                arg_value += line;
                             }
 
                             // RequestArgument &arg = _postArgs[_postArgsLen++];
-                            String key = argName;
-                            String value = argValue;
+                            String key = arg_name;
+                            String value = arg_value;
                             EX_DBG(F("key: "), key, F("value: "), value);
 
                             if (line == ("--" + boundary + "--"))
@@ -506,7 +518,10 @@ public:
         return true;
     }
 
-    String urlDecode(const String &text)
+    /// @brief 
+    /// @param text 
+    /// @return 
+    auto urlDecode(const String& text) -> String
     {
         String decoded = "";
         char temp[] = "0x00";
@@ -515,22 +530,22 @@ public:
 
         while (i < len)
         {
-            char decodedChar;
-            char encodedChar = text.charAt(i++);
+            char decoded_char;
+            char encoded_char = text.charAt(i++);
 
-            if ((encodedChar == '%') && (i + 1 < len))
+            if ((encoded_char == '%') && (i + 1 < len))
             {
                 temp[2] = text.charAt(i++);
                 temp[3] = text.charAt(i++);
 
-                decodedChar = strtol(temp, NULL, 16);
+                decoded_char = strtol(temp, NULL, 16);
             }
             else
             {
-                decodedChar = encodedChar == '+' ? ' ' : encodedChar;
+                decoded_char = encoded_char == '+' ? ' ' : encoded_char;
             }
 
-            decoded += decodedChar;
+            decoded += decoded_char;
         }
 
         return decoded;

@@ -1,6 +1,5 @@
 #define DEBUG Serial
 
-#include <Ethernet.h>
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
@@ -8,18 +7,15 @@ byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
 
-EthernetServer server(80);
 Express express;
+Express v1;
+Express v2;
 
-bool middleware1(HttpRequest &req, HttpResponse &res) {
-  req.headers["aa"] = "aa";
-  EX_DBG("step1");
-  return false; // don't go to next middle ware
+bool middleware1(Request &req, Response &res) {
+  return false;  // don't go to next middle ware
 }
 
-bool middleware2(HttpRequest &req, HttpResponse &res) {
-  req.headers["bbb"] = "bb";
-  EX_DBG("step2");
+bool middleware2(Request &req, Response &res) {
   return true;
 }
 
@@ -37,26 +33,30 @@ void setup() {
     for (;;)
       ;
   }
-  Serial.print("IP address is ");
-  Serial.println(Ethernet.localIP());
 
-  express.use("/v1");
+  express.use("/v0");
+  express.use("/v1", v1);
+  express.use("/v2", v2);
   express.use(middleware1);
   express.use(middleware2);
 
-  express.get("/", [](HttpRequest &req, HttpResponse &res) {
-    EX_DBG("step3");
-    EX_DBG(req.headers["aa"]);
-    EX_DBG(req.headers["bb"]);
-    res.status = 204;
+  express.get("/hello", [](Request &req, Response &res) {
+    res.status(200).json("{'route': 'v0'}");
   });
 
-  server.begin();
-  Serial.print("Webserver listening on port ");
-  Serial.println(80);
+  v1.get("/hello", [](Request &req, Response &res) {
+    res.status(200).json("{'route': 'v1'}");
+  });
+
+  v2.get("/hello", [](Request &req, Response &res) {
+    res.status(200).json("{'route': 'v2'}");
+  });
+
+  express.listen(80, []() {
+    EX_DBG("Webserver on IP:", Ethernet.localIP(), "listening on port:", express.port);
+  });
 }
 
 void loop() {
-  if (EthernetClient client = server.available())
-    express.run(client);
+  express.run();
 }

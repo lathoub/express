@@ -16,7 +16,7 @@ Express express;
 void setup() {
   Ethernet.begin(mac); // checks not included for brevity
   
-  express.get("/", [](HttpRequest &req, HttpResponse &res) {
+  express.get("/", [](HttpRequest &req, Response &res) {
     res.body = "<!doctype html><meta charset=utf-8><title>Arduino Express</title>Hello World";
     res.headers["content-type"] = "text/html;charset=utf-8";
     res.status = 200;
@@ -34,7 +34,7 @@ void loop() {
 ## Routing Parameters
 
 ```cpp
-express.get("/collections/:collectionId", [](HttpRequest &req, HttpResponse &res) {
+express.get("/collections/:collectionId", [](HttpRequest &req, Response &res) {
     // req.params["collectionId"]
     res.status = 200;
   });
@@ -43,11 +43,11 @@ express.get("/collections/:collectionId", [](HttpRequest &req, HttpResponse &res
 ## http methods
 
 ```cpp
-  express.get("/blabla", [](HttpRequest &req, HttpResponse &res) {
+  express.get("/blabla", [](HttpRequest &req, Response &res) {
     res.status = 200;
   });
   
-  express.put("/blabla", [](HttpRequest &req, HttpResponse &res) {
+  express.put("/blabla", [](HttpRequest &req, Response &res) {
     // body in req.body
     res.status = 200;
   });

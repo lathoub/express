@@ -3,6 +3,7 @@
 #include <Ethernet.h>
 #include <vector>
 #include <list>
+#include <map>
 
 // #define DEBUG Serial
 
@@ -18,108 +19,166 @@ class Express
 private:
     struct Route
     {
-        HttpMethod method = HttpMethod::UNDEFINED;
-        String uri;
+        Method method = Method::UNDEFINED;
+        String uri{};
         requestCallback fptr = nullptr;
-        std::vector<PosLen> indices;
+        // cache path splitting (avoid doing this for every request * number of paths)
+        std::vector<PosLen> indices{};
     };
 
-    std::vector<Route> _routes;
-
-    String _prefix;
+    std::vector<Route> routes_{};
 
     friend class HttpRequestHandler;
-    HttpRequestParser _httpRequestParser;
+    HttpRequestParser http_request_parser_;
 
-    std::list<MiddlewareCallback> _middlewares;
-    std::list<MiddlewareCallback>::iterator _mwi;
+    std::list<MiddlewareCallback> middlewares_{};
+
+    EthernetServer *server_{}; // TODO: singleton
+
+    String mount_path_{};
+    
+    std::map<String, Express*> mount_paths_{};
 
 private:
-    void evaluate(HttpRequest &req, HttpResponse &res)
+    /// @brief
+    /// @param req
+    /// @param res
+    bool evaluate(Request &req, Response &res)
     {
-        res.body = "";
-        res.status = 404;
-        res.headers.clear();
-        auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri);
+        res.body_ = "";
+        res.status_ = 404;
+        res.headers_.clear();
+        const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri);
 
-        for (auto [method, uri, fptr, indices] : _routes)
+        for (auto [method, uri, fptr, indices] : routes_)
         {
             if (req.method == method && PathCompareAndExtractParams::match(
                                             uri, indices,
                                             req.uri, req_indices,
                                             req.params))
             {
-                res.status = 0;
+                res.status_ = 0;
                 fptr(req, res);
-                break;
+                return true;
             }
         }
+
+        for (auto [mountPath, express] : mount_paths_)
+        {
+            if (express->evaluate(req, res))
+                return true;
+        }
+
+        return false;
     }
 
 public:
-    // Add middleware
-    Express &use(MiddlewareCallback middleware)
+    uint16_t port{};
+
+    /// @brief
+    /// @param middleware
+    /// @return
+    void use(const MiddlewareCallback middleware)
     {
-        _middlewares.push_back(middleware);
-        return *this;
+        middlewares_.push_back(middleware);
     }
 
-    Express &use(String prefix)
+    /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+    /// @param mount_path
+    /// @param other
+    /// @return
+    void use(String mount_path, Express &other)
     {
-        _prefix = prefix;
-        return *this;
+        other.mount_path_ = mount_path;
+        mount_paths_[other.mount_path_] = &other;
     }
 
-    Express &get(String uri, requestCallback fptr)
+    /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+    /// @param mount_path
+    /// @return
+    void use(String mount_path)
+    {
+        mount_path_ = mount_path;
+    }
+
+    /// @brief
+    /// @param uri
+    /// @param fptr
+    /// @return
+    void get(String uri, const requestCallback fptr)
     {
         if (uri == "/")
             uri = "";
 
+        uri = mount_path_ + uri;
+
         Route item{};
-        item.method = HttpMethod::GET;
-        item.uri = _prefix + uri;
+        item.method = Method::GET;
+        item.uri = uri;
         item.fptr = fptr;
-        // cache path splitting (avoid doing this for every request * number of paths)
         item.indices = PathCompareAndExtractParams::splitToVector(item.uri);
 
-        _routes.push_back(item);
-
-        return *this;
+        routes_.push_back(item);
     };
 
-    Express &post(String uri, requestCallback fptr)
+    /// @brief
+    /// @param uri
+    /// @param fptr
+    /// @return
+    void post(String uri, const requestCallback fptr)
     {
         if (uri == "/")
             uri = "";
 
+        uri = mount_path_ + uri;
+
         Route item{};
-        item.method = HttpMethod::POST;
-        item.uri = _prefix + uri;
+        item.method = Method::POST;
+        item.uri = uri;
         item.fptr = fptr;
-        // cache path splitting (avoid doing this for every request * number of paths)
         item.indices = PathCompareAndExtractParams::splitToVector(item.uri);
 
-        _routes.push_back(item);
-
-        return *this;
+        routes_.push_back(item);
     };
 
+    /// @brief
+    void listen(uint16_t port, const StartedCallback fptr = nullptr)
+    {
+        this->port = port;
+
+        server_ = new EthernetServer(port);
+        server_->begin();
+
+        if (fptr)
+            fptr();
+    }
+
+    /// @brief
+    void run()
+    {
+        if (EthernetClient client = server_->available())
+            run(client);
+    }
+
+    /// @brief
+    /// @param client
     void run(EthernetClient &client)
     {
         while (client.connected())
         {
             if (client.available())
             {
-                HttpRequest &req = _httpRequestParser.parseRequest(client);
-                HttpResponse res;
+                Request &req = http_request_parser_.parseRequest(client);
 
-                if (req.method != HttpMethod::ERROR)
+                if (req.method != Method::ERROR)
                 {
-                    _mwi = _middlewares.begin();
-                    while (_mwi != _middlewares.end())
+	                Response res;
+
+	                auto it = middlewares_.begin();
+                    while (it != middlewares_.end())
                     {
-                        if ((*_mwi)(req, res))
-                            _mwi++;
+                        if ((*it)(req, res))
+                            ++it;
                         else
                             break;
                     }
@@ -144,23 +203,23 @@ public:
                     evaluate(req, res);
 
                     client.print("HTTP/1.1 ");
-                    client.println(res.status);
-                    for (auto [first, second] : res.headers)
+                    client.println(res.status_);
+                    for (auto [first, second] : res.headers_)
                     {
                         client.print(first);
                         client.print(": ");
                         client.println(second);
                     }
-                    if (!res.body.isEmpty())
+                    if (!res.body_.isEmpty())
                     {
                         client.print("content-length: ");
-                        client.println(res.body.length());
+                        client.println(res.body_.length());
                     }
                     client.println("connection: close");
                     client.println("");
                     // send content length *or* close the connection (spec 7.2.2)
-                    if (!res.body.isEmpty())
-                        client.println(res.body.c_str());
+                    if (!res.body_.isEmpty())
+                        client.println(res.body_.c_str());
                     client.stop();
                 }
             }
