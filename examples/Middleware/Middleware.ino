@@ -2,7 +2,7 @@
 
 #include <Ethernet.h>
 #include <Express.h>
-using namespace EXPRESS_NAMESPACE;  // avoids adding namespace for each Express call
+using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
@@ -11,12 +11,14 @@ byte mac[] = {
 EthernetServer server(80);
 Express express;
 
-bool encoding1(HttpRequest &req, HttpResponse &res) {
+bool middleware1(HttpRequest &req, HttpResponse &res) {
+  req.headers["aa"] = "aa";
   EX_DBG("step1");
-  return false;
+  return false; // don't go to next middle ware
 }
 
-bool encoding2(HttpRequest &req, HttpResponse &res) {
+bool middleware2(HttpRequest &req, HttpResponse &res) {
+  req.headers["bbb"] = "bb";
   EX_DBG("step2");
   return true;
 }
@@ -38,11 +40,14 @@ void setup() {
   Serial.print("IP address is ");
   Serial.println(Ethernet.localIP());
 
-  express.use(encoding1);  // middleware
-  express.use(encoding2);  // middleware
+  express.use("/v1");
+  express.use(middleware1);
+  express.use(middleware2);
 
   express.get("/", [](HttpRequest &req, HttpResponse &res) {
-  EX_DBG("step3");
+    EX_DBG("step3");
+    EX_DBG(req.headers["aa"]);
+    EX_DBG(req.headers["bb"]);
     res.status = 204;
   });
 

@@ -24,7 +24,8 @@ enum HttpMethod
     OPTIONS, // The OPTIONS method describes the communication options for the target resource.
     TRACE,   // The TRACE method performs a message loop-back test along the path to the target resource.
     PATCH,   // The PATCH method applies partial modifications to a resource.
-    UNDEFINED
+    UNDEFINED = 999,
+    ERROR = 999,
 };
 
 struct Param
@@ -60,17 +61,12 @@ struct HttpResponse
 };
 
 using requestCallback = void (*)(HttpRequest &req, HttpResponse &res);
-using middlewareCallback = bool (*)(HttpRequest &req, HttpResponse &res);
+using MiddlewareCallback = bool (*)(HttpRequest &req, HttpResponse &res);
 
-class IHttpRequestParser
+class /* interface */ IHttpRequestParser
 {
-protected:
-    HttpRequest req;
-
 public:
-    virtual HttpRequest &request() { return req; }
-
-    virtual bool parseRequest(EthernetClient &client) = 0;
+    virtual HttpRequest& parseRequest(EthernetClient &client) = 0;
 };
 
 END_EXPRESS_NAMESPACE

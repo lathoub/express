@@ -11,6 +11,8 @@ BEGIN_EXPRESS_NAMESPACE
 
 class HttpRequestParser : public IHttpRequestParser
 {
+    HttpRequest _req;
+
     static bool readBytesWithTimeout(EthernetClient &client, HttpRequest &req, int timeout_ms)
     {
         // TODO: use a download handler
@@ -43,21 +45,22 @@ class HttpRequestParser : public IHttpRequestParser
     }
 
 public:
-    bool parseRequest(EthernetClient &client)
+    HttpRequest &parseRequest(EthernetClient &client)
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');
         client.readStringUntil('\n');
 
-        req.method = HttpMethod::UNDEFINED;
-        req.version = "";
-        req.uri = "";
-        req.host = "";
-        req.body = "";
-        req.contentLength = 0;
-        req.params.clear();
-        req.headers.clear();
-        req.arguments.clear();
+        // clean
+        _req.method = HttpMethod::UNDEFINED;
+        _req.version = "";
+        _req.uri = "";
+        _req.host = "";
+        _req.body = "";
+        _req.contentLength = 0;
+        _req.params.clear();
+        _req.headers.clear();
+        _req.arguments.clear();
 
         // First line of HTTP request looks like "GET /path HTTP/1.1"
         // Retrieve the "/path" part by finding the spaces
@@ -67,7 +70,8 @@ public:
         if (addr_start == -1 || addr_end == -1)
         {
             EX_DBG(F("_parseRequest: Invalid request: "), reqStr);
-            return false;
+            _req.method = HttpMethod::ERROR;
+            return _req;
         }
 
         String methodStr = reqStr.substring(0, addr_start);
@@ -83,21 +87,21 @@ public:
             url = url.substring(0, hasSearch);
         }
 
-        req.uri = url;
+        _req.uri = url;
 
-        req.method = HttpMethod::GET;
+        _req.method = HttpMethod::GET;
         if (methodStr == "HEAD")
-            req.method = HttpMethod::HEAD;
+            _req.method = HttpMethod::HEAD;
         else if (methodStr == "POST")
-            req.method = HttpMethod::POST;
+            _req.method = HttpMethod::POST;
         else if (methodStr == "DELETE")
-            req.method = HttpMethod::DELETE;
+            _req.method = HttpMethod::DELETE;
         else if (methodStr == "OPTIONS")
-            req.method = HttpMethod::OPTIONS;
+            _req.method = HttpMethod::OPTIONS;
         else if (methodStr == "PUT")
-            req.method = HttpMethod::PUT;
+            _req.method = HttpMethod::PUT;
         else if (methodStr == "PATCH")
-            req.method = HttpMethod::PATCH;
+            _req.method = HttpMethod::PATCH;
 
         // parse headers
         while (true)
@@ -116,10 +120,10 @@ public:
             auto headerName = reqStr.substring(0, headerDiv);
             headerName.toLowerCase();
             auto headerValue = reqStr.substring(headerDiv + 2);
-            req.headers[headerName] = headerValue;
+            _req.headers[headerName] = headerValue;
 
             if (headerName.equalsIgnoreCase(F("Host")))
-                req.host = headerValue;
+                _req.host = headerValue;
         }
 
         parseArguments(searchStr);
@@ -127,9 +131,9 @@ public:
         bool isForm = false;
         bool isEncoded = false;
         String boundaryStr;
-        if (req.method == HttpMethod::POST || req.method == HttpMethod::PUT || req.method == HttpMethod::PATCH || req.method == HttpMethod::DELETE)
+        if (_req.method == HttpMethod::POST || _req.method == HttpMethod::PUT || _req.method == HttpMethod::PATCH || _req.method == HttpMethod::DELETE)
         {
-            for (auto [key, value] : req.headers)
+            for (auto [key, value] : _req.headers)
             {
                 if (key.equalsIgnoreCase("Content-Type"))
                 {
@@ -147,17 +151,18 @@ public:
                 }
                 else if (key.equalsIgnoreCase("Content-Length"))
                 {
-                    req.contentLength = value.toInt();
+                    _req.contentLength = value.toInt();
                 }
             }
         }
 
         if (!isForm)
         {
-            if (!readBytesWithTimeout(client, req, 3000))
+            if (!readBytesWithTimeout(client, _req, 3000))
             {
                 EX_DBG(F("failed:"));
-                return false;
+                _req.method = HttpMethod::ERROR;
+                return _req;
             }
         }
 
@@ -169,18 +174,21 @@ public:
         if (isForm)
         {
             EX_DBG(F("reading form:"));
-            if (!parseForm(client, boundaryStr, req.contentLength))
+            if (!parseForm(client, boundaryStr, _req.contentLength))
             {
                 EX_DBG(F("failed parseForm"));
-                return false;
+                _req.method = HttpMethod::ERROR;
+                return _req;
             }
         }
 
         client.flush();
 
-        return true;
+        return _req;
     }
 
+    /// @brief
+    /// @param data
     void parseArguments(const String &data)
     {
         if (data.length() == 0)
@@ -218,7 +226,7 @@ public:
             String key = urlDecode(data.substring(pos, equal_sign_index));
             key.toLowerCase();
             String value = urlDecode(data.substring(equal_sign_index + 1, next_arg_index));
-            req.arguments[key] = value;
+            _req.arguments[key] = value;
 
             ++iarg;
 

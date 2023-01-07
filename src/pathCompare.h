@@ -33,6 +33,9 @@ public:
                       const String &requestPath, const std::vector<PosLen> &requestPathItems,
                       std::map<String, String> &params) -> bool
     {
+        if (path != requestPath)
+            return false;
+
         if (requestPathItems.size() != pathItems.size())
             return false;
 
@@ -43,7 +46,7 @@ public:
 
             if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
             {
-                auto name = path.substring(bve.pos + 2, bve.pos + bve.len);  // Note: + 2 to offset /:
+                auto name = path.substring(bve.pos + 2, bve.pos + bve.len); // Note: + 2 to offset /:
                 name.toLowerCase();
                 const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
                 params[name] = value;

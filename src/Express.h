@@ -31,12 +31,11 @@ private:
     friend class HttpRequestHandler;
     HttpRequestParser _httpRequestParser;
 
-    std::list<middlewareCallback> _middlewares;
+    std::list<MiddlewareCallback> _middlewares;
+    std::list<MiddlewareCallback>::iterator _mwi;
 
 private:
-    HttpResponse res;
-
-    HttpResponse &evaluate(HttpRequest &req)
+    void evaluate(HttpRequest &req, HttpResponse &res)
     {
         res.body = "";
         res.status = 404;
@@ -55,30 +54,33 @@ private:
                 break;
             }
         }
-        return res;
     }
 
 public:
-    // middleware
-    void use(middlewareCallback middleware)
+    // Add middleware
+    Express &use(MiddlewareCallback middleware)
     {
         _middlewares.push_back(middleware);
+        return *this;
     }
 
-    //   Express & prefix(String prefix) {
-    //       _prefix = prefix;
-    //
-    //      return *this;
-    //}
+    Express &use(String prefix)
+    {
+        _prefix = prefix;
+        return *this;
+    }
 
     Express &get(String uri, requestCallback fptr)
     {
+        if (uri == "/")
+            uri = "";
+
         Route item{};
         item.method = HttpMethod::GET;
         item.uri = _prefix + uri;
         item.fptr = fptr;
         // cache path splitting (avoid doing this for every request * number of paths)
-        item.indices = PathCompareAndExtractParams::splitToVector(uri);
+        item.indices = PathCompareAndExtractParams::splitToVector(item.uri);
 
         _routes.push_back(item);
 
@@ -87,12 +89,15 @@ public:
 
     Express &post(String uri, requestCallback fptr)
     {
+        if (uri == "/")
+            uri = "";
+
         Route item{};
         item.method = HttpMethod::POST;
         item.uri = _prefix + uri;
         item.fptr = fptr;
         // cache path splitting (avoid doing this for every request * number of paths)
-        item.indices = PathCompareAndExtractParams::splitToVector(uri);
+        item.indices = PathCompareAndExtractParams::splitToVector(item.uri);
 
         _routes.push_back(item);
 
@@ -105,17 +110,20 @@ public:
         {
             if (client.available())
             {
-                if (_httpRequestParser.parseRequest(client))
+                HttpRequest &req = _httpRequestParser.parseRequest(client);
+                HttpResponse res;
+
+                if (req.method != HttpMethod::ERROR)
                 {
-                    auto it = _middlewares.begin();
-                    while (it != _middlewares.end())
+                    _mwi = _middlewares.begin();
+                    while (_mwi != _middlewares.end())
                     {
-                        HttpRequest req;
-                        HttpResponse res;
-                        if ((*it)(req, res)) it++; else break;
+                        if ((*_mwi)(req, res))
+                            _mwi++;
+                        else
+                            break;
                     }
 
-                    HttpRequest &req = _httpRequestParser.request();
                     /*
                                         EX_DBG("method", req.method);
                                         EX_DBG("uri", req.uri);
@@ -133,7 +141,7 @@ public:
                                             EX_DBG(F("key:"), first, F("value:"), second);
                                         }
                     */
-                    HttpResponse &res = evaluate(req);
+                    evaluate(req, res);
 
                     client.print("HTTP/1.1 ");
                     client.println(res.status);

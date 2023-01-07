@@ -1,12 +1,13 @@
 #include <Ethernet.h>
 #include <Express.h>
+using namespace EXPRESS_NAMESPACE; 
 
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 };
 
 EthernetServer server(80);
-EXPRESS_NAMESPACE::Express express;
+Express express;
 
 void setup() {
   Serial.begin(115200);
