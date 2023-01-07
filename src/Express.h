@@ -54,7 +54,7 @@ private:
     /// @param res
     bool evaluate(Request &req, Response &res)
     {
-        res.body = "";
+        res.body_ = "";
         res.status_ = 404;
         res.headers_.clear();
         const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri_);
@@ -330,16 +330,16 @@ public:
                         client.print(": ");
                         client.println(second);
                     }
-                    if (!res.body.isEmpty())
+                    if (!res.body_.isEmpty())
                     {
                         client.print("content-length: ");
-                        client.println(res.body.length());
+                        client.println(res.body_.length());
                     }
                     client.println("connection: close");
                     client.println("");
                     // send content length *or* close the connection (spec 7.2.2)
-                    if (!res.body.isEmpty())
-                        client.println(res.body.c_str());
+                    if (!res.body_.isEmpty())
+                        client.println(res.body_.c_str());
                     client.stop();
                 }
             }

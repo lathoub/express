@@ -7,7 +7,7 @@ class Response
     friend class Express;
 
 private:
-    String body{};
+    String body_{};
 
     uint16_t status_ = 404;
 
@@ -77,9 +77,9 @@ public: /* Methods*/
     /// @return
     void json(String body)
     {
-        body = body;
+        body_ = body;
 
-        set("content-type", body);
+        set("content-type", "application/json");
         // QUESTION: set content-length here?
 
         return;
@@ -101,7 +101,7 @@ public: /* Methods*/
     /// @param view
     void send(String body)
     {
-        body = body;
+        body_ = body;
     }
 
     /// @brief Sets the response HTTP status code to statusCode and sends the
