@@ -63,8 +63,7 @@ public: /* Methods*/
         // TODO
     }
 
-    /// @brief Returns the specified HTTP request header field (case-insensitive match). The Referrer
-    /// and Referer fields are interchangeable.
+    /// @brief Returns the specified HTTP request header field (case-insensitive match). 
     /// @param field
     /// @return
     String get(String field)

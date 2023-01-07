@@ -258,6 +258,12 @@ public:
     {
         this->port = port;
 
+        // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
+        // change in ESP32 server.h
+        // MacOS:   /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.5/cores/esp32
+        // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.5\cores\esp32\Server.h
+        //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
+
         server_ = new EthernetServer(port);
         server_->begin();
 
