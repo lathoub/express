@@ -53,3 +53,15 @@ express.get("/collections/:collectionId", [](HttpRequest &req, Response &res) {
   });
 
 ```
+
+## Middleware(s)
+```cpp
+bool middleware1(HttpRequest &req, HttpResponse &res) {
+  req.headers["aa"] = "aa";
+  return true; 
+}
+...
+  express.use("/v1"); // prefix all paths with /v1
+  express.use(middleware1);
+
+```
