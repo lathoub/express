@@ -3,6 +3,10 @@ Fast, unopinionated, (very) minimalist web framework for Arduino
 
 ## Getting started
 
+### Hello world example
+
+Embedded below is essentially the simplest Arduino Express app you can create. 
+
 ```cpp
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
@@ -18,11 +22,11 @@ void setup() {
   Ethernet.begin(mac); // no check for brevity
 
   express.get("/", [](Request &req, Response &res) {
-    res.status(200).json("{'value': 42}");
+    res.send("Hello World!");
   });
 
-  express.listen(80, []() {
-    Serial.print("Webserver listening on port:");
+  express.listen(3000, []() {
+    Serial.print("Example app listening on port ");
     Serial.println(express.port);
   });
 }
