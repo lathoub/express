@@ -15,11 +15,12 @@ void setup() {
   }
 
   express.get("/", [](Request &req, Response &res) {
-    res.status(200).json("{'value': 42}");
+    res.send("Hello World!"));
   });
 
-  express.listen(80, []() {
-    EX_DBG("Webserver on IP:", Ethernet.localIP(), "listening on port:", express.port);
+  express.listen(3000, []() {
+    Serial.print("Example app listening on port ");
+    Serial.println(express.port);
   });
 }
 
