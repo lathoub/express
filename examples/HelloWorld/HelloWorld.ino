@@ -8,19 +8,20 @@ Express express;
 void setup() {
   Serial.begin(115200);
   while (!Serial) { }  delay(1500);
-  Serial.println("booting...");
 
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println(F("Failed DHCP, check network cable & reboot")); for (;;);
-  }
+  Ethernet.begin(mac);
 
   express.get("/", [](Request &req, Response &res) {
     res.send("Hello World!"));
   });
 
   express.listen(3000, []() {
+<<<<<<< Updated upstream
     Serial.print("Example app listening on port ");
     Serial.println(express.port);
+=======
+    Serial.println("Webserver on IP: listening on port:", express.port);
+>>>>>>> Stashed changes
   });
 }
 
