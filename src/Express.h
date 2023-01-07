@@ -37,12 +37,13 @@ private:
 
     EthernetServer *server_{}; // TODO: singleton
 
-    String mount_path_{};
-
     std::map<String, Express *> mount_paths_{};
 
     /// @brief Application Settings
     std::map<String, bool> settings_{};
+
+    /// @brief Application Settings
+    std::map<String, String> locals{};
 
     /// @brief
     Express *parent_ = nullptr;
@@ -89,7 +90,7 @@ private:
         if (path == "/")
             path = "";
 
-        path = mount_path_ + path;
+        path = mountpath + path;
 
         Route item{};
         item.method = method;
@@ -102,6 +103,10 @@ private:
 
 public:
     uint16_t port{};
+
+    /// @brief The app.mountpath property contains the path patterns 
+    /// on which a sub-app was mounted.
+    String mountpath{};
 
     /// Methods
 
@@ -119,9 +124,9 @@ public:
     /// @return
     void use(String mount_path, Express &other)
     {
-        other.mount_path_ = mount_path;
+        other.mountpath = mount_path;
         other.parent_ = this;
-        mount_paths_[other.mount_path_] = &other;
+        mount_paths_[other.mountpath] = &other;
     }
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
@@ -129,7 +134,7 @@ public:
     /// @return
     void use(String mount_path)
     {
-        mount_path_ = mount_path;
+        mountpath = mount_path;
     }
 
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
@@ -237,16 +242,15 @@ public:
     String path()
     {
         // TODO: noy sure
-        return (parent_ == nullptr) ? mount_path_ : parent_->mount_path_;
+        return (parent_ == nullptr) ? mountpath : parent_->mountpath;
     }
 
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    Route &route()
+    void route(String path)
     {
         // TODO
-        return nullptr;
     }
 
     /// @brief
