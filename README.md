@@ -14,18 +14,16 @@ Express express;
 void setup() {
   Serial.begin(115200);
   while (!Serial) { }  delay(1500);
-  Serial.println("booting...");
 
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println(F("Failed DHCP, check network cable & reboot")); for (;;);
-  }
+  Ethernet.begin(mac); // no check for brevity
 
   express.get("/", [](Request &req, Response &res) {
     res.status(200).json("{'value': 42}");
   });
 
   express.listen(80, []() {
-    EX_DBG("Webserver on IP:", Ethernet.localIP(), "listening on port:", express.port);
+    Serial.print("Webserver listening on port:");
+    Serial.println(express.port);
   });
 }
 
