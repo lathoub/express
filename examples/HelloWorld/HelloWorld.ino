@@ -9,7 +9,6 @@ void setup() {
   Serial.begin(115200);
   while (!Serial && !Serial.available()) {}
 
-  Ethernet.init(5);
   Ethernet.begin(mac);
 
   app.get(F("/"), [](Request &req, Response &res) {

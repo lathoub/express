@@ -3,32 +3,38 @@ using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-Express express;
+Express app;
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
-  while (!Serial)  { } delay(1500);
+  while (!Serial && !Serial.available()) {}
 
   Ethernet.begin(mac);
 
-  express.get("/", [](Request &req, Response &res)
-              { res.send("Hello World!"); });
+  app.get("/", [](Request &req, Response &res) {
+    res.send("Hello World!");
+  });
 
-  express.post("/", [](Request &req, Response &res)
-              { res.send("Got a POST request"); });
+  app.post("/", [](Request &req, Response &res) {
+    res.send("Got a POST request");
+  });
 
-  express.put("/user", [](Request &req, Response &res)
-              { res.send("Got a PUT request at /user"); });
+  app.put("/user", [](Request &req, Response &res) {
+    res.send("Got a PUT request at /user");
+  });
 
-  express.delete("/user", [](Request &req, Response &res)
-              { res.send("Got a DELETE request at /user"); });
+  app.Delete("/user", [](Request &req, Response &res) {
+    res.send("Got a DELETE request at /user");
+  });
 
-  express.listen(80, []()
-                 { Serial.println("Webserver on IP:", Ethernet.localIP(), "listening on port:", express.port); });
+  app.listen(80, []() {
+    Serial.print(F("Example app listening on port "));
+    Serial.print(Ethernet.localIP());
+    Serial.print(F(" "));
+    Serial.println(app.port);
+  });
 }
 
-void loop()
-{
-  express.run();
+void loop() {
+  app.run();
 }
