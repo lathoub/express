@@ -197,7 +197,7 @@ public:
     String get(const String& name)
     {
         // TODO
-        return "";
+        return F("");
     }
 
     /// @brief Assigns setting name to value. You may store any value that you want, but

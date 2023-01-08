@@ -70,8 +70,8 @@ public:
         req_.headers.clear();
         req_.query.clear();
 
-        req_.protocol = "http";
-        req_.secure = (req_.protocol == "https");
+        req_.protocol = F("http");
+        req_.secure = (req_.protocol == F("https"));
         req_.ip = client.remoteIP();
 
         // First line of HTTP request looks like "GET /path HTTP/1.1"
@@ -86,9 +86,9 @@ public:
             return req_;
         }
 
-        String method_str = reqStr.substring(0, addr_start);
-        String url = reqStr.substring(addr_start + 1, addr_end);
-        String version_end = reqStr.substring(addr_end + 8);
+        auto method_str = reqStr.substring(0, addr_start);
+        auto url = reqStr.substring(addr_start + 1, addr_end);
+        auto version_end = reqStr.substring(addr_end + 8);
         //  req.version = atoi(versionEnd.c_str());
         String search_str = "";
         auto has_search = url.indexOf('?');
@@ -102,7 +102,7 @@ public:
         req_.uri_ = url;
 
         req_.method = Method::GET;
-        if (method_str == "HEAD")
+        if (method_str == F("HEAD"))
             req_.method = Method::HEAD;
         else if (method_str == "POST")
             req_.method = Method::POST;
@@ -147,21 +147,21 @@ public:
         {
             for (auto [key, value] : req_.headers)
             {
-                if (key.equalsIgnoreCase("Content-Type"))
+                if (key.equalsIgnoreCase(F("Content-Type")))
                 {
-                    if (value.startsWith("application/x-www-form-urlencoded"))
+                    if (value.startsWith(F("application/x-www-form-urlencoded")))
                     {
                         is_form = false;
                         is_encoded = true;
                     }
-                    else if (value.startsWith("multipart/"))
+                    else if (value.startsWith(F("multipart/")))
                     {
                         boundary_str = value.substring(value.indexOf('=') + 1);
                         boundary_str.replace("\"", "");
                         is_form = true;
                     }
                 }
-                else if (key.equalsIgnoreCase("Content-Length"))
+                else if (key.equalsIgnoreCase(F("Content-Length")))
                 {
                     req_.contentLength_ = value.toInt();
                 }
