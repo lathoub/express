@@ -97,7 +97,7 @@ public:
     Express()
     {
         settings[F("env")] = F("production");
-        settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
+      //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
     }
 
     /// @brief
