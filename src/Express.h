@@ -28,9 +28,6 @@ private:
     std::map<String, Express *> mount_paths_{};
 
     /// @brief Application Settings
-    std::map<String, bool> settings_{};
-
-    /// @brief Application Settings
     std::map<String, String> locals{};
 
     /// @brief
@@ -49,14 +46,24 @@ private:
 
         for (auto [method, uri, fptr, indices] : routes_)
         {
+            EX_DBG(F("---------------------------------------------"));
+            EX_DBG(F("req.method:"), req.method, F("method:"), method);
+            EX_DBG(F("req.uri:"), req.uri_, F("uri:"), uri);
+
             if (req.method == method && PathCompareAndExtractParams::match(
                                             uri, indices,
                                             req.uri_, req_indices,
                                             req.params))
             {
+                EX_DBG(F("Match"));
+
                 res.status_ = HTTP_STATUS_OK;
                 fptr(req, res);
                 return true;
+            }
+            else
+            {
+                EX_DBG(F("No match"));
             }
         }
 
@@ -75,8 +82,8 @@ private:
     /// @return
     void METHOD(Method method, String path, const requestCallback fptr)
     {
-//        if (path == F("/"))
-  //          path = F("");
+        //        if (path == F("/"))
+        //          path = F("");
 
         path = mountpath + path;
 
@@ -90,7 +97,18 @@ private:
     }
 
 public:
+    /// @brief Constructor
+    Express()
+    {
+        settings[F("env")] = F("production");
+        settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
+    }
+
+    /// @brief
     uint16_t port{};
+
+    /// @brief Application Settings
+    std::map<String, String> settings{};
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
@@ -110,7 +128,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    void use(const String& mount_path, Express &other)
+    void use(const String &mount_path, Express &other)
     {
         other.mountpath = mount_path;
         other.parent_ = this;
@@ -120,7 +138,7 @@ public:
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
     /// @param mount_path
     /// @return
-    void use(const String& mount_path)
+    void use(const String &mount_path)
     {
         mountpath = mount_path;
     }
@@ -128,7 +146,7 @@ public:
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param uri
     /// @param fptr
-    void all(const String& path, const requestCallback fptr)
+    void all(const String &path, const requestCallback fptr)
     {
         // TODO: not implemented
     }
@@ -137,7 +155,7 @@ public:
     /// For more information, see the routing guide.
     /// @param uri
     /// @param fptr
-    void Delete(const String& path, const requestCallback fptr)
+    void Delete(const String &path, const requestCallback fptr)
     {
         METHOD(Method::DELETE, path, fptr);
     }
@@ -146,43 +164,43 @@ public:
     /// the app settings table. Calling app.set('foo', false) for a Boolean property is the
     /// same as calling app.disable('foo').
     /// @param uri
-    void disable(const String& name)
+    void disable(const String &name)
     {
-        settings_[name] = false;
+        settings[name] = "false";
     }
 
     /// @brief Returns true if the Boolean setting name is disabled (false), where name is one
     /// of the properties from the app settings table.
     /// @param name
     /// @return
-    bool disabled(const String& name)
+    String disabled(const String &name)
     {
-        return settings_[name];
+        return settings[name];
     }
 
     /// @brief Sets the Boolean setting name to true, where name is one of the properties from the
     /// app settings table. Calling app.set('foo', true) for a Boolean property is the same as
     /// calling app.enable('foo').
     /// @param name
-    void enable(const String& name)
+    void enable(const String &name)
     {
-        settings_[name] = true;
+        settings[name] = "true";
     }
 
     /// @brief Returns true if the setting name is enabled (true), where name is one of the
     /// properties from the app settings table.
     /// @param name
     /// @return
-    bool enabled(const String& name)
+    String enabled(const String &name)
     {
-        return settings_[name];
+        return settings[name];
     }
 
     /// @brief Returns the value of name app setting, where name is one of the strings in
     /// the app settings table. For example:
     /// @param name
     /// @return
-    String get(const String& name)
+    String get(const String &name)
     {
         // TODO
         return F("");
@@ -193,7 +211,7 @@ public:
     /// names are listed in the app settings table.
     /// @param name
     /// @param value
-    void set(const String& name, const String& value)
+    void set(const String &name, const String &value)
     {
         // TODO
     }
@@ -202,7 +220,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    void get(const String& path, const requestCallback fptr)
+    void get(const String &path, const requestCallback fptr)
     {
         METHOD(Method::GET, path, fptr);
     };
@@ -211,7 +229,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    void post(const String& path, const requestCallback fptr)
+    void post(const String &path, const requestCallback fptr)
     {
         METHOD(Method::POST, path, fptr);
     };
@@ -220,7 +238,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    void put(const String& path, const requestCallback fptr)
+    void put(const String &path, const requestCallback fptr)
     {
         METHOD(Method::PUT, path, fptr);
     };
@@ -236,7 +254,7 @@ public:
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    void route(const String& path)
+    void route(const String &path)
     {
         // TODO
     }

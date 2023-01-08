@@ -43,16 +43,18 @@ public:
                       const String &requestPath, const std::vector<PosLen> &requestPathItems,
                       std::map<String, String> &params) -> bool
     {
-        if (path != requestPath)
+        if (requestPathItems.size() != pathItems.size()) {
+            EX_DBG(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+            EX_DBG(F("return false in function match"));
             return false;
-
-        if (requestPathItems.size() != pathItems.size())
-            return false;
+        }
 
         for (size_t i = 0; i < requestPathItems.size(); i++)
         {
             const auto &ave = requestPathItems[i];
             const auto &bve = pathItems[i];
+
+          //  EX_DBG(F("ave:"), ave, F("bve:"), bve);
 
             if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
             {
