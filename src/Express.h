@@ -75,10 +75,13 @@ private:
     /// @return
     void METHOD(Method method, String path, const requestCallback fptr)
     {
-        //        if (path == F("/"))
-        //          path = F("");
+        EX_DBG_I(F("METHOD:") , method, F("mountpath:"), mountpath, F("path:"), path);
+
+        if (path == F("/")) 
+            path = F("");
 
         path = mountpath + path;
+        EX_DBG_I(F("na mountpath, path:"), path);
 
         Route item{};
         item.method = method;
@@ -123,6 +126,8 @@ public:
     /// @return
     void use(const String &mount_path, Express &other)
     {
+        EX_DBG_I(F("use mountPath:"), mount_path);
+
         other.mountpath = mount_path;
         other.parent_ = this;
         mount_paths_[other.mountpath] = &other;
@@ -324,6 +329,8 @@ public:
                         client.print(F("content-length: "));
                         client.println(res.body_.length());
                     }
+                    if (settings[F("X-powered-by")])
+                        client.println(settings[F("X-powered-by")]);
                     client.println(F("connection: close"));
                     client.println(F(""));
                     // send content length *or* close the connection (spec 7.2.2)

@@ -100,6 +100,7 @@ public:
         }
 
         req_.uri_ = url;
+        if (req_.uri_ == F("/")) req_.uri_ = F("");
 
         req_.method = Method::GET;
         if (method_str == F("HEAD"))
