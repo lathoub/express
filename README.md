@@ -20,12 +20,12 @@ void setup() {
 
   Ethernet.begin(mac); // no check for brevity
 
-  express.get("/", [](Request &req, Response &res) {
-    res.send("Hello World!");
+  express.get(F("/"), [](Request &req, Response &res) {
+    res.send(F("Hello World!"));
   });
 
   express.listen(3000, []() { // creates and runs EthernetServer
-    Serial.print("Example app listening on port ");
+    Serial.print(F("Example app listening on port "));
     Serial.println(express.port);
   });
 }
