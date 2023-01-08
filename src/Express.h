@@ -5,7 +5,7 @@
 #include <list>
 #include <map>
 
-#define DEBUG Serial
+#define EX_DEBUG Serial
 
 #include "debug.h"
 #include "defs.h"
@@ -46,16 +46,16 @@ private:
 
         for (auto [method, uri, fptr, indices] : routes_)
         {
-            EX_DBG(F("---------------------------------------------"));
-            EX_DBG(F("req.method:"), req.method, F("method:"), method);
-            EX_DBG(F("req.uri:"), req.uri_, F("uri:"), uri);
+            EX_DBG_I(F("---------------------------------------------"));
+            EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
+            EX_DBG_I(F("req.uri:"), req.uri_, F("uri:"), uri);
 
             if (req.method == method && PathCompareAndExtractParams::match(
                                             uri, indices,
                                             req.uri_, req_indices,
                                             req.params))
             {
-                EX_DBG(F("Match"));
+                EX_DBG_I(F("Match"));
 
                 res.status_ = HTTP_STATUS_OK;
                 fptr(req, res);
@@ -63,7 +63,7 @@ private:
             }
             else
             {
-                EX_DBG(F("No match"));
+                EX_DBG_I(F("No match"));
             }
         }
 
@@ -260,8 +260,14 @@ public:
     }
 
     /// @brief
-    void listen(uint16_t port, const StartedCallback fptr = nullptr)
+    void listen(uint16_t port, const StartedCallback startedCallback = nullptr)
     {
+        if (nullptr != server_)
+        {
+            EX_DBG_E(F("The listen method can only be called once! This call is ignored and processing continous."));
+            return;
+        }
+
         this->port = port;
 
         // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
@@ -273,8 +279,8 @@ public:
         server_ = new EthernetServer(port);
         server_->begin();
 
-        if (fptr)
-            fptr();
+        if (startedCallback)
+            startedCallback();
     }
 
     /// @brief

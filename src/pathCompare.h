@@ -44,8 +44,8 @@ public:
                       std::map<String, String> &params) -> bool
     {
         if (requestPathItems.size() != pathItems.size()) {
-            EX_DBG(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-            EX_DBG(F("return false in function match"));
+            EX_DBG_I(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+            EX_DBG_I(F("return false in function match"));
             return false;
         }
 
@@ -53,8 +53,6 @@ public:
         {
             const auto &ave = requestPathItems[i];
             const auto &bve = pathItems[i];
-
-          //  EX_DBG(F("ave:"), ave, F("bve:"), bve);
 
             if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
             {

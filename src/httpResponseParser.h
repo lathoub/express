@@ -81,7 +81,7 @@ public:
 
         if (addr_start == -1 || addr_end == -1)
         {
-            EX_DBG(F("_parseRequest: Invalid request: "), reqStr);
+            EX_DBG_V(F("_parseRequest: Invalid request: "), reqStr);
             req_.method = Method::ERROR;
             return req_;
         }
@@ -172,7 +172,7 @@ public:
         {
             if (!bodyParser(client, req_, 3000)) // TODO: can be overwritten
             {
-                EX_DBG(F("failed:"));
+                EX_DBG_V(F("failed:"));
                 req_.method = Method::ERROR;
                 return req_;
             }
@@ -185,10 +185,10 @@ public:
 
         if (is_form)
         {
-            EX_DBG(F("reading form:"));
+            EX_DBG_V(F("reading form:"));
             if (!parseForm(client, boundary_str, req_.contentLength_))
             {
-                EX_DBG(F("failed parseForm"));
+                EX_DBG_V(F("failed parseForm"));
                 req_.method = Method::ERROR;
                 return req_;
             }
@@ -256,8 +256,8 @@ public:
     /// @return 
     auto parseForm(EthernetClient& client, const String& boundary, uint32_t len) -> bool
     {
-        EX_DBG(F("boundary"), boundary);
-        EX_DBG(F("len"), len);
+        EX_DBG_V(F("boundary"), boundary);
+        EX_DBG_V(F("len"), len);
 
         String line;
         int retry = 0;
@@ -285,7 +285,7 @@ public:
 
                 if (line.length() > 19 && line.substring(0, 19).equalsIgnoreCase(F("Content-Disposition")))
                 {
-                    EX_DBG(F("line:"), line);
+                    EX_DBG_V(F("line:"), line);
 
                     auto name_start = line.indexOf('=');
 
@@ -305,7 +305,7 @@ public:
                             arg_name = arg_name.substring(0, arg_name.indexOf('"'));
                             arg_is_file = true;
 
-                            EX_DBG(F("PostArg FileName: "), arg_filename);
+                            EX_DBG_V(F("PostArg FileName: "), arg_filename);
 
                             // use GET to set the filename if uploading using blob
                             //    if (argFilename == F("blob") && hasArg("filename"))
@@ -342,11 +342,11 @@ public:
                             // RequestArgument &arg = _postArgs[_postArgsLen++];
                             String key = arg_name;
                             String value = arg_value;
-                            EX_DBG(F("key: "), key, F("value: "), value);
+                            EX_DBG_V(F("key: "), key, F("value: "), value);
 
                             if (line == ("--" + boundary + "--"))
                             {
-                                EX_DBG(F("Done Parsing POST"));
+                                EX_DBG_V(F("Done Parsing POST"));
                                 break;
                             }
                         }
@@ -364,8 +364,8 @@ public:
                                                         _currentUpload->currentSize = 0;
                                                         _currentUpload->contentLength = len;
 
-                                                        EX_DBG(F("Start File: "), _currentUpload->filename);
-                                                        EX_DBG(F("Type: "), _currentUpload->type);
+                                                        EX_DBG_V(F("Start File: "), _currentUpload->filename);
+                                                        EX_DBG_V(F("Type: "), _currentUpload->type);
 
                                                         if (_currentHandler && _currentHandler->canUpload(_currentUri))
                                                             _currentHandler->upload(*this, _currentUri, *_currentUpload);
@@ -436,9 +436,9 @@ public:
                                                                 if (_currentHandler && _currentHandler->canUpload(_currentUri))
                                                                     _currentHandler->upload(*this, _currentUri, *_currentUpload);
 
-                                                                EX_DBG(F("End File: "), _currentUpload->filename);
-                                                                EX_DBG(F("Type: "), _currentUpload->type);
-                                                                EX_DBG(F("Size: "), _currentUpload->totalSize);
+                                                                EX_DBG_V(F("End File: "), _currentUpload->filename);
+                                                                EX_DBG_V(F("Type: "), _currentUpload->type);
+                                                                EX_DBG_V(F("Size: "), _currentUpload->totalSize);
 
                                                                 line = client.readStringUntil(0x0D);
                                                                 client.readStringUntil(0x0A);
@@ -496,7 +496,7 @@ public:
 
                         if (_currentArgs == nullptr)
                         {
-                            EX_DBG(F("EthernetWebServer::_parseForm: null _currentArgs"));
+                            EX_DBG_V(F("EthernetWebServer::_parseForm: null _currentArgs"));
 
                             return false;
                         }
