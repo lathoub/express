@@ -5,10 +5,8 @@ namespace
   static void EX_DBG_SETUP(unsigned long baud)
   {
     DEBUG.begin(baud);
-    while (!DEBUG)
-    {
-    }
-    delay(1500);
+    while(!DEBUG && !DEBUG.available()){} delay(100);
+    DEBUG.println(F("Booting..."));
   }
 
   template <typename T>
