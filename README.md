@@ -8,7 +8,7 @@ Fast, unopinionated, (very) minimalist web framework for Arduino
 Embedded below is essentially the simplest Arduino Express app you can create. 
 
 ```cpp
-#include <Express.h>
+#include <Express.h> // <Ethernet.h> included in Express.h
 using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -24,7 +24,7 @@ void setup() {
     res.send("Hello World!");
   });
 
-  express.listen(3000, []() {
+  express.listen(3000, []() { // creates and runs EthernetServer
     Serial.print("Example app listening on port ");
     Serial.println(express.port);
   });
