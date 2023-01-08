@@ -40,13 +40,12 @@ private:
     bool evaluate(Request &req, Response &res)
     {
         res.body_ = "";
-        res.status_ = 404;
+        res.status_ = HTTP_STATUS_NOT_FOUND;
         res.headers_.clear();
         const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri_);
 
         for (auto [method, uri, fptr, indices] : routes_)
         {
-            EX_DBG_I(F("---------------------------------------------"));
             EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
             EX_DBG_I(F("req.uri:"), req.uri_, F("uri:"), uri);
 
@@ -55,15 +54,9 @@ private:
                                             req.uri_, req_indices,
                                             req.params))
             {
-                EX_DBG_I(F("Match"));
-
                 res.status_ = HTTP_STATUS_OK;
                 fptr(req, res);
                 return true;
-            }
-            else
-            {
-                EX_DBG_I(F("No match"));
             }
         }
 
@@ -316,8 +309,7 @@ public:
                             break;
                     }
 
-                    if (!(it != middlewares_.end()))
-                        evaluate(req, res);
+                    evaluate(req, res);
 
                     client.print(F("HTTP/1.1 "));
                     client.println(res.status_);

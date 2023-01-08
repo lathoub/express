@@ -1,69 +1,41 @@
-#define DEBUG Serial
-
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
-byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-};
+byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 
-Express express;
-Express v1;
-Express v2;
+Express app;
 
 bool middleware1(Request &req, Response &res) {
-  return false;  // don't go to next middle ware
+  req.params[F("demo")]= "hello";
+  return true;  
 }
 
 bool middleware2(Request &req, Response &res) {
-  return true;
+  req.params[F("demo")]= req.params[F("demo")] + " world";
+  return true; 
 }
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) {
-  }
-  delay(1500);
-  Serial.println("booting...");
+  while (!Serial && !Serial.available()) {}
 
-  Ethernet.init(5);
+  Ethernet.begin(mac);
 
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println(F("Failed DHCP, check network cable & reboot"));
-    for (;;)
-      ;
-  }
+  app.use(middleware1);
+  app.use(middleware2);
 
-  express.use("/v0");
-  express.use("/v1", v1);
-  express.use("/v2", v2);
-  express.use(middleware1);
-  express.use(middleware2);
-
-  express.get("/hello", [](Request &req, Response &res) {
-    EX_DBG(req.ip);
-    res.status(HTTP_STATUS_OK).json("{'route': 'v0'}");
+  app.get("/", [](Request &req, Response &res) {
+    res.status(HTTP_STATUS_OK).send(req.params[F("demo")]);
   });
 
-  express.Delete("/hello", [](Request &req, Response &res) {
-    EX_DBG(express.path());
-    res.status(HTTP_STATUS_NO_CONTENT);
-  });
-
-  v1.get("/hello", [](Request &req, Response &res) {
-    EX_DBG(v1.path());
-    res.status(HTTP_STATUS_OK).json("{'route': 'v1'}");
-  });
-
-  v2.get("/hello", [](Request &req, Response &res) {
-    res.status(HTTP_STATUS_OK).json("{'route': 'v2'}");
-  });
-
-  express.listen(80, []() {
-    EX_DBG("Webserver on IP:", Ethernet.localIP(), "listening on port:", express.port);
+  app.listen(80, []() {
+    Serial.print(F("Example app listening on port "));
+    Serial.print(Ethernet.localIP());
+    Serial.print(F(" "));
+    Serial.println(app.port);
   });
 }
 
 void loop() {
-  express.run();
+  app.run();
 }

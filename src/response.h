@@ -9,7 +9,7 @@ class Response
 private:
     String body_{};
 
-    uint16_t status_ = 404;
+    uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
     std::map<String, String> headers_{};
 
