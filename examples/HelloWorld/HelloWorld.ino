@@ -7,7 +7,7 @@ Express app;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) { } delay(1500);
+  while (!Serial && !Serial.available()) {}
 
   Ethernet.init(5);
   Ethernet.begin(mac);
