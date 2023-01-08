@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 #include "namespace.h"
 
 #if ARDUINO
@@ -13,7 +11,8 @@ typedef uint8_t byte;
 
 BEGIN_EXPRESS_NAMESPACE
 
-#include "method.h"
+#include "httpMethods.h"
+#include "httpStatusCodes.h"
 
 struct Options
 {
@@ -38,10 +37,6 @@ using requestCallback = void (*)(Request &req, Response &res);
 using MiddlewareCallback = bool (*)(Request &req, Response &res);
 using StartedCallback = void (*)();
 
-class /* interface */ IHttpRequestParser
-{
-public:
-    virtual Request &parseRequest(EthernetClient &client) = 0;
-};
+#include "route.h"
 
 END_EXPRESS_NAMESPACE

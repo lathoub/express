@@ -9,7 +9,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-class HttpRequestParser : public IHttpRequestParser
+class HttpRequestParser
 {
     Request req_;
 
@@ -53,7 +53,7 @@ public:
     /// @brief 
     /// @param client 
     /// @return 
-    Request &parseRequest(EthernetClient &client) override
+    Request &parseRequest(EthernetClient &client) 
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');

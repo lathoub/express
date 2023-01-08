@@ -7,16 +7,19 @@ Express app;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) { }  delay(1500);
+  while (!Serial) { } delay(1500);
 
+  Ethernet.init(5);
   Ethernet.begin(mac);
 
   app.get(F("/"), [](Request &req, Response &res) {
     res.send(F("Hello World!"));
   });
 
-  app.listen(3000, []() {
+  app.listen(80, []() {
     Serial.print(F("Example app listening on port "));
+    Serial.print(Ethernet.localIP());
+    Serial.print(F(" "));
     Serial.println(app.port);
   });
 }

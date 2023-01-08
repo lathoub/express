@@ -5,7 +5,7 @@
 #include <list>
 #include <map>
 
-// #define DEBUG Serial
+#define DEBUG Serial
 
 #include "debug.h"
 #include "defs.h"
@@ -16,22 +16,10 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Express
 {
-private:
-    class Route
-    {
-    private:
-    public:
-        Method method = Method::UNDEFINED;
-        String path{};
-        requestCallback fptr = nullptr;
-        // cache path splitting (avoid doing this for every request * number of paths)
-        std::vector<PosLen> indices{};
-    };
-
-    std::vector<Route> routes_{};
-
     friend class HttpRequestHandler;
-    HttpRequestParser http_request_parser_;
+
+private:
+    std::vector<Route> routes_{};
 
     std::list<MiddlewareCallback> middlewares_{};
 
@@ -66,7 +54,7 @@ private:
                                             req.uri_, req_indices,
                                             req.params))
             {
-                res.status_ = 0;
+                res.status_ = HTTP_STATUS_OK;
                 fptr(req, res);
                 return true;
             }
@@ -87,8 +75,8 @@ private:
     /// @return
     void METHOD(Method method, String path, const requestCallback fptr)
     {
-        if (path == F("/"))
-            path = F("");
+//        if (path == F("/"))
+  //          path = F("");
 
         path = mountpath + path;
 
@@ -286,6 +274,7 @@ public:
         {
             if (client.available())
             {
+                HttpRequestParser http_request_parser_;
                 Request &req = http_request_parser_.parseRequest(client);
                 req.app = this;
 

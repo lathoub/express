@@ -42,21 +42,21 @@ void setup() {
 
   express.get("/hello", [](Request &req, Response &res) {
     EX_DBG(req.ip);
-    res.status(200).json("{'route': 'v0'}");
+    res.status(HTTP_STATUS_OK).json("{'route': 'v0'}");
   });
 
   express.Delete("/hello", [](Request &req, Response &res) {
     EX_DBG(express.path());
-    res.status(204);
+    res.status(HTTP_STATUS_NO_CONTENT);
   });
 
   v1.get("/hello", [](Request &req, Response &res) {
     EX_DBG(v1.path());
-    res.status(200).json("{'route': 'v1'}");
+    res.status(HTTP_STATUS_OK).json("{'route': 'v1'}");
   });
 
   v2.get("/hello", [](Request &req, Response &res) {
-    res.status(200).json("{'route': 'v2'}");
+    res.status(HTTP_STATUS_OK).json("{'route': 'v2'}");
   });
 
   express.listen(80, []() {
