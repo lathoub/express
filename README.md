@@ -16,8 +16,7 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 Express express;
 
 void setup() {
-  Serial.begin(115200);
-  while (!Serial) { }  delay(1500);
+  // ... setup for logging
 
   Ethernet.begin(mac); // no check for brevity
 
