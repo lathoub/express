@@ -58,7 +58,7 @@ public: /* Methods*/
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    bool accepts(String types)
+    bool accepts(const String& types)
     {
         return false;
     }
@@ -66,7 +66,7 @@ public: /* Methods*/
     /// @brief Returns the specified HTTP request header field (case-insensitive match). 
     /// @param field
     /// @return
-    String get(String field)
+    String get(const String& field)
     {
         for (auto [key, header] : headers)
         {

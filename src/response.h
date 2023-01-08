@@ -26,7 +26,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    Response &append(String field, String value)
+    Response &append(const String& field, const String& value)
     {
         for (auto [key, header] : headers_)
         {
@@ -49,7 +49,7 @@ public: /* Methods*/
     /// @param data
     /// @param encoding
     /// @return
-    Response &end(String data, String encoding)
+    Response &end(const String& data, const String& encoding)
     {
         return *this;
     }
@@ -61,7 +61,7 @@ public: /* Methods*/
 
     /// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
     /// @return
-    String get(String field)
+    String get(const String& field)
     {
         for (auto [key, header] : headers_)
         {
@@ -75,11 +75,11 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    void json(String body)
+    void json(const String& body)
     {
         body_ = body;
 
-        set("content-type", "application/json");
+        set(F("content-type"), F("application/json"));
         // QUESTION: set content-length here?
 
         return;
@@ -92,7 +92,7 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    void render(String view)
+    void render(const String& view)
     {
     }
 
@@ -117,7 +117,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    Response &set(String field, String value)
+    Response &set(const String& field, const String& value)
     {
         for (auto [key, header] : headers_)
         {

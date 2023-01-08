@@ -87,8 +87,8 @@ private:
     /// @return
     void METHOD(Method method, String path, const requestCallback fptr)
     {
-        if (path == "/")
-            path = "";
+        if (path == F("/"))
+            path = F("");
 
         path = mountpath + path;
 
@@ -122,7 +122,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    void use(String mount_path, Express &other)
+    void use(const String& mount_path, Express &other)
     {
         other.mountpath = mount_path;
         other.parent_ = this;
@@ -132,7 +132,7 @@ public:
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
     /// @param mount_path
     /// @return
-    void use(String mount_path)
+    void use(const String& mount_path)
     {
         mountpath = mount_path;
     }
@@ -140,7 +140,7 @@ public:
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param uri
     /// @param fptr
-    void all(String path, const requestCallback fptr)
+    void all(const String& path, const requestCallback fptr)
     {
         // TODO: not implemented
     }
@@ -149,7 +149,7 @@ public:
     /// For more information, see the routing guide.
     /// @param uri
     /// @param fptr
-    void Delete(String path, const requestCallback fptr)
+    void Delete(const String& path, const requestCallback fptr)
     {
         METHOD(Method::DELETE, path, fptr);
     }
@@ -158,7 +158,7 @@ public:
     /// the app settings table. Calling app.set('foo', false) for a Boolean property is the
     /// same as calling app.disable('foo').
     /// @param uri
-    void disable(String name)
+    void disable(const String& name)
     {
         settings_[name] = false;
     }
@@ -167,7 +167,7 @@ public:
     /// of the properties from the app settings table.
     /// @param name
     /// @return
-    bool disabled(String name)
+    bool disabled(const String& name)
     {
         return settings_[name];
     }
@@ -176,7 +176,7 @@ public:
     /// app settings table. Calling app.set('foo', true) for a Boolean property is the same as
     /// calling app.enable('foo').
     /// @param name
-    void enable(String name)
+    void enable(const String& name)
     {
         settings_[name] = true;
     }
@@ -185,7 +185,7 @@ public:
     /// properties from the app settings table.
     /// @param name
     /// @return
-    bool enabled(String name)
+    bool enabled(const String& name)
     {
         return settings_[name];
     }
@@ -194,7 +194,7 @@ public:
     /// the app settings table. For example:
     /// @param name
     /// @return
-    String get(String name)
+    String get(const String& name)
     {
         // TODO
         return "";
@@ -205,7 +205,7 @@ public:
     /// names are listed in the app settings table.
     /// @param name
     /// @param value
-    void set(String name, String value)
+    void set(const String& name, const String& value)
     {
         // TODO
     }
@@ -214,7 +214,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    void get(String path, const requestCallback fptr)
+    void get(const String& path, const requestCallback fptr)
     {
         METHOD(Method::GET, path, fptr);
     };
@@ -223,7 +223,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    void post(String path, const requestCallback fptr)
+    void post(const String& path, const requestCallback fptr)
     {
         METHOD(Method::POST, path, fptr);
     };
@@ -232,7 +232,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    void put(String path, const requestCallback fptr)
+    void put(const String& path, const requestCallback fptr)
     {
         METHOD(Method::PUT, path, fptr);
     };
@@ -248,7 +248,7 @@ public:
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    void route(String path)
+    void route(const String& path)
     {
         // TODO
     }
@@ -306,7 +306,7 @@ public:
                     if (!(it != middlewares_.end()))
                         evaluate(req, res);
 
-                    client.print("HTTP/1.1 ");
+                    client.print(F("HTTP/1.1 "));
                     client.println(res.status_);
                     for (auto [first, second] : res.headers_)
                     {
@@ -316,11 +316,11 @@ public:
                     }
                     if (!res.body_.isEmpty())
                     {
-                        client.print("content-length: ");
+                        client.print(F("content-length: "));
                         client.println(res.body_.length());
                     }
-                    client.println("connection: close");
-                    client.println("");
+                    client.println(F("connection: close"));
+                    client.println(F(""));
                     // send content length *or* close the connection (spec 7.2.2)
                     if (!res.body_.isEmpty())
                         client.println(res.body_.c_str());
