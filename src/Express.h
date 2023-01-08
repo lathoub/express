@@ -44,7 +44,7 @@ private:
         res.headers_.clear();
         const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri_);
 
-        for (auto [method, uri, fptr, indices] : routes_)
+        for (auto [method, uri, middleware, fptrCallback, indices] : routes_)
         {
             EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
             EX_DBG_I(F("req.uri:"), req.uri_, F("uri:"), uri);
@@ -55,7 +55,8 @@ private:
                                             req.params))
             {
                 res.status_ = HTTP_STATUS_OK;
-                fptr(req, res);
+                if (middleware) middleware(req, res);
+                if (fptrCallback) fptrCallback(req, res);
                 return true;
             }
         }
@@ -71,25 +72,34 @@ private:
 
     /// @brief
     /// @param uri
-    /// @param fptr
+    /// @param fptrCallback
     /// @return
-    void METHOD(Method method, String path, const requestCallback fptr)
+    void METHOD(Method method, String path, const MiddlewareCallback fptrMiddleware, const requestCallback fptrCallback)
     {
-        EX_DBG_I(F("METHOD:") , method, F("mountpath:"), mountpath, F("path:"), path);
-
         if (path == F("/")) 
             path = F("");
 
         path = mountpath + path;
-        EX_DBG_I(F("na mountpath, path:"), path);
+
+        EX_DBG_I(F("METHOD:") , method, F("mountpath:"), mountpath, F("path:"), path);
 
         Route item{};
         item.method = method;
         item.path = path;
-        item.fptr = fptr;
+        item.fptrCallback = fptrCallback;
+        item.fptrMiddleware = fptrMiddleware;
         item.indices = PathCompareAndExtractParams::splitToVector(item.path);
 
         routes_.push_back(item);
+    }
+
+    /// @brief
+    /// @param uri
+    /// @param fptr
+    /// @return
+    void METHOD(Method method, String path, const requestCallback fptr)
+    {
+        METHOD(method, path, nullptr, fptr);
     }
 
 public:
@@ -228,6 +238,15 @@ public:
     /// @param fptr
     /// @return
     void post(const String &path, const requestCallback fptr)
+    {
+        METHOD(Method::POST, path, fptr);
+    };
+
+    /// @brief
+    /// @param uri
+    /// @param fptr
+    /// @return
+    void post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
     {
         METHOD(Method::POST, path, fptr);
     };

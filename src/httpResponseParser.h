@@ -139,6 +139,13 @@ public:
                 req_.hostname = header_value;
         }
 
+        EX_DBG_V(F("Method:"), method_str);
+        EX_DBG_V(F("Uri:"), req_.uri_);
+
+        EX_DBG_V(F("Headers"));
+        for (auto [header, value] : req_.headers)
+            EX_DBG_V(F("header:"), header, F("value:"), value);
+
         parseArguments(search_str);
 
         bool is_form = false;
@@ -169,18 +176,31 @@ public:
             }
         }
 
+        // All header read - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        // From here onwards, it content / body ...
+
+
+        EX_DBG_V(F("isForm:"), is_form);
+
         if (!is_form)
         {
+            EX_DBG_V(F("start to read body"));
+
             if (!bodyParser(client, req_, 3000)) // TODO: can be overwritten
             {
                 EX_DBG_V(F("failed:"));
                 req_.method = Method::ERROR;
                 return req_;
             }
+
+            EX_DBG_V(F("end read body"));
         }
+
+        EX_DBG_V(F("isEncoded:"), is_encoded);
 
         if (is_encoded)
         {
+            EX_DBG_V(F("TODO: encoding"));
             // TODO
         }
 
@@ -248,6 +268,10 @@ public:
 
             pos = next_arg_index + 1;
         }
+
+        EX_DBG_V(F("Query Arguments"));
+        for (auto [argument, value] : req_.query)
+            EX_DBG_V(F("argument:"), argument, F("value:"), value);
     }
 
     /// @brief 
