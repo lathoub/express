@@ -13,18 +13,18 @@ using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-Express express;
+Express app;
 
 void setup() {
   // ... setup for logging
 
   Ethernet.begin(mac); // no check for brevity
 
-  express.get(F("/"), [](Request &req, Response &res) {
+  app.get(F("/"), [](Request &req, Response &res) {
     res.send(F("Hello World!"));
   });
 
-  express.listen(3000, []() { // creates and runs EthernetServer
+  app.listen(3000, []() { // creates and runs EthernetServer
     Serial.print(F("Example app listening on port "));
     Serial.println(express.port);
   });
