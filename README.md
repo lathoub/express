@@ -1,4 +1,4 @@
-# Express
+# Express for Arduino
 Fast, unopinionated, (very) minimalist web framework for Arduino
 
 ## Getting started
