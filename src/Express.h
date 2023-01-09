@@ -13,6 +13,7 @@
 #include "request.h"
 #include "response.h"
 #include "route.h"
+#include "bodyParser.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -21,17 +22,17 @@ class Express
     friend class HttpRequestHandler;
 
 private:
-    /// @brief 
+    /// @brief
     EthernetServer *server_{}; // TODO: singleton
 
 private:
-    /// @brief 
-    Routes routes_{};
+    /// @brief
+    std::vector<Route> routes_{};
 
     /// @brief Application wide middlewares
     std::list<MiddlewareCallback> middlewares_{};
 
-    /// @brief 
+    /// @brief
     std::map<String, Express *> mount_paths_{};
 
     /// @brief Application Settings
@@ -49,37 +50,33 @@ private:
         res.body_ = "";
         res.status_ = HTTP_STATUS_NOT_FOUND;
         res.headers_.clear();
-//        const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri_);
-
-        routes_.evaluate(req, res);
+        const auto req_indices = Route::splitToVector(req.uri_);
 
         for (auto [method, path, fptrMiddlewares, fptrCallback, indices] : routes_)
         {
-            /*            EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
-                        EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), path);
+            EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
+            EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), path);
 
-                        if (req.method == method && PathCompareAndExtractParams::match(
-                                                        path, indices,
-                                                        req.uri_, req_indices,
-                                                        req.params))
-                        {
-                            res.status_ = HTTP_STATUS_OK; // assumes all goes OK
+            if (req.method == method && Route::match(path, indices,
+                                                     req.uri_, req_indices,
+                                                     req.params))
+            {
+                res.status_ = HTTP_STATUS_OK; // assumes all goes OK
 
-                            auto it = fptrMiddlewares.begin();
-                            while (it != fptrMiddlewares.end())
-                            {
-                                if ((*it)(req, res))
-                                    ++it;
-                                else
-                                    break;
-                            }
+                auto it = fptrMiddlewares.begin();
+                while (it != fptrMiddlewares.end())
+                {
+                    if ((*it)(req, res))
+                        ++it;
+                    else
+                        break;
+                }
 
-                            if (fptrCallback)
-                                fptrCallback(req, res);
+                if (fptrCallback)
+                    fptrCallback(req, res);
 
-                            return true;
-                        }
-            */
+                return true;
+            }
         }
 
         for (auto [mountPath, express] : mount_paths_)
@@ -109,8 +106,7 @@ private:
         item.path = path;
         item.fptrCallback = fptrCallback;
         item.fptrMiddlewares.push_back(fptrMiddleware);
-      //  item.indices = PathCompareAndExtractParams::splitToVector(item.path);
-
+        item.indices = Route::splitToVector(item.path);
         routes_.push_back(item);
     }
 

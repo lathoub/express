@@ -11,11 +11,20 @@ void setup() {
 
   Ethernet.begin(mac);
 
-  // parse various different custom JSON types as JSON
-  app.use(bodyParser::json);
+  app.get("/", [](Request &req, Response &res) {
+    res.send("Hello World!");
+  });
 
   app.post("/", [](Request &req, Response &res) {
     res.send("Got a POST request");
+  });
+
+  app.put("/user", [](Request &req, Response &res) {
+    res.send("Got a PUT request at /user");
+  });
+
+  app.Delete("/user", [](Request &req, Response &res) {
+    res.send("Got a DELETE request at /user");
   });
 
   app.listen(80, []() {

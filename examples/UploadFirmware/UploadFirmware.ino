@@ -8,6 +8,14 @@ Express app;
 
 bool downloader(Request &req, Response &res) {
   EX_DBG_I(F("downloader middleware"));
+  if (req.get(F("content-type")).equalsIgnoreCase(F("application/octet-stream"))) {
+    req.on(F("data"), [](int) {
+      EX_DBG_I(F("data"));
+    });
+    req.on(F("end"), []() {
+      EX_DBG_I(F("end"));
+    });
+  }
   return true;
 }
 

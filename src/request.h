@@ -85,6 +85,24 @@ public: /* Methods*/
         return "";
     }
 
+    /// @brief 
+    /// @param name 
+    /// @param callback 
+    void on(const String& name, DataCallback callback)
+    {
+        
+    }
+
+    /// @brief 
+    /// @param name 
+    /// @param callback 
+    void on(const String& name, EndDataCallback callback)
+    {
+        
+    }
+
+
+
 };
 
 END_EXPRESS_NAMESPACE

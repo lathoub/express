@@ -7,22 +7,6 @@ BEGIN_EXPRESS_NAMESPACE
 #include "request.h"
 #include "response.h"
 
-class Routes : public std::vector<Route>
-{
-private:
-public:
-
-    bool evaluate(Request &req, Response &res)
-    {
-        res.body_ = "";
-        res.status_ = HTTP_STATUS_NOT_FOUND;
-        res.headers_.clear();
-        // const auto req_indices = PathCompareAndExtractParams::splitToVector(req.uri_);
-
-        return true;
-    }
-};
-
 class Route
 {
 private:
@@ -97,35 +81,6 @@ public:
         return true;
     }
 
-    bool evaluate(Request &req, Response &res)
-    {
-        EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
-        EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), path);
-        /*
-                if (req.method == method && PathCompareAndExtractParams::match(
-                                                path, indices,
-                                                req.uri_, req_indices,
-                                                req.params))
-                {
-                    res.status_ = HTTP_STATUS_OK; // assumes all goes OK
-
-                    auto it = fptrMiddlewares.begin();
-                    while (it != fptrMiddlewares.end())
-                    {
-                        if ((*it)(req, res))
-                            ++it;
-                        else
-                            break;
-                    }
-
-                    if (fptrCallback)
-                        fptrCallback(req, res);
-
-                    return true;
-                }
-                */
-        return true;
-    }
 };
 
 END_EXPRESS_NAMESPACE

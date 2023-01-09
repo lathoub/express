@@ -1,6 +1,10 @@
 #pragma once
 
-class bodyparser
+#include "namespace.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
+class bodyParser
 {
 public:
     bool inflate;
@@ -8,16 +12,17 @@ public:
     String limit;
 
 public:
-    static int json()
+    static bool json(Request &req, Response &res)
     {
-    }
-    static int urlencoded()
-    {
-    }
-    static int raw()
-    {
-    }
-    static int text()
-    {
+        EX_DBG_I(F("in json bodyParser"));
+
+        if (req.get(F("content-type")).equalsIgnoreCase(F("application/json"))) {
+            req.body = F("{ 'name': 'bart' }");
+            return true;
+        }
+
+        return true;
     }
 };
+
+END_EXPRESS_NAMESPACE
