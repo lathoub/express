@@ -1,10 +1,18 @@
 #pragma once
 
+#include "namespace.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
 class Express;
+class Routes;
+class Route;
 
 class Response
 {
     friend class Express;
+    friend class Routes;
+    friend class Route;
 
 private:
     String body_{};
@@ -146,3 +154,5 @@ public: /* Methods*/
         return *this;
     }
 };
+
+END_EXPRESS_NAMESPACE

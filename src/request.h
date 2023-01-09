@@ -1,11 +1,20 @@
 #pragma once
+
 #include <map>
 
+#include "namespace.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
 class Express;
+class Routes;
+class Route;
 
 class Request
 {
     friend class Express;
+    friend class Routes;
+    friend class Route;
     friend class HttpRequestParser;
 
 private:
@@ -77,3 +86,5 @@ public: /* Methods*/
     }
 
 };
+
+END_EXPRESS_NAMESPACE
