@@ -36,9 +36,9 @@ void loop() {
 ```
 
 ## Dependencies
-Easy, none. The Ethernet libraries come preinstalled with the Arduino IDE.
+None
 
-### ESP32 with W5500 
+## ESP32 with W5500 
 When you combine an ESP32 with the W5500 chip, you need to patch Server.h as reported [here](https://github.com/PaulStoffregen/Ethernet/issues/42).
 
 this `virtual void begin(uint16_t port=0) =0;` must be changed into `virtual void begin() =0;` 
