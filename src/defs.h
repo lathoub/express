@@ -1,7 +1,5 @@
 #pragma once
 
-#include "namespace.h"
-
 #if ARDUINO
 #include <Arduino.h>
 #else
@@ -9,10 +7,23 @@
 typedef uint8_t byte;
 #endif
 
+#include <map>
+#include <vector>
+#include <list>
+
+#include "namespace.h"
+
 BEGIN_EXPRESS_NAMESPACE
 
 #include "httpMethods.h"
 #include "httpStatusCodes.h"
+
+class Request;
+class Response;
+
+using requestCallback = void (*)(Request &req, Response &res);
+using MiddlewareCallback = bool (*)(Request &req, Response &res);
+using StartedCallback = void (*)();
 
 struct Options
 {
@@ -29,14 +40,5 @@ struct PosLen
     size_t pos;
     size_t len;
 };
-
-#include "request.h"
-#include "response.h"
-
-using requestCallback = void (*)(Request &req, Response &res);
-using MiddlewareCallback = bool (*)(Request &req, Response &res);
-using StartedCallback = void (*)();
-
-#include "route.h"
 
 END_EXPRESS_NAMESPACE
