@@ -34,3 +34,15 @@ void loop() {
   app.run();
 }
 ```
+
+## Dependencies
+Easy, none. The Ethernet libraries come preinstalled with the Arduino IDE.
+
+### ESP32 with W5500 
+When you combine an ESP32 with the W5500 chip, you need to patch Server.h as reported [here](https://github.com/PaulStoffregen/Ethernet/issues/42).
+
+this `virtual void begin(uint16_t port=0) =0;` must be changed into `virtual void begin() =0;` 
+
+- MacOS:   /Users/`user`/Library/Arduino15/packages/esp32/hardware/esp32/2.0.*/cores/esp32
+- Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
+              
