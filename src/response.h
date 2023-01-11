@@ -7,12 +7,14 @@ BEGIN_EXPRESS_NAMESPACE
 class Express;
 class Routes;
 class Route;
+class bodyParser;
 
 class Response
 {
     friend class Express;
     friend class Routes;
     friend class Route;
+    friend class bodyParser;
 
 private:
     String body_;

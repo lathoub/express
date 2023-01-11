@@ -55,10 +55,7 @@ private:
     /// @param res
     bool evaluate(Request &req, Response &res)
     {
-        // Reset result
-        res.body_ = F("");
-        res.status_ = HTTP_STATUS_NOT_FOUND;
-        res.headers_.clear();
+        EX_DBG_I(F("evaluate"), req.uri_);
 
         PosLen saPosLens[maxMiddlewareCallbacks];
         vector<PosLen> req_indices{};
@@ -80,6 +77,9 @@ private:
                 auto it = route.fptrMiddlewares.begin();
                 while (it != route.fptrMiddlewares.end())
                 {
+                    if (nullptr == *it)
+                        continue;
+
                     if ((*it)(req, res))
                         ++it;
                     else
@@ -160,7 +160,7 @@ public:
     /// Methods
 
     /// @brief
-    /// @param middleware
+    /// @param application middleware
     /// @return
     void use(const MiddlewareCallback middleware)
     {
@@ -360,6 +360,12 @@ public:
                 {
                     Response res;
                     res.app = this;
+                    res.body_ = F("");
+                    res.status_ = HTTP_STATUS_NOT_FOUND;
+                    res.headers_.clear();
+
+                    // app wide middlewares
+                    req.stream = &client; // NOTE: is er een betere oplossing??
 
                     auto it = middlewares_.begin();
                     while (it != middlewares_.end())
@@ -369,6 +375,8 @@ public:
                         else
                             break;
                     }
+
+                    req.stream = nullptr;
 
                     evaluate(req, res);
 
@@ -395,7 +403,6 @@ public:
                     // send content length *or* close the connection (spec 7.2.2)
                     if (res.body_ && !res.body_.isEmpty())
                     {
-                        EX_DBG_I(F("writing body"), res.body_);
                         client.println(res.body_.c_str());
                     }
 

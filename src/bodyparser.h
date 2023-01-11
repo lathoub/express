@@ -6,21 +6,91 @@ BEGIN_EXPRESS_NAMESPACE
 
 class bodyParser
 {
-public:
-    bool inflate;
-    String type;
-    String limit;
-
-public:
-    static bool json(Request &req, Response &res)
+private:
+    /// @brief 
+    /// @param req 
+    /// @param res 
+    /// @return 
+    static bool parseJson(Request &req, Response &res)
     {
-        if (req.get(F("content-type")).equalsIgnoreCase(F("application/json"))) {
-            req.body = F("{ 'name': 'bart' }");
+        if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
+        {
+            if (nullptr == req.stream)
+                return true;
+
+            auto max_length = req.get(F("content-length")).toInt();
+
+            EX_DBG_I(F("content-length:"), max_length);
+
+            req.body.reserve(max_length);
+
+            if (!req.body.reserve(max_length + 1))
+                return false;
+
+            req.body[0] = 0;
+
+            while (req.body.length() < max_length)
+            {
+                int tries = 1000;
+                size_t avail;
+
+                while (!((avail = req.stream->available())) && tries--)
+                    delay(1);
+
+                if (!avail)
+                    break;
+
+                if (req.body.length() + avail > max_length)
+                    avail = max_length - req.body.length();
+
+                while (avail--)
+                    req.body += static_cast<char>(req.stream->read());
+            }
+
+            res.headers_["content-type"] = F("application/json");
+
             return true;
         }
 
         return true;
     }
+
+    /// @brief 
+    /// @param req 
+    /// @param res 
+    /// @return 
+    static bool parseRaw(Request &req, Response &res)
+    {
+        return true;
+    }
+
+public:
+    /// @brief
+    bodyParser()
+    {
+    }
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback raw()
+    {
+         return bodyParser::parseRaw;
+   }
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback json()
+    {
+        return bodyParser::parseJson;
+    }
+
+    /*
+}
+*/
 };
 
 END_EXPRESS_NAMESPACE

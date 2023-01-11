@@ -1,6 +1,3 @@
-#define EX_DEBUG
-#define EX_DEBUG_LOGLEVEL EX_DEBUG_LOGLEVEL_VERBOSE
-
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
@@ -12,16 +9,10 @@ void setup() {
   Serial.begin(115200);
   while (!Serial && !Serial.available()) {}
 
-  Ethernet.init(5);
   Ethernet.begin(mac);
 
-  // parse various different custom JSON types as JSON
-  app.use(bodyParser::json);
-
-  app.post("/", [](Request &req, Response &res) {
-    Serial.print(F("req.body: "));
-    Serial.println(req.body);
-    res.send("Got a POST request");
+  app.get("/", [](Request &req, Response &res) {
+    res.send("Got a GET request");
   });
 
   app.listen(80, []() {
