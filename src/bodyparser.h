@@ -55,7 +55,7 @@ private:
         return true;
     }
 
-    /// @brief 
+    /// @brief defayults to application/octet-stream
     /// @param req 
     /// @param res 
     /// @return 
@@ -64,12 +64,25 @@ private:
         return true;
     }
 
-public:
-    /// @brief
-    bodyParser()
+    /// @brief 
+    /// @param req 
+    /// @param res 
+    /// @return 
+    static bool parseText(Request &req, Response &res)
     {
+        return true;
     }
 
+    /// @brief 
+    /// @param req 
+    /// @param res 
+    /// @return 
+    static bool parseUrlencoded(Request &req, Response &res)
+    {
+        return true;
+    }
+
+public:
     /// @brief
     /// @param req
     /// @param res
@@ -88,9 +101,24 @@ public:
         return bodyParser::parseJson;
     }
 
-    /*
-}
-*/
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback text()
+    {
+         return bodyParser::parseText;
+   }
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback urlencoded()
+    {
+        return bodyParser::parseUrlencoded;
+    }
+
 };
 
 END_EXPRESS_NAMESPACE

@@ -360,9 +360,6 @@ public:
                 {
                     Response res;
                     res.app = this;
-                    res.body_ = F("");
-                    res.status_ = HTTP_STATUS_NOT_FOUND;
-                    res.headers_.clear();
 
                     // app wide middlewares
                     req.stream = &client; // NOTE: is er een betere oplossing??

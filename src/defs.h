@@ -27,7 +27,7 @@ class Response;
 using requestCallback = void (*)(Request &req, Response &res);
 using MiddlewareCallback = bool (*)(Request &req, Response &res);
 using StartedCallback = void (*)();
-using DataCallback = void (*)(int);
+using DataCallback = void (*)(void*);
 using EndDataCallback = void (*)();
 
 struct Options
