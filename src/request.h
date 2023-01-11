@@ -88,7 +88,7 @@ public: /* Methods*/
     /// @param callback 
     void on(const String& name, DataCallback callback)
     {
-        
+        EX_DBG_I(F("end"));
     }
 
     /// @brief 
@@ -96,7 +96,7 @@ public: /* Methods*/
     /// @param callback 
     void on(const String& name, EndDataCallback callback)
     {
-        
+        EX_DBG_I(F("on end"));
     }
 
 

@@ -16,10 +16,10 @@ BEGIN_EXPRESS_NAMESPACE
 
 struct DefaultSettings
 {
-    /// @brief 
+    /// @brief
     static const int maxRoutes = 10;
 
-    /// @brief 
+    /// @brief
     static const int maxMiddlewareCallbacks = 10;
 };
 
@@ -32,7 +32,7 @@ private:
     EthernetServer *server_{}; // TODO: singleton
 
 private:
-    /// @brief routes 
+    /// @brief routes
     Route saRoutes_[DefaultSettings::maxRoutes];
     vector<Route> routes_{};
 
@@ -56,7 +56,7 @@ private:
     bool evaluate(Request &req, Response &res)
     {
         // Reset result
-        res.body_ = "";
+        res.body_ = F("");
         res.status_ = HTTP_STATUS_NOT_FOUND;
         res.headers_.clear();
 
@@ -72,13 +72,13 @@ private:
             EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), route.path);
 
             if (req.method == route.method && Route::match(route.path, route.indices,
-                                                     req.uri_, req_indices,
-                                                     req.params))
+                                                           req.uri_, req_indices,
+                                                           req.params))
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
-/*
-                auto it = fptrMiddlewares.begin();
-                while (it != fptrMiddlewares.end())
+
+                auto it = route.fptrMiddlewares.begin();
+                while (it != route.fptrMiddlewares.end())
                 {
                     if ((*it)(req, res))
                         ++it;
@@ -86,11 +86,10 @@ private:
                         break;
                 }
 
-                if (fptrCallback)
-                    fptrCallback(req, res);
-*/
-                return true;
+                if (route.fptrCallback)
+                    route.fptrCallback(req, res);
 
+                return true;
             }
         }
 
@@ -120,9 +119,10 @@ private:
         route.method = method;
         route.path = path;
         route.fptrCallback = fptrCallback;
-        route.fptrMiddlewares.push_back(fptrMiddleware);
+        if (nullptr != fptrMiddleware)
+            route.fptrMiddlewares.push_back(fptrMiddleware);
         route.splitToVector(route.path);
-        
+
         routes_.push_back(route);
     }
 
@@ -374,24 +374,31 @@ public:
 
                     client.print(F("HTTP/1.1 "));
                     client.println(res.status_);
+
+                    // Add to headers
+                    if (!res.body_.isEmpty())
+                        res.headers_[F("content-length")] = res.body_.length();
+                    res.headers_[F("connection")] = F("close");
+                    if (settings[F("X-powered-by")])
+                        res.headers_[F("X-powered-by")] = settings[F("X-powered-by")];
+
+                    // Send headers
                     for (auto [first, second] : res.headers_)
                     {
                         client.print(first);
                         client.print(": ");
                         client.println(second);
                     }
-                    if (!res.body_.isEmpty())
-                    {
-                        client.print(F("content-length: "));
-                        client.println(res.body_.length());
-                    }
-                    if (settings[F("X-powered-by")])
-                        client.println(settings[F("X-powered-by")]);
-                    client.println(F("connection: close"));
-                    client.println(F(""));
+                    // headers are done
+                    client.println();
+
                     // send content length *or* close the connection (spec 7.2.2)
-                    if (!res.body_.isEmpty())
+                    if (res.body_ && !res.body_.isEmpty())
+                    {
+                        EX_DBG_I(F("writing body"), res.body_);
                         client.println(res.body_.c_str());
+                    }
+
                     client.stop();
                 }
             }

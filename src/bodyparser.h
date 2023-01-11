@@ -14,8 +14,6 @@ public:
 public:
     static bool json(Request &req, Response &res)
     {
-        EX_DBG_I(F("in json bodyParser"));
-
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json"))) {
             req.body = F("{ 'name': 'bart' }");
             return true;

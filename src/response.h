@@ -15,7 +15,7 @@ class Response
     friend class Route;
 
 private:
-    String body_{};
+    String body_;
 
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
