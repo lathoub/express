@@ -1,9 +1,6 @@
 #pragma once
 
 #include <Ethernet.h>
-#include <vector>
-#include <list>
-#include <map>
 
 #define EX_DEBUG Serial
 
@@ -17,6 +14,15 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
+struct DefaultSettings
+{
+    /// @brief 
+    static const int maxRoutes = 10;
+
+    /// @brief 
+    static const int maxMiddlewareCallbacks = 10;
+};
+
 class Express
 {
     friend class HttpRequestHandler;
@@ -26,11 +32,13 @@ private:
     EthernetServer *server_{}; // TODO: singleton
 
 private:
-    /// @brief
-    std::vector<Route> routes_{};
+    /// @brief routes 
+    Route saRoutes_[DefaultSettings::maxRoutes];
+    vector<Route> routes_{};
 
     /// @brief Application wide middlewares
-    std::list<MiddlewareCallback> middlewares_{};
+    MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
+    vector<MiddlewareCallback> middlewares_{};
 
     /// @brief
     std::map<String, Express *> mount_paths_{};
@@ -47,22 +55,28 @@ private:
     /// @param res
     bool evaluate(Request &req, Response &res)
     {
+        // Reset result
         res.body_ = "";
         res.status_ = HTTP_STATUS_NOT_FOUND;
         res.headers_.clear();
-        const auto req_indices = Route::splitToVector(req.uri_);
 
-        for (auto [method, path, fptrMiddlewares, fptrCallback, indices] : routes_)
+        PosLen saPosLens[maxMiddlewareCallbacks];
+        vector<PosLen> req_indices{};
+        req_indices.setStorage(saPosLens);
+
+        Route::splitToVector(req.uri_, req_indices);
+
+        for (auto route : routes_)
         {
-            EX_DBG_I(F("req.method:"), req.method, F("method:"), method);
-            EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), path);
+            EX_DBG_I(F("req.method:"), req.method, F("method:"), route.method);
+            EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), route.path);
 
-            if (req.method == method && Route::match(path, indices,
+            if (req.method == route.method && Route::match(route.path, route.indices,
                                                      req.uri_, req_indices,
                                                      req.params))
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
-
+/*
                 auto it = fptrMiddlewares.begin();
                 while (it != fptrMiddlewares.end())
                 {
@@ -74,8 +88,9 @@ private:
 
                 if (fptrCallback)
                     fptrCallback(req, res);
-
+*/
                 return true;
+
             }
         }
 
@@ -101,13 +116,14 @@ private:
 
         EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
 
-        Route item{};
-        item.method = method;
-        item.path = path;
-        item.fptrCallback = fptrCallback;
-        item.fptrMiddlewares.push_back(fptrMiddleware);
-        item.indices = Route::splitToVector(item.path);
-        routes_.push_back(item);
+        Route route{};
+        route.method = method;
+        route.path = path;
+        route.fptrCallback = fptrCallback;
+        route.fptrMiddlewares.push_back(fptrMiddleware);
+        route.splitToVector(route.path);
+        
+        routes_.push_back(route);
     }
 
     /// @brief
@@ -123,6 +139,10 @@ public:
     /// @brief Constructor
     Express()
     {
+        // Set storage for vector
+        routes_.setStorage(saRoutes_);
+        middlewares_.setStorage(saMiddlewareCallbacks_);
+
         settings[F("env")] = F("production");
         //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
     }

@@ -7,9 +7,8 @@
 typedef uint8_t byte;
 #endif
 
+#include "utility/vector.h"
 #include <map>
-#include <vector>
-#include <list>
 
 #include "namespace.h"
 
@@ -17,6 +16,10 @@ BEGIN_EXPRESS_NAMESPACE
 
 #include "httpMethods.h"
 #include "httpStatusCodes.h"
+
+// Need to move these to DefaultSettings
+const int maxRoutes = 10;
+const int maxMiddlewareCallbacks = 10;
 
 class Request;
 class Response;

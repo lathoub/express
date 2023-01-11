@@ -12,33 +12,52 @@ class Route
 private:
     static const char delimiter = '/';
 
+private:
+    MiddlewareCallback saMiddlewareCallbacks_[maxMiddlewareCallbacks];
+    PosLen saPosLens_[maxMiddlewareCallbacks];
+
 public:
     Method method = Method::UNDEFINED;
+
     String path{};
-    std::list<MiddlewareCallback> fptrMiddlewares{};
+
+    vector<MiddlewareCallback> fptrMiddlewares{};
+
     requestCallback fptrCallback = nullptr;
+
     // cache path splitting (avoid doing this for every request * number of paths)
-    std::vector<PosLen> indices{};
+    vector<PosLen> indices{};
 
 public:
     /// @brief
+    Route()
+    {
+        fptrMiddlewares.setStorage(saMiddlewareCallbacks_);
+        indices.setStorage(saPosLens_);
+    }
+
+    /// @brief 
+    /// @param path 
+    void splitToVector(const String &path)
+    {
+        splitToVector(path, indices);
+    }
+
+    /// @brief
     /// @param path
     /// @return
-    static auto splitToVector(const String &path) -> std::vector<PosLen>
+    static void splitToVector(const String &path, vector<PosLen> &poslens)
     {
-        std::vector<PosLen> pathItems;
         size_t p = 0, i = 1;
         for (; i < path.length(); i++)
         {
             if (path.charAt(i) == delimiter)
             {
-                pathItems.push_back({p, i - p});
+                poslens.push_back({p, i - p});
                 p = i;
             }
         }
-        pathItems.push_back({p, i - p});
-
-        return pathItems;
+        poslens.push_back({p, i - p});
     }
 
     /// @brief
@@ -48,8 +67,8 @@ public:
     /// @param requestPathItems
     /// @param params
     /// @return
-    static auto match(const String &path, const std::vector<PosLen> &pathItems,
-                      const String &requestPath, const std::vector<PosLen> &requestPathItems,
+    static auto match(const String &path, const vector<PosLen> &pathItems,
+                      const String &requestPath, const vector<PosLen> &requestPathItems,
                       std::map<String, String> &params) -> bool
     {
         if (requestPathItems.size() != pathItems.size())
@@ -80,7 +99,6 @@ public:
 
         return true;
     }
-
 };
 
 END_EXPRESS_NAMESPACE

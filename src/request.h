@@ -22,8 +22,6 @@ private:
 
     String uri_;
 
-    int contentLength_;
-
 public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
