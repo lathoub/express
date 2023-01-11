@@ -10,22 +10,20 @@ Express app;
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial && !Serial.available()) {}
+  while (!Serial && !Serial.available()) {} delay(1000);
 
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.use(bodyParser::json());
+  // app.use(bodyParser::json());
 
-  app.post("/", [](Request& req, Response& res) {
-    Serial.println(req.body);
-    Serial.print(F("req.body: "));
-    Serial.println(req.body);
-
+  app.post("/", bodyParser::json(), [](Request& req, Response& res) {
     req.on("data", [](void* data) {
+      EX_DBG_I(F("data zalig"));
     });
 
     req.on("end", []() {
+      EX_DBG_I(F("end zalig"));
     });
 
     res.send(req.body);

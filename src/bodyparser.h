@@ -7,10 +7,10 @@ BEGIN_EXPRESS_NAMESPACE
 class bodyParser
 {
 private:
-    /// @brief 
-    /// @param req 
-    /// @param res 
-    /// @return 
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
     static bool parseJson(Request &req, Response &res)
     {
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
@@ -47,7 +47,15 @@ private:
                     req.body += static_cast<char>(req.stream->read());
             }
 
+            EX_DBG_I(F("en body is gelezen"));
+
+            if (req.dataCallback_)
+                req.dataCallback_(nullptr);
+
             res.headers_["content-type"] = F("application/json");
+
+            if (req.endCallback_)
+                req.endCallback_();
 
             return true;
         }
@@ -56,27 +64,27 @@ private:
     }
 
     /// @brief defayults to application/octet-stream
-    /// @param req 
-    /// @param res 
-    /// @return 
+    /// @param req
+    /// @param res
+    /// @return
     static bool parseRaw(Request &req, Response &res)
     {
         return true;
     }
 
-    /// @brief 
-    /// @param req 
-    /// @param res 
-    /// @return 
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
     static bool parseText(Request &req, Response &res)
     {
         return true;
     }
 
-    /// @brief 
-    /// @param req 
-    /// @param res 
-    /// @return 
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
     static bool parseUrlencoded(Request &req, Response &res)
     {
         return true;
@@ -89,8 +97,8 @@ public:
     /// @return
     static MiddlewareCallback raw()
     {
-         return bodyParser::parseRaw;
-   }
+        return bodyParser::parseRaw;
+    }
 
     /// @brief
     /// @param req
@@ -107,8 +115,8 @@ public:
     /// @return
     static MiddlewareCallback text()
     {
-         return bodyParser::parseText;
-   }
+        return bodyParser::parseText;
+    }
 
     /// @brief
     /// @param req
@@ -118,7 +126,6 @@ public:
     {
         return bodyParser::parseUrlencoded;
     }
-
 };
 
 END_EXPRESS_NAMESPACE

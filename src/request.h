@@ -23,10 +23,9 @@ private:
     String uri_;
 
 public:
-
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
-    /// @return 
-    Express* app = nullptr;
+    /// @return
+    Express *app = nullptr;
 
     Stream *stream = nullptr;
 
@@ -46,7 +45,7 @@ public:
     /// @brief Contains the remote IP address of the request.
     IPAddress ip;
 
-    /// @brief 
+    /// @brief
     std::map<String, String> headers;
 
     /// @brief Contains the path part of the request URL.
@@ -55,7 +54,7 @@ public:
     /// @brief Contains the request protocol string: either http or (for TLS requests) https.
     String protocol;
 
-    /// @brief 
+    /// @brief
     std::map<String, String> query;
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
@@ -63,19 +62,25 @@ public:
     //  req.params[name]
     std::map<String, String> params;
 
+    /// @brief
+    DataCallback dataCallback_ = nullptr;
+
+    /// @brief
+    EndDataCallback endCallback_ = nullptr;
+
 public: /* Methods*/
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    bool accepts(const String& types)
+    bool accepts(const String &types)
     {
         return false;
     }
 
-    /// @brief Returns the specified HTTP request header field (case-insensitive match). 
+    /// @brief Returns the specified HTTP request header field (case-insensitive match).
     /// @param field
     /// @return
-    String get(const String& field)
+    String get(const String &field)
     {
         for (auto [key, header] : headers)
         {
@@ -85,22 +90,23 @@ public: /* Methods*/
         return "";
     }
 
-    /// @brief 
-    /// @param name 
-    /// @param callback 
-    void on(const String& name, DataCallback callback)
+    /// @brief
+    /// @param name
+    /// @param callback
+    void on(const String &name, DataCallback callback)
     {
-        EX_DBG_I(F("end"));
+        EX_DBG_I(F("data callback is"), (nullptr == callback));
+        dataCallback_ = callback;
     }
 
-    /// @brief 
-    /// @param name 
-    /// @param callback 
-    void on(const String& name, EndDataCallback callback)
+    /// @brief
+    /// @param name
+    /// @param callback
+    void on(const String &name, EndDataCallback callback)
     {
-        EX_DBG_I(F("on end"));
+        EX_DBG_I(F("end callback is"), (nullptr == callback));
+        endCallback_ = callback;
     }
-
 };
 
 END_EXPRESS_NAMESPACE

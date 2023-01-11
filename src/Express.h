@@ -63,6 +63,8 @@ private:
 
         Route::splitToVector(req.uri_, req_indices);
 
+        EX_DBG_I(F("route size:"), routes_.size());
+
         for (auto route : routes_)
         {
             EX_DBG_I(F("req.method:"), req.method, F("method:"), route.method);
@@ -74,15 +76,19 @@ private:
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
 
-                auto it = route.fptrMiddlewares.begin();
-                while (it != route.fptrMiddlewares.end())
-                {
-                    if (nullptr == *it)
-                        continue;
+                EX_DBG_I(F("route middleware size:"), route.fptrMiddlewares.size());
 
-                    if ((*it)(req, res))
-                        ++it;
-                    else
+                for (auto middleware : route.fptrMiddlewares)
+                {
+                    if (nullptr == middleware)
+                    {
+                        EX_DBG_E(F("route middleware is nullptr"));
+                        continue;
+                    }
+
+                    EX_DBG_I(F("route middleware"));
+
+                    if (!middleware(req, res))
                         break;
                 }
 
@@ -122,7 +128,7 @@ private:
         if (nullptr != fptrMiddleware)
             route.fptrMiddlewares.push_back(fptrMiddleware);
         route.splitToVector(route.path);
-
+        // Add to collection
         routes_.push_back(route);
     }
 
@@ -285,7 +291,7 @@ public:
     /// @return
     void post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
     {
-        METHOD(Method::POST, path, fptr);
+        METHOD(Method::POST, path, middleware, fptr);
     };
 
     /// @brief
@@ -364,12 +370,11 @@ public:
                     // app wide middlewares
                     req.stream = &client; // NOTE: is er een betere oplossing??
 
-                    auto it = middlewares_.begin();
-                    while (it != middlewares_.end())
+                    EX_DBG_I(F("app middleware size:"), middlewares_.size());
+
+                    for (auto middleware : route.fptrMiddlewares)
                     {
-                        if ((*it)(req, res))
-                            ++it;
-                        else
+                        if (!middleware(req, res))
                             break;
                     }
 
