@@ -10,7 +10,7 @@
 #include "request.h"
 #include "response.h"
 #include "route.h"
-#include "bodyParser.h"
+// #include "bodyParser.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -23,7 +23,7 @@ struct DefaultSettings
     static const int maxMiddlewareCallbacks = 10;
 };
 
-class Express
+class express
 {
     friend class HttpRequestHandler;
 
@@ -33,21 +33,168 @@ private:
 
 private:
     /// @brief routes
- //   Route saRoutes_[DefaultSettings::maxRoutes];
+    Route saRoutes_[DefaultSettings::maxRoutes];
     std::vector<Route> routes_;
 
     /// @brief Application wide middlewares
- //   MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
+    //   MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
     std::vector<MiddlewareCallback> middlewares_;
 
     /// @brief
-    std::map<String, Express *> mount_paths_;
+    std::map<String, express *> mount_paths_;
 
     /// @brief Application Settings
     std::map<String, String> locals;
 
     /// @brief
-    Express *parent_ = nullptr;
+    express *parent_ = nullptr;
+
+private:
+    // bodyparser
+
+    // TODO: static options
+    // inflate, limit, reviver, strict, type, verify
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static bool parseJson(Request &req, Response &res)
+    {
+        EX_DBG_I(F("> bodyparser parseJson"));
+
+        if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
+        {
+            if (nullptr == req.stream)
+            {
+                EX_DBG_I(F("req.stream is null"));
+                return true;
+            }
+
+            auto max_length = req.get(F("content-length")).toInt();
+
+            req.body.reserve(max_length);
+
+            if (!req.body.reserve(max_length + 1))
+                return false;
+
+            req.body[0] = 0;
+
+            while (req.body.length() < max_length)
+            {
+                int tries = 1000;
+                size_t avail;
+
+                while (!((avail = req.stream->available())) && tries--)
+                    delay(1);
+
+                if (!avail)
+                    break;
+
+                if (req.body.length() + avail > max_length)
+                    avail = max_length - req.body.length();
+
+                while (avail--)
+                    req.body += static_cast<char>(req.stream->read());
+            }
+
+            EX_DBG_I(F("< bodyparser parseJson"));
+
+
+            if (req.dataCallback_)
+            {
+                EX_DBG_I(F("calling event on data"));
+                req.dataCallback_(nullptr);
+            }
+
+            res.headers_["content-type"] = F("application/json");
+
+            if (req.endCallback_)
+            {
+                EX_DBG_I(F("calling event on end"));
+                req.endCallback_();
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
+    // TODO: static options
+    // inflate, limit, type, verify
+
+    /// @brief defayults to application/octet-stream
+    /// @param req
+    /// @param res
+    /// @return
+    static bool parseRaw(Request &req, Response &res)
+    {
+        return true;
+    }
+
+    // TODO: static options
+    // defaultCharset, inflate, limit, type, verify
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static bool parseText(Request &req, Response &res)
+    {
+        return true;
+    }
+
+    // TODO: static options
+    // extended, inflate, limit, parameterLimit, type, verify
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static bool parseUrlencoded(Request &req, Response &res)
+    {
+        return true;
+    }
+
+public:
+    // bodyparser
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback raw()
+    {
+        return express::parseRaw;
+    }
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback json()
+    {
+        return express::parseJson;
+    }
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback text()
+    {
+        return express::parseText;
+    }
+
+    /// @brief
+    /// @param req
+    /// @param res
+    /// @return
+    static MiddlewareCallback urlencoded()
+    {
+        return express::parseUrlencoded;
+    }
 
 private:
     /// @brief
@@ -57,9 +204,9 @@ private:
     {
         EX_DBG_I(F("evaluate"), req.uri_);
 
-    //    PosLen saPosLens[maxMiddlewareCallbacks];
+        //    PosLen saPosLens[maxMiddlewareCallbacks];
         std::vector<PosLen> req_indices{};
-   //     req_indices.setStorage(saPosLens);
+        //     req_indices.setStorage(saPosLens);
 
         Route::splitToVector(req.uri_, req_indices);
 
@@ -86,10 +233,8 @@ private:
         }
 
         for (auto [mountPath, express] : mount_paths_)
-        {
             if (express->evaluate(req, res))
                 return true;
-        }
 
         return false;
     }
@@ -113,10 +258,7 @@ private:
         route.path = path;
         route.fptrCallback = fptrCallback;
         if (nullptr != fptrMiddleware)
-        {
-            EX_DBG_E(F("erwtwertqertqertewrt "), nullptr == fptrMiddleware);
             route.fptrMiddlewares.push_back(fptrMiddleware);
-        }
         route.splitToVector(route.path);
         // Add to collection
         routes_.push_back(route);
@@ -134,13 +276,13 @@ private:
 
 public:
     /// @brief Constructor
-    Express()
+    express()
     {
         EX_DBG_V(F("Express() constructor"));
 
         // Set storage for vector
-//        routes_.setStorage(saRoutes_);
-  //      middlewares_.setStorage(saMiddlewareCallbacks_);
+        //        routes_.setStorage(saRoutes_);
+        //      middlewares_.setStorage(saMiddlewareCallbacks_);
 
         settings[F("env")] = F("production");
         //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
@@ -170,7 +312,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    void use(const String &mount_path, Express &other)
+    void use(const String &mount_path, express &other)
     {
         EX_DBG_I(F("use mountPath:"), mount_path);
 

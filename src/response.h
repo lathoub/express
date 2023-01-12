@@ -4,14 +4,14 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-class Express;
+class express;
 class Routes;
 class Route;
 class bodyParser;
 
 class Response
 {
-    friend class Express;
+    friend class express;
     friend class Routes;
     friend class Route;
     friend class bodyParser;
@@ -27,7 +27,7 @@ public: /* Methods*/
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return 
-    Express* app;
+    express* app;
 
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value

@@ -6,13 +6,13 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-class Express;
+class express;
 class Routes;
 class Route;
 
 class Request
 {
-    friend class Express;
+    friend class express;
     friend class Routes;
     friend class Route;
     friend class HttpRequestParser;
@@ -25,7 +25,7 @@ private:
 public:
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express *app = nullptr;
+    express *app = nullptr;
 
     Stream *stream = nullptr;
 

@@ -3,9 +3,9 @@ using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-Express app;
-Express v1;
-Express v2;
+express app;
+express v1;
+express v2;
 
 void setup() {
   Serial.begin(115200);

@@ -13,8 +13,8 @@ private:
     static const char delimiter = '/';
 
 private:
- //   MiddlewareCallback saMiddlewareCallbacks_[maxMiddlewareCallbacks];
- //   PosLen saPosLens_[maxMiddlewareCallbacks];
+    MiddlewareCallback saMiddlewareCallbacks_[maxMiddlewareCallbacks];
+    PosLen saPosLens_[maxMiddlewareCallbacks];
 
 public:
     Method method = Method::UNDEFINED;

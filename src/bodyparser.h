@@ -16,6 +16,8 @@ private:
     /// @return
     static bool parseJson(Request &req, Response &res)
     {
+        EX_DBG_I(F("bodyparser parseJson"));
+
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
         {
             if (nullptr == req.stream)

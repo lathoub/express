@@ -6,7 +6,7 @@ using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-Express app;
+express app;
 
 void setup() {
   Serial.begin(115200);
@@ -17,10 +17,12 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  // app.use(bodyParser::json());
+  // app.use(express::json());
 
-  app.post("/", bodyParser::json(), [](Request& req, Response& res) {
-    req.on("data", [](void* data) {
+  app.post("/", express::json(), [](Request& req, Response& res) {
+    EX_DBG_I(F("in POST / handler"));
+
+    req.on("data", [](void* chunk) {
       EX_DBG_I(F("data zalig"));
     });
 
