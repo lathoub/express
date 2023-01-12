@@ -13,20 +13,20 @@ private:
     static const char delimiter = '/';
 
 private:
-    MiddlewareCallback saMiddlewareCallbacks_[maxMiddlewareCallbacks];
-    PosLen saPosLens_[maxMiddlewareCallbacks];
+ //   MiddlewareCallback saMiddlewareCallbacks_[maxMiddlewareCallbacks];
+ //   PosLen saPosLens_[maxMiddlewareCallbacks];
 
 public:
     Method method = Method::UNDEFINED;
 
-    String path{};
+    String path;
 
-    vector<MiddlewareCallback> fptrMiddlewares{};
+    std::vector<MiddlewareCallback> fptrMiddlewares;
 
     requestCallback fptrCallback = nullptr;
 
     // cache path splitting (avoid doing this for every request * number of paths)
-    vector<PosLen> indices{};
+    std::vector<PosLen> indices;
 
 public:
     /// @brief
@@ -34,8 +34,8 @@ public:
     {
         EX_DBG_V(F("Route() constructor"));
 
-        fptrMiddlewares.setStorage(saMiddlewareCallbacks_);
-        indices.setStorage(saPosLens_);
+//        fptrMiddlewares.setStorage(saMiddlewareCallbacks_);
+  //      indices.setStorage(saPosLens_);
     }
 
     /// @brief 
@@ -48,7 +48,7 @@ public:
     /// @brief
     /// @param path
     /// @return
-    static void splitToVector(const String &path, vector<PosLen> &poslens)
+    static void splitToVector(const String &path, std::vector<PosLen> &poslens)
     {
         size_t p = 0, i = 1;
         for (; i < path.length(); i++)
@@ -69,8 +69,8 @@ public:
     /// @param requestPathItems
     /// @param params
     /// @return
-    static auto match(const String &path, const vector<PosLen> &pathItems,
-                      const String &requestPath, const vector<PosLen> &requestPathItems,
+    static auto match(const String &path, const std::vector<PosLen> &pathItems,
+                      const String &requestPath, const std::vector<PosLen> &requestPathItems,
                       std::map<String, String> &params) -> bool
     {
         if (requestPathItems.size() != pathItems.size())

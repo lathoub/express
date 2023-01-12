@@ -95,7 +95,7 @@ public: /* Methods*/
     /// @param callback
     void on(const String &name, DataCallback callback)
     {
-        EX_DBG_I(F("data callback is"), (nullptr == callback));
+        EX_DBG_I(F("data callback"));
         dataCallback_ = callback;
     }
 
@@ -104,7 +104,7 @@ public: /* Methods*/
     /// @param callback
     void on(const String &name, EndDataCallback callback)
     {
-        EX_DBG_I(F("end callback is"), (nullptr == callback));
+        EX_DBG_I(F("end callback"));
         endCallback_ = callback;
     }
 };

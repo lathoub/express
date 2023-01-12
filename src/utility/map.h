@@ -29,7 +29,7 @@ public:
         for (auto key : keys_)
         {
             index++;
-            if (key == target)
+            if (key == target) // Case sensitivity
                 return values_.at(index);
         }
 

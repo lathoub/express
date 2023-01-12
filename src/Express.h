@@ -33,18 +33,18 @@ private:
 
 private:
     /// @brief routes
-    Route saRoutes_[DefaultSettings::maxRoutes];
-    vector<Route> routes_{};
+ //   Route saRoutes_[DefaultSettings::maxRoutes];
+    std::vector<Route> routes_;
 
     /// @brief Application wide middlewares
-    MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
-    vector<MiddlewareCallback> middlewares_{};
+ //   MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
+    std::vector<MiddlewareCallback> middlewares_;
 
     /// @brief
-    std::map<String, Express *> mount_paths_{};
+    std::map<String, Express *> mount_paths_;
 
     /// @brief Application Settings
-    std::map<String, String> locals{};
+    std::map<String, String> locals;
 
     /// @brief
     Express *parent_ = nullptr;
@@ -57,13 +57,11 @@ private:
     {
         EX_DBG_I(F("evaluate"), req.uri_);
 
-        PosLen saPosLens[maxMiddlewareCallbacks];
-        vector<PosLen> req_indices{};
-        req_indices.setStorage(saPosLens);
+    //    PosLen saPosLens[maxMiddlewareCallbacks];
+        std::vector<PosLen> req_indices{};
+   //     req_indices.setStorage(saPosLens);
 
         Route::splitToVector(req.uri_, req_indices);
-
-        EX_DBG_I(F("route size:"), routes_.size());
 
         for (auto route : routes_)
         {
@@ -76,21 +74,9 @@ private:
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
 
-                EX_DBG_I(F("route middleware size:"), route.fptrMiddlewares.size());
-
                 for (auto middleware : route.fptrMiddlewares)
-                {
-                    if (nullptr == middleware)
-                    {
-                        EX_DBG_E(F("route middleware is nullptr"));
-                        continue;
-                    }
-
-                    EX_DBG_I(F("route middleware"));
-
                     if (!middleware(req, res))
                         break;
-                }
 
                 if (route.fptrCallback)
                     route.fptrCallback(req, res);
@@ -112,21 +98,25 @@ private:
     /// @param uri
     /// @param fptrCallback
     /// @return
-    void METHOD(Method method, String path, const MiddlewareCallback fptrMiddleware, const requestCallback fptrCallback)
+    void
+    METHOD(Method method, String path, const MiddlewareCallback fptrMiddleware, const requestCallback fptrCallback)
     {
         if (path == F("/"))
             path = F("");
 
         path = mountpath + path;
 
-        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
+        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("fptrMiddleware:"), (nullptr == fptrMiddleware));
 
         Route route{};
         route.method = method;
         route.path = path;
         route.fptrCallback = fptrCallback;
         if (nullptr != fptrMiddleware)
+        {
+            EX_DBG_E(F("erwtwertqertqertewrt "), nullptr == fptrMiddleware);
             route.fptrMiddlewares.push_back(fptrMiddleware);
+        }
         route.splitToVector(route.path);
         // Add to collection
         routes_.push_back(route);
@@ -138,6 +128,7 @@ private:
     /// @return
     void METHOD(Method method, String path, const requestCallback fptr)
     {
+        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
         METHOD(method, path, nullptr, fptr);
     }
 
@@ -148,8 +139,8 @@ public:
         EX_DBG_V(F("Express() constructor"));
 
         // Set storage for vector
-        routes_.setStorage(saRoutes_);
-        middlewares_.setStorage(saMiddlewareCallbacks_);
+//        routes_.setStorage(saRoutes_);
+  //      middlewares_.setStorage(saMiddlewareCallbacks_);
 
         settings[F("env")] = F("production");
         //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
@@ -372,15 +363,9 @@ public:
                     // app wide middlewares
                     req.stream = &client; // NOTE: is er een betere oplossing??
 
-                    EX_DBG_I(F("app middleware size:"), middlewares_.size());
-
                     for (auto middleware : middlewares_)
-                    {
                         if (!middleware(req, res))
                             break;
-                    }
-
-                    req.stream = nullptr;
 
                     evaluate(req, res);
 

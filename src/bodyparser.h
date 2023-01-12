@@ -7,6 +7,9 @@ BEGIN_EXPRESS_NAMESPACE
 class bodyParser
 {
 private:
+    // TODO: static options
+    // inflate, limit, reviver, strict, type, verify
+
     /// @brief
     /// @param req
     /// @param res
@@ -16,11 +19,12 @@ private:
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
         {
             if (nullptr == req.stream)
+            {
+                EX_DBG_I(F("req.stream is null"));
                 return true;
+            }
 
             auto max_length = req.get(F("content-length")).toInt();
-
-            EX_DBG_I(F("content-length:"), max_length);
 
             req.body.reserve(max_length);
 
@@ -48,18 +52,27 @@ private:
             }
 
             if (req.dataCallback_)
+            {
+                EX_DBG_I(F("calling event on data"));
                 req.dataCallback_(nullptr);
+            }
 
             res.headers_["content-type"] = F("application/json");
 
             if (req.endCallback_)
+            {
+                EX_DBG_I(F("calling event on end"));
                 req.endCallback_();
+            }
 
             return true;
         }
 
         return true;
     }
+
+    // TODO: static options
+    // inflate, limit, type, verify
 
     /// @brief defayults to application/octet-stream
     /// @param req
@@ -70,6 +83,9 @@ private:
         return true;
     }
 
+    // TODO: static options
+    // defaultCharset, inflate, limit, type, verify
+
     /// @brief
     /// @param req
     /// @param res
@@ -78,6 +94,9 @@ private:
     {
         return true;
     }
+
+    // TODO: static options
+    // extended, inflate, limit, parameterLimit, type, verify
 
     /// @brief
     /// @param req
