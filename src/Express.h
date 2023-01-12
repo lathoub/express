@@ -145,6 +145,8 @@ public:
     /// @brief Constructor
     Express()
     {
+        EX_DBG_V(F("Express() constructor"));
+
         // Set storage for vector
         routes_.setStorage(saRoutes_);
         middlewares_.setStorage(saMiddlewareCallbacks_);
@@ -372,7 +374,7 @@ public:
 
                     EX_DBG_I(F("app middleware size:"), middlewares_.size());
 
-                    for (auto middleware : route.fptrMiddlewares)
+                    for (auto middleware : middlewares_)
                     {
                         if (!middleware(req, res))
                             break;

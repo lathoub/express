@@ -32,6 +32,8 @@ public:
     /// @brief
     Route()
     {
+        EX_DBG_V(F("Route() constructor"));
+
         fptrMiddlewares.setStorage(saMiddlewareCallbacks_);
         indices.setStorage(saPosLens_);
     }

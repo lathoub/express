@@ -47,8 +47,6 @@ private:
                     req.body += static_cast<char>(req.stream->read());
             }
 
-            EX_DBG_I(F("en body is gelezen"));
-
             if (req.dataCallback_)
                 req.dataCallback_(nullptr);
 
