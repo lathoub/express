@@ -10,7 +10,6 @@
 #include "request.h"
 #include "response.h"
 #include "route.h"
-// #include "bodyParser.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -63,14 +62,10 @@ private:
     {
         EX_DBG_I(F("> bodyparser parseJson"));
 
+        EthernetClient& client = const_cast <EthernetClient&>(req.client_);
+
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
         {
-            if (nullptr == req.stream)
-            {
-                EX_DBG_I(F("req.stream is null"));
-                return true;
-            }
-
             auto max_length = req.get(F("content-length")).toInt();
 
             req.body.reserve(max_length);
@@ -85,7 +80,7 @@ private:
                 int tries = 1000;
                 size_t avail;
 
-                while (!((avail = req.stream->available())) && tries--)
+                while (!((avail = client.available())) && tries--)
                     delay(1);
 
                 if (!avail)
@@ -95,24 +90,24 @@ private:
                     avail = max_length - req.body.length();
 
                 while (avail--)
-                    req.body += static_cast<char>(req.stream->read());
+                    req.body += static_cast<char>(client.read());
             }
 
             EX_DBG_I(F("< bodyparser parseJson"));
 
 
-            if (req.dataCallback_)
+            if (req.app_.dataCallback_)
             {
                 EX_DBG_I(F("calling event on data"));
-                req.dataCallback_(nullptr);
+                req.app_.dataCallback_(nullptr);
             }
 
             res.headers_["content-type"] = F("application/json");
 
-            if (req.endCallback_)
+            if (req.app_.endCallback_)
             {
                 EX_DBG_I(F("calling event on end"));
-                req.endCallback_();
+                req.app_.endCallback_();
             }
 
             return true;
@@ -155,6 +150,37 @@ private:
     static bool parseUrlencoded(Request &req, Response &res)
     {
         return true;
+    }
+
+private:
+    // events
+
+    /// @brief
+    DataCallback dataCallback_ = nullptr;
+
+    /// @brief
+    EndDataCallback endCallback_ = nullptr;
+
+public:
+
+    // events
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    void on(const String &name, DataCallback callback)
+    {
+        EX_DBG_I(F("data callback"));
+        dataCallback_ = callback;
+    }
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    void on(const String &name, EndDataCallback callback)
+    {
+        EX_DBG_I(F("end callback"));
+        endCallback_ = callback;
     }
 
 public:
@@ -467,8 +493,8 @@ public:
 
         // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
         // change in ESP32 server.h
-        // MacOS:   /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.5/cores/esp32
-        // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.5\cores\esp32\Server.h
+        // MacOS:   /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.*/cores/esp32
+        // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
         //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
         server_ = new EthernetServer(port);
@@ -493,22 +519,21 @@ public:
         {
             if (client.available())
             {
+                Request req(*this, client);
+
                 HttpRequestParser http_request_parser_;
-                Request &req = http_request_parser_.parseRequest(client);
-                req.app = this;
+                http_request_parser_.parseRequest(client, req);
 
                 if (req.method != Method::ERROR)
                 {
-                    Response res;
-                    res.app = this;
+                    Response res(*this);
 
-                    // app wide middlewares
-                    req.stream = &client; // NOTE: is er een betere oplossing??
-
+                    /// @brief run the app wide middlewares (ao bodyparsers)
                     for (auto middleware : middlewares_)
                         if (!middleware(req, res))
                             break;
 
+                    /// @brief evaluate the request
                     evaluate(req, res);
 
                     client.print(F("HTTP/1.1 "));

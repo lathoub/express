@@ -22,13 +22,14 @@ private:
 
     String uri_;
 
-public:
+    /// @brief
+    const EthernetClient &client_;
+
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    express *app = nullptr;
+    const express &app_;
 
-    Stream *stream = nullptr;
-
+public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
     Method method;
 
@@ -62,13 +63,13 @@ public:
     //  req.params[name]
     std::map<String, String> params;
 
-    /// @brief
-    DataCallback dataCallback_ = nullptr;
-
-    /// @brief
-    EndDataCallback endCallback_ = nullptr;
-
 public: /* Methods*/
+    /// @brief Constructor
+    Request(express &express, EthernetClient &client)
+        : app_(express), client_(client)
+    {
+    }
+
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
@@ -88,24 +89,6 @@ public: /* Methods*/
                 return header;
         }
         return "";
-    }
-
-    /// @brief
-    /// @param name
-    /// @param callback
-    void on(const String &name, DataCallback callback)
-    {
-        EX_DBG_I(F("data callback"));
-        dataCallback_ = callback;
-    }
-
-    /// @brief
-    /// @param name
-    /// @param callback
-    void on(const String &name, EndDataCallback callback)
-    {
-        EX_DBG_I(F("end callback"));
-        endCallback_ = callback;
     }
 };
 

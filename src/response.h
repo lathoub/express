@@ -23,11 +23,16 @@ private:
 
     std::map<String, String> headers_{};
 
-public: /* Methods*/
-
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
-    /// @return 
-    express* app;
+    /// @return
+    const express &app_;
+
+public: /* Methods*/
+    /// @brief Constructor
+    Response(express &express)
+        : app_(express)
+    {
+    }
 
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value
@@ -36,7 +41,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    Response &append(const String& field, const String& value)
+    Response &append(const String &field, const String &value)
     {
         for (auto [key, header] : headers_)
         {
@@ -59,7 +64,7 @@ public: /* Methods*/
     /// @param data
     /// @param encoding
     /// @return
-    Response &end(const String& data, const String& encoding)
+    Response &end(const String &data, const String &encoding)
     {
         return *this;
     }
@@ -71,7 +76,7 @@ public: /* Methods*/
 
     /// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
     /// @return
-    String get(const String& field)
+    String get(const String &field)
     {
         for (auto [key, header] : headers_)
         {
@@ -85,7 +90,7 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    void json(const String& body)
+    void json(const String &body)
     {
         body_ = body;
 
@@ -98,11 +103,11 @@ public: /* Methods*/
     /// @brief Renders a view and sends the rendered HTML string to the client.
     /// Optional parameters:
     ///    - locals, an object whose properties define local variables for the view.
-    ///    - callback, a callback function. If provided, the method returns both the 
+    ///    - callback, a callback function. If provided, the method returns both the
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    void render(const String& view)
+    void render(const String &view)
     {
     }
 
@@ -127,7 +132,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    Response &set(const String& field, const String& value)
+    Response &set(const String &field, const String &value)
     {
         for (auto [key, header] : headers_)
         {

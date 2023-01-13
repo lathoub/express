@@ -19,9 +19,17 @@ void setup() {
 
   // app.use(express::json());
 
+  app.on("data", [](void* chunk) {
+    EX_DBG_I(F("data zalig"));
+  });
+
+  app.on("end", []() {
+    EX_DBG_I(F("end zalig"));
+  });
+
   app.post("/", express::json(), [](Request& req, Response& res) {
     EX_DBG_I(F("in POST / handler"));
-
+/*
     req.on("data", [](void* chunk) {
       EX_DBG_I(F("data zalig"));
     });
@@ -30,6 +38,8 @@ void setup() {
       EX_DBG_I(F("end zalig"));
     });
 
+    // TODO: trigger iets om body reading te starten
+*/
     res.send(req.body);
   });
 

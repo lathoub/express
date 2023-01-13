@@ -11,31 +11,29 @@ BEGIN_EXPRESS_NAMESPACE
 
 class HttpRequestParser
 {
-    Request req_;
-
 public:
     /// @brief 
     /// @param client 
     /// @return 
-    Request &parseRequest(EthernetClient &client) 
+    bool parseRequest(EthernetClient &client, Request &req) 
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');
         client.readStringUntil('\n');
 
         // TODO: clean
-        req_.method = Method::UNDEFINED;
-        req_.version_ = "";
-        req_.uri_ = "";
-        req_.hostname = "";
-        req_.body = "";
-        req_.params.clear();
-        req_.headers.clear();
-        req_.query.clear();
+        req.method = Method::UNDEFINED;
+        req.version_ = "";
+        req.uri_ = "";
+        req.hostname = "";
+        req.body = "";
+        req.params.clear();
+        req.headers.clear();
+        req.query.clear();
 
-        req_.protocol = F("http");
-        req_.secure = (req_.protocol == F("https"));
-        req_.ip = client.remoteIP();
+        req.protocol = F("http");
+        req.secure = (req.protocol == F("https"));
+        req.ip = client.remoteIP();
 
         // First line of HTTP request looks like "GET /path HTTP/1.1"
         // Retrieve the "/path" part by finding the spaces
@@ -45,8 +43,8 @@ public:
         if (addr_start == -1 || addr_end == -1)
         {
             EX_DBG_V(F("_parseRequest: Invalid request: "), reqStr);
-            req_.method = Method::ERROR;
-            return req_;
+            req.method = Method::ERROR;
+            return false;
         }
 
         auto method_str = reqStr.substring(0, addr_start);
@@ -62,22 +60,22 @@ public:
             url = url.substring(0, has_search);
         }
 
-        req_.uri_ = url;
-        if (req_.uri_ == F("/")) req_.uri_ = F("");
+        req.uri_ = url;
+        if (req.uri_ == F("/")) req.uri_ = F("");
 
-        req_.method = Method::GET;
+        req.method = Method::GET;
         if (method_str == F("HEAD"))
-            req_.method = Method::HEAD;
+            req.method = Method::HEAD;
         else if (method_str == "POST")
-            req_.method = Method::POST;
+            req.method = Method::POST;
         else if (method_str == "DELETE")
-            req_.method = Method::DELETE;
+            req.method = Method::DELETE;
         else if (method_str == "OPTIONS")
-            req_.method = Method::OPTIONS;
+            req.method = Method::OPTIONS;
         else if (method_str == "PUT")
-            req_.method = Method::PUT;
+            req.method = Method::PUT;
         else if (method_str == "PATCH")
-            req_.method = Method::PATCH;
+            req.method = Method::PATCH;
 
         // parse headers
         while (true)
@@ -96,29 +94,27 @@ public:
             auto header_name = reqStr.substring(0, header_div);
             header_name.toLowerCase();
             auto header_value = reqStr.substring(header_div + 2);
-            req_.headers[header_name] = header_value;
+            req.headers[header_name] = header_value;
 
             if (header_name.equalsIgnoreCase(F("Host")))
-                req_.hostname = header_value;
+                req.hostname = header_value;
         }
 
         EX_DBG_V(F("Method:"), method_str);
-        EX_DBG_V(F("Uri:"), req_.uri_);
+        EX_DBG_V(F("Uri:"), req.uri_);
 
         EX_DBG_V(F("Headers"));
-        for (auto [header, value] : req_.headers)
+        for (auto [header, value] : req.headers)
             EX_DBG_V(F("header:"), header, F("value:"), value);
 
-        parseArguments(search_str);
+        parseArguments(req, search_str);
 
-//        client.flush();
-
-        return req_;
+        return true;
     }
 
     /// @brief
     /// @param data
-    auto parseArguments(const String& data) -> void
+    auto parseArguments(Request &req, const String& data) -> void
     {
         if (data.length() == 0)
             return;
@@ -155,7 +151,7 @@ public:
             String key = urlDecode(data.substring(pos, equal_sign_index));
             key.toLowerCase();
             String value = urlDecode(data.substring(equal_sign_index + 1, next_arg_index));
-            req_.query[key] = value;
+            req.query[key] = value;
 
             ++iarg;
 
@@ -166,7 +162,7 @@ public:
         }
 
         EX_DBG_V(F("Query Arguments"));
-        for (auto [argument, value] : req_.query)
+        for (auto [argument, value] : req.query)
             EX_DBG_V(F("argument:"), argument, F("value:"), value);
     }
 
