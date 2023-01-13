@@ -17,29 +17,9 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  // app.use(express::json());
-
-  app.on("data", [](void* chunk) {
-    EX_DBG_I(F("data zalig"));
-  });
-
-  app.on("end", []() {
-    EX_DBG_I(F("end zalig"));
-  });
+ // app.use(express::json());
 
   app.post("/", express::json(), [](Request& req, Response& res) {
-    EX_DBG_I(F("in POST / handler"));
-/*
-    req.on("data", [](void* chunk) {
-      EX_DBG_I(F("data zalig"));
-    });
-
-    req.on("end", []() {
-      EX_DBG_I(F("end zalig"));
-    });
-
-    // TODO: trigger iets om body reading te starten
-*/
     res.send(req.body);
   });
 

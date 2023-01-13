@@ -62,7 +62,13 @@ private:
     {
         EX_DBG_I(F("> bodyparser parseJson"));
 
-        EthernetClient& client = const_cast <EthernetClient&>(req.client_);
+        if (req.body != nullptr && req.body.length() > 0)
+        {
+                EX_DBG_I(F("Body already read"));
+                return true;
+        }    
+
+        EthernetClient &client = const_cast<EthernetClient &>(req.client_);
 
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
         {
@@ -95,19 +101,18 @@ private:
 
             EX_DBG_I(F("< bodyparser parseJson"));
 
-
-            if (req.app_.dataCallback_)
+            if (req.dataCallback_)
             {
                 EX_DBG_I(F("calling event on data"));
-                req.app_.dataCallback_(nullptr);
+                req.dataCallback_(nullptr);
             }
 
             res.headers_["content-type"] = F("application/json");
 
-            if (req.app_.endCallback_)
+            if (req.endCallback_)
             {
                 EX_DBG_I(F("calling event on end"));
-                req.app_.endCallback_();
+                req.endCallback_();
             }
 
             return true;
@@ -150,37 +155,6 @@ private:
     static bool parseUrlencoded(Request &req, Response &res)
     {
         return true;
-    }
-
-private:
-    // events
-
-    /// @brief
-    DataCallback dataCallback_ = nullptr;
-
-    /// @brief
-    EndDataCallback endCallback_ = nullptr;
-
-public:
-
-    // events
-
-    /// @brief
-    /// @param name
-    /// @param callback
-    void on(const String &name, DataCallback callback)
-    {
-        EX_DBG_I(F("data callback"));
-        dataCallback_ = callback;
-    }
-
-    /// @brief
-    /// @param name
-    /// @param callback
-    void on(const String &name, EndDataCallback callback)
-    {
-        EX_DBG_I(F("end callback"));
-        endCallback_ = callback;
     }
 
 public:
@@ -247,13 +221,16 @@ private:
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
 
+                // Route middleware
                 for (auto middleware : route.fptrMiddlewares)
                     if (!middleware(req, res))
                         break;
 
+                // evaluate the actual function
                 if (route.fptrCallback)
                     route.fptrCallback(req, res);
 
+                // go to the next middleware
                 return true;
             }
         }
