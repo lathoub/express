@@ -25,12 +25,12 @@ public:
 
     String path = F("");
 
-    std::vector<HandlerCallback> handlers;
+    std::vector<HandlerCallback> handlers{};
 
     requestCallback fptrCallback = nullptr;
 
     // cache path splitting (avoid doing this for every request * number of paths)
-    std::vector<PosLen> indices;
+    std::vector<PosLen> indices{};
 
 public:
     /// @brief constructor
@@ -41,7 +41,7 @@ public:
 
     /// @brief
     /// @param path
-    void splitToVector(const String &path)
+    auto splitToVector(const String& path) -> void
     {
         splitToVector(path, indices);
     }
@@ -49,7 +49,7 @@ public:
     /// @brief
     /// @param path
     /// @return
-    static void splitToVector(const String &path, std::vector<PosLen> &poslens)
+    static auto splitToVector(const String& path, std::vector<PosLen>& poslens) -> void
     {
         size_t p = 0, i = 1;
         for (; i < path.length(); i++)
@@ -106,7 +106,7 @@ public:
     /// @brief
     /// @param name
     /// @param callback
-    void on(const String &name, DataCallback callback)
+    auto on(const String& name, const DataCallback callback) -> void
     {
         EX_DBG_I(F("register data callback"), name);
         dataCallback_ = callback;
@@ -116,7 +116,7 @@ public:
     /// @brief
     /// @param name
     /// @param callback
-    void on(const String &name, EndDataCallback callback)
+    auto on(const String& name, const EndDataCallback callback) -> void
     {
         EX_DBG_I(F("register end callback"), name);
         endCallback_ = callback;

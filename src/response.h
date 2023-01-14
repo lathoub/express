@@ -29,7 +29,7 @@ private:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(express &express)
+    Response(const express &express)
         : app_(express)
     {
     }
@@ -41,7 +41,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    Response &append(const String &field, const String &value)
+    auto append(const String& field, const String& value) -> Response&
     {
         for (auto [key, header] : headers_)
         {
@@ -64,19 +64,19 @@ public: /* Methods*/
     /// @param data
     /// @param encoding
     /// @return
-    Response &end(const String &data, const String &encoding)
+    auto end(const String& data, const String& encoding) -> Response&
     {
         return *this;
     }
 
     /// @brief Ends the response process
-    void end()
+    static void end()
     {
     }
 
     /// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
     /// @return
-    String get(const String &field)
+    auto get(const String& field) -> String
     {
         for (auto [key, header] : headers_)
         {
@@ -90,7 +90,7 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    void json(const String &body)
+    auto json(const String& body) -> void
     {
         body_ = body;
 
@@ -107,14 +107,14 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    void render(const String &view)
+    auto render(const String& view) -> void
     {
     }
 
     /// @brief Sends the HTTP response.
     /// Optional parameters:
     /// @param view
-    void send(String body)
+    auto send(String body) -> void
     {
         body_ = body;
     }
@@ -123,7 +123,7 @@ public: /* Methods*/
     ///  registered status message as the text response body. If an unknown
     // status code is specified, the response body will just be the code number.
     /// @param statusCode
-    void sendStatus(uint16_t statusCode)
+    auto sendStatus(const uint16_t statusCode) -> void
     {
         status_ = statusCode;
     }
@@ -132,7 +132,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    Response &set(const String &field, const String &value)
+    auto set(const String& field, const String& value) -> Response&
     {
         for (auto [key, header] : headers_)
         {
@@ -154,7 +154,7 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    Response &status(int status)
+    auto status(const int status) -> Response&
     {
         status_ = status;
 

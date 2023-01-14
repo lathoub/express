@@ -18,13 +18,13 @@ BEGIN_EXPRESS_NAMESPACE
 #include "httpStatusCodes.h"
 
 // Need to move these to DefaultSettings
-const int maxRoutes = 10;
-const int maxMiddlewareCallbacks = 10;
+constexpr int maxRoutes = 10;
+constexpr int maxMiddlewareCallbacks = 10;
 
 class Request;
 class Response;
 
-const size_t rawBufferSize = 512;
+constexpr size_t rawBufferSize = 512;
 
 class Buffer
 {

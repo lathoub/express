@@ -18,9 +18,9 @@ class Request
     friend class HttpRequestParser;
 
 private:
-    String version_;
+    String version_{};
 
-    String uri_;
+    String uri_{};
 
     /// @brief
     const EthernetClient &client_;
@@ -37,46 +37,46 @@ public:
     Method method;
 
     /// @brief Contains the hostname derived from the Host HTTP header
-    String hostname;
+    String hostname{};
 
     /// @brief A Boolean property that is true if a TLS connection is established.
     ///  Equivalent to: (req.protocol === 'https')
-    bool secure;
+    bool secure{};
 
     /// @brief
-    String body;
+    String body{};
 
     /// @brief Contains the remote IP address of the request.
-    IPAddress ip;
+    IPAddress ip{};
 
     /// @brief
-    std::map<String, String> headers;
+    std::map<String, String> headers{};
 
     /// @brief Contains the path part of the request URL.
-    String path;
+    String path{};
 
     /// @brief Contains the request protocol string: either http or (for TLS requests) https.
-    String protocol;
+    String protocol{};
 
     /// @brief
-    std::map<String, String> query;
+    std::map<String, String> query{};
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as
     //  req.params[name]
-    std::map<String, String> params;
+    std::map<String, String> params{};
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(express &express, EthernetClient &client)
-        : app_(express), client_(client)
+    Request(const express &express, EthernetClient &client)
+	    : client_(client), app_(express), method(Method::UNDEFINED)
     {
     }
 
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    bool accepts(const String &types)
+    auto accepts(const String& types) -> bool
     {
         return false;
     }
@@ -84,7 +84,7 @@ public: /* Methods*/
     /// @brief Returns the specified HTTP request header field (case-insensitive match).
     /// @param field
     /// @return
-    String get(const String &field)
+    auto get(const String& field) -> String
     {
         for (auto [key, header] : headers)
         {

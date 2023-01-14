@@ -16,10 +16,10 @@ BEGIN_EXPRESS_NAMESPACE
 struct DefaultSettings
 {
     /// @brief
-    static const int maxRoutes = 10;
+    static constexpr int maxRoutes = 10;
 
     /// @brief
-    static const int maxMiddlewareCallbacks = 10;
+    static constexpr int maxMiddlewareCallbacks = 10;
 };
 
 class express
@@ -32,17 +32,17 @@ private:
 
 private:
     /// @brief routes
-    std::vector<Route *> routes_;
+    std::vector<Route *> routes_{};
 
     /// @brief Application wide middlewares
     //   MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
-    std::vector<MiddlewareCallback> middlewares_;
+    std::vector<MiddlewareCallback> middlewares_{};
 
     /// @brief
-    std::map<String, express *> mount_paths_;
+    std::map<String, express *> mount_paths_{};
 
     /// @brief Application Settings
-    std::map<String, String> locals;
+    std::map<String, String> locals_{};
 
     /// @brief
     express *parent_ = nullptr;
@@ -57,7 +57,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static bool parseJson(Request &req, Response &res)
+    static auto parseJson(Request& req, Response& res) -> bool
     {
         EX_DBG_I(F("> bodyparser parseJson"));
 
@@ -115,7 +115,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static bool parseRaw(Request &req, Response &res)
+    static auto parseRaw(Request& req, Response& res) -> bool
     {
         EX_DBG_I(F("> bodyparser raw"));
 
@@ -125,13 +125,12 @@ private:
         {
             auto dataLen = req.get(F("content-length")).toInt();
 
-            Buffer buffer;
-
             while (dataLen > 0 && client.connected())
             {
                 if (client.available())
                 {
-                    buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
+	                Buffer buffer;
+	                buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
                     dataLen -= buffer.length;
 
                     EX_DBG_I(F("remaining:"), buffer.length, dataLen);
@@ -167,7 +166,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static bool parseText(Request &req, Response &res)
+    static auto parseText(Request& req, Response& res) -> bool
     {
         return true;
     }
@@ -179,7 +178,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static bool parseUrlencoded(Request &req, Response &res)
+    static auto parseUrlencoded(Request& req, Response& res) -> bool
     {
         return true;
     }
@@ -188,37 +187,29 @@ public:
     // bodyparser
 
     /// @brief
-    /// @param req
-    /// @param res
     /// @return
-    static MiddlewareCallback raw()
+    static auto raw() -> MiddlewareCallback
     {
         return express::parseRaw;
     }
 
     /// @brief
-    /// @param req
-    /// @param res
     /// @return
-    static MiddlewareCallback json()
+    static auto json() -> MiddlewareCallback
     {
         return express::parseJson;
     }
 
     /// @brief
-    /// @param req
-    /// @param res
     /// @return
-    static MiddlewareCallback text()
+    static auto text() -> MiddlewareCallback
     {
         return express::parseText;
     }
 
     /// @brief
-    /// @param req
-    /// @param res
     /// @return
-    static MiddlewareCallback urlencoded()
+    static auto urlencoded() -> MiddlewareCallback
     {
         return express::parseUrlencoded;
     }
@@ -227,7 +218,7 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    bool evaluate(Request &req, Response &res)
+    auto evaluate(Request& req, Response& res) -> bool
     {
         EX_DBG_I(F("evaluate"), req.uri_);
 
@@ -248,7 +239,7 @@ private:
                 req.route_ = route;
 
                 // Route middleware
-                for (auto handler : route->handlers)
+                for (const auto handler : route->handlers)
                     if (!handler(req, res))
                         break;
 
@@ -261,7 +252,7 @@ private:
             }
         }
 
-        // evalaate child mounting paths
+        // evaluate child mounting paths
         for (auto [mountPath, express] : mount_paths_)
             if (express->evaluate(req, res))
                 return true;
@@ -270,11 +261,12 @@ private:
     }
 
     /// @brief
-    /// @param uri
+    /// @param method
+    /// @param path
+    /// @param handler
     /// @param fptrCallback
     /// @return
-    Route &
-    METHOD(Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback)
+    auto METHOD(const Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback) -> Route&
     {
         if (path == F("/"))
             path = F("");
@@ -297,10 +289,11 @@ private:
     }
 
     /// @brief
-    /// @param uri
+    /// @param method
+    /// @param path
     /// @param fptr
     /// @return
-    Route &METHOD(Method method, String path, const requestCallback fptr)
+    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route&
     {
         EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
         return METHOD(method, path, nullptr, fptr);
@@ -327,9 +320,9 @@ public:
     String mountpath{};
 
     /// @brief
-    /// @param application middleware
+    /// @param middleware
     /// @return
-    void use(const MiddlewareCallback middleware)
+    auto use(const MiddlewareCallback middleware) -> void
     {
         middlewares_.push_back(middleware);
     }
@@ -338,7 +331,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    void use(const String &mount_path, express &other)
+    auto use(const String& mount_path, express& other) -> void
     {
         EX_DBG_I(F("use mountPath:"), mount_path);
 
@@ -350,24 +343,24 @@ public:
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
     /// @param mount_path
     /// @return
-    void use(const String &mount_path)
+    auto use(const String& mount_path) -> void
     {
         mountpath = mount_path;
     }
 
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
-    /// @param uri
+    /// @param path
     /// @param fptr
-    void all(const String &path, const requestCallback fptr)
+    auto all(const String& path, const requestCallback fptr) -> void
     {
         // TODO: not implemented
     }
 
     /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
     /// For more information, see the routing guide.
-    /// @param uri
+    /// @param path
     /// @param fptr
-    void Delete(const String &path, const requestCallback fptr)
+    auto Delete(const String& path, const requestCallback fptr) -> void
     {
         METHOD(Method::DELETE, path, fptr);
     }
@@ -375,8 +368,8 @@ public:
     /// @brief Sets the Boolean setting name to false, where name is one of the properties from
     /// the app settings table. Calling app.set('foo', false) for a Boolean property is the
     /// same as calling app.disable('foo').
-    /// @param uri
-    void disable(const String &name)
+    /// @param name
+    auto disable(const String& name) -> void
     {
         settings[name] = "false";
     }
@@ -385,7 +378,7 @@ public:
     /// of the properties from the app settings table.
     /// @param name
     /// @return
-    String disabled(const String &name)
+    auto disabled(const String& name) -> String
     {
         return settings[name];
     }
@@ -394,7 +387,7 @@ public:
     /// app settings table. Calling app.set('foo', true) for a Boolean property is the same as
     /// calling app.enable('foo').
     /// @param name
-    void enable(const String &name)
+    auto enable(const String& name) -> void
     {
         settings[name] = "true";
     }
@@ -403,7 +396,7 @@ public:
     /// properties from the app settings table.
     /// @param name
     /// @return
-    String enabled(const String &name)
+    auto enabled(const String& name) -> String
     {
         return settings[name];
     }
@@ -412,7 +405,7 @@ public:
     /// the app settings table. For example:
     /// @param name
     /// @return
-    String get(const String &name)
+    auto get(const String& name) -> String
     {
         // TODO
         return F("");
@@ -423,7 +416,7 @@ public:
     /// names are listed in the app settings table.
     /// @param name
     /// @param value
-    void set(const String &name, const String &value)
+    auto set(const String& name, const String& value) -> void
     {
         // TODO
     }
@@ -431,37 +424,38 @@ public:
 #pragma region HTTP_Methods
 
     /// @brief
-    /// @param uri
+    /// @param path
     /// @param fptr
     /// @return
-    Route &get(const String &path, const requestCallback fptr)
+    auto get(const String& path, const requestCallback fptr) -> Route&
     {
         return METHOD(Method::GET, path, fptr);
     };
 
     /// @brief
-    /// @param uri
+    /// @param path
     /// @param fptr
     /// @return
-    Route &post(const String &path, const requestCallback fptr)
+    auto post(const String& path, const requestCallback fptr) -> Route&
     {
         return METHOD(Method::POST, path, fptr);
     };
 
     /// @brief
-    /// @param uri
+    /// @param path
+    /// @param middleware
     /// @param fptr
     /// @return
-    Route &post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
+    auto post(const String& path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route&
     {
         return METHOD(Method::POST, path, middleware, fptr);
     };
 
     /// @brief
-    /// @param uri
+    /// @param path
     /// @param fptr
     /// @return
-    Route &put(const String &path, const requestCallback fptr)
+    auto put(const String& path, const requestCallback fptr) -> Route&
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -470,7 +464,7 @@ public:
 
     /// @brief Returns the canonical path of the app, a string.
     /// @return
-    String path()
+    auto path() -> String
     {
         // TODO: noy sure
         return (parent_ == nullptr) ? mountpath : parent_->mountpath;
@@ -479,13 +473,13 @@ public:
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    void route(const String &path)
+    auto route(const String& path) -> void
     {
         // TODO
     }
 
     /// @brief
-    void listen(uint16_t port, const StartedCallback startedCallback = nullptr)
+    auto listen(uint16_t port, const StartedCallback startedCallback = nullptr) -> void
     {
         if (nullptr != server_)
         {
@@ -509,7 +503,7 @@ public:
     }
 
     /// @brief
-    void run()
+    auto run() -> void
     {
         if (EthernetClient client = server_->available())
             run(client);
@@ -517,7 +511,7 @@ public:
 
     /// @brief
     /// @param client
-    void run(EthernetClient &client)
+    auto run(EthernetClient& client) -> void
     {
         while (client.connected())
         {
@@ -533,7 +527,7 @@ public:
                     Response res(*this);
 
                     /// @brief run the app wide middlewares (ao bodyparsers)
-                    for (auto middleware : middlewares_)
+                    for (const auto middleware : middlewares_)
                         if (!middleware(req, res))
                             break;
 
