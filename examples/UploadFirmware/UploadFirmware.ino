@@ -20,8 +20,9 @@ void setup() {
     res.send("lets see");
   });
 
-  route.on(F("data"), [](void *chunck) {
-    Serial.println(F("data"));
+  route.on(F("data"), [](Buffer &chunck) {
+    Serial.print(F("chunck size: "));
+    Serial.println(chunck.length);
   });
 
   route.on(F("end"), []() {

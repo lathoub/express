@@ -103,20 +103,7 @@ private:
             res.headers_["content-type"] = F("application/json");
 
             EX_DBG_I(F("< bodyparser parseJson"));
-            /*
-                        if (dataCallback_)
-                        {
-                            EX_DBG_I(F("calling event on data"));
-                            dataCallback_(nullptr);
-                        }
 
-
-                        if (endCallback_)
-                        {
-                            EX_DBG_I(F("calling event on end"));
-                            endCallback_();
-                        }
-            */
             return true;
         }
 
@@ -140,16 +127,16 @@ private:
         {
             auto dataLen = req.get(F("content-length")).toInt();
 
-            byte buffer[rawBufferSize];
+            Buffer buffer;
 
             while (dataLen > 0 && client.connected())
             {
                 if (client.available())
                 {
-                    auto bytesRead = client.read(buffer, sizeof(buffer));
-                    dataLen -= bytesRead;
+                    buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
+                    dataLen -= buffer.length;
 
-                    EX_DBG_I(F("remaining:"), bytesRead, dataLen);
+                    EX_DBG_I(F("remaining:"), buffer.length, dataLen);
 
                     if (dataLen > 0)
                     {
@@ -158,6 +145,11 @@ private:
                     }
                     else
                     {
+                        if (buffer.length > 0)
+                        {
+                            if (req.route_->dataCallback_)
+                                req.route_->dataCallback_(buffer);
+                        }
                         if (req.route_->endCallback_)
                             req.route_->endCallback_();
                     }
