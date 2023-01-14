@@ -479,13 +479,9 @@ public:
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    Route &route(const String &path)
+    void route(const String &path)
     {
-        for (auto route : routes_)
-        {
-            if (route->path.equalsIgnoreCase(path))
-                return *route;
-        }
+        // TODO
     }
 
     /// @brief
