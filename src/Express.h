@@ -245,9 +245,6 @@ private:
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
                 req.route_ = route;
 
-                EX_DBG_I(F("route->dataCallback_:"), (route->dataCallback_ == nullptr));
-                EX_DBG_I(F("route->test:"), (route->test));
-
                 // Route middleware
                 for (auto handler : route->handlers)
                     if (!handler(req, res))
