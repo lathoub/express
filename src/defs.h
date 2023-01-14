@@ -29,7 +29,7 @@ constexpr size_t rawBufferSize = 512;
 class Buffer
 {
 public:
-    byte buffer[rawBufferSize];
+    byte buffer[rawBufferSize]{};
     size_t byteOffset = 0;
     size_t length = 0;
 };
@@ -47,8 +47,8 @@ struct Options
 
 struct Param
 {
-    String name;
-    String value;
+    String name{};
+    String value{};
 };
 
 struct PosLen
