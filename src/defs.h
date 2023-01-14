@@ -24,10 +24,12 @@ const int maxMiddlewareCallbacks = 10;
 class Request;
 class Response;
 
+const size_t rawBufferSize = 512;
+
 class Buffer
 {
 public:
-    byte buffer[512];
+    byte buffer[rawBufferSize];
     size_t byteOffset = 0;
     size_t length = 0;
 };
@@ -36,7 +38,7 @@ using requestCallback = void (*)(Request &, Response &);
 using MiddlewareCallback = bool (*)(Request &, Response &);
 using HandlerCallback = bool (*)(Request &, Response &);
 using StartedCallback = void (*)();
-using DataCallback = void (*)(Buffer &);
+using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
 
 struct Options

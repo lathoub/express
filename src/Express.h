@@ -30,8 +30,6 @@ private:
     /// @brief
     EthernetServer *server_{}; // TODO: singleton
 
-    static const int rawBufferSize = 512;
-
 private:
     /// @brief routes
     std::vector<Route *> routes_;
