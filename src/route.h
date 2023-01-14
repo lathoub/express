@@ -25,8 +25,6 @@ public:
 
     String path = F("");
 
-int test = 0;
-
     std::vector<HandlerCallback> handlers;
 
     requestCallback fptrCallback = nullptr;
@@ -112,7 +110,6 @@ public:
     {
         EX_DBG_I(F("register data callback"), name);
         dataCallback_ = callback;
-test++;
         // return *this;
     }
 
@@ -123,8 +120,6 @@ test++;
     {
         EX_DBG_I(F("register end callback"), name);
         endCallback_ = callback;
-test++;
-
         //  return *this;
     }
 };

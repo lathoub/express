@@ -28,8 +28,6 @@ void setup() {
     Serial.println(F("end"));
   });
 
-  Serial.println(route.test);
-
   app.listen(80, []() {
     Serial.print(F("Example app listening on port "));
     Serial.print(Ethernet.localIP());
