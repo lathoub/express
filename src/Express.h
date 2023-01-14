@@ -218,7 +218,7 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(Request &req, Response &res) -> bool
+    auto evaluate(Request &req, Response &res) -> const bool
     {
         EX_DBG_V(F("evaluate"), req.uri_);
 

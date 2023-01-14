@@ -114,7 +114,7 @@ public: /* Methods*/
     /// @brief Sends the HTTP response.
     /// Optional parameters:
     /// @param view
-    auto send(String body) -> void
+    auto send(const String& body) -> void
     {
         body_ = body;
     }
