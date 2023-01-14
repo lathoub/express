@@ -32,8 +32,7 @@ private:
 
 private:
     /// @brief routes
-    Route saRoutes_[DefaultSettings::maxRoutes];
-    std::vector<Route> routes_;
+    std::vector<Route *> routes_;
 
     /// @brief Application wide middlewares
     //   MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
@@ -64,9 +63,9 @@ private:
 
         if (req.body != nullptr && req.body.length() > 0)
         {
-                EX_DBG_I(F("Body already read"));
-                return true;
-        }    
+            EX_DBG_I(F("Body already read"));
+            return true;
+        }
 
         EthernetClient &client = const_cast<EthernetClient &>(req.client_);
 
@@ -99,22 +98,23 @@ private:
                     req.body += static_cast<char>(client.read());
             }
 
-            EX_DBG_I(F("< bodyparser parseJson"));
-
-            if (req.dataCallback_)
-            {
-                EX_DBG_I(F("calling event on data"));
-                req.dataCallback_(nullptr);
-            }
-
             res.headers_["content-type"] = F("application/json");
 
-            if (req.endCallback_)
-            {
-                EX_DBG_I(F("calling event on end"));
-                req.endCallback_();
-            }
+            EX_DBG_I(F("< bodyparser parseJson"));
+            /*
+                        if (dataCallback_)
+                        {
+                            EX_DBG_I(F("calling event on data"));
+                            dataCallback_(nullptr);
+                        }
 
+
+                        if (endCallback_)
+                        {
+                            EX_DBG_I(F("calling event on end"));
+                            endCallback_();
+                        }
+            */
             return true;
         }
 
@@ -130,6 +130,31 @@ private:
     /// @return
     static bool parseRaw(Request &req, Response &res)
     {
+        EX_DBG_I(F("> bodyparser raw"));
+
+        EthernetClient &client = const_cast<EthernetClient &>(req.client_);
+
+        if (req.get(F("content-type")).equalsIgnoreCase(F("application/octet-stream")))
+        {
+            auto max_length = req.get(F("content-length")).toInt();
+
+            EX_DBG_I(F("max_length"), max_length);
+
+            if (req.route_->dataCallback_)
+            {
+                EX_DBG_I(F("calling event on data"));
+                req.route_->dataCallback_(nullptr);
+            }
+
+            if (req.route_->endCallback_)
+            {
+                EX_DBG_I(F("calling event on end"));
+                req.route_->endCallback_();
+            }
+        }
+
+        EX_DBG_I(F("< bodyparser raw"));
+
         return true;
     }
 
@@ -204,37 +229,40 @@ private:
     {
         EX_DBG_I(F("evaluate"), req.uri_);
 
-        //    PosLen saPosLens[maxMiddlewareCallbacks];
         std::vector<PosLen> req_indices{};
-        //     req_indices.setStorage(saPosLens);
 
         Route::splitToVector(req.uri_, req_indices);
 
         for (auto route : routes_)
         {
-            EX_DBG_I(F("req.method:"), req.method, F("method:"), route.method);
-            EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), route.path);
+            EX_DBG_I(F("req.method:"), req.method, F("method:"), route->method);
+            EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), route->path);
 
-            if (req.method == route.method && Route::match(route.path, route.indices,
-                                                           req.uri_, req_indices,
-                                                           req.params))
+            if (req.method == route->method && Route::match(route->path, route->indices,
+                                                            req.uri_, req_indices,
+                                                            req.params))
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
+                req.route_ = route;
+
+                EX_DBG_I(F("route->dataCallback_:"), (route->dataCallback_ == nullptr));
+                EX_DBG_I(F("route->test:"), (route->test));
 
                 // Route middleware
-                for (auto middleware : route.fptrMiddlewares)
-                    if (!middleware(req, res))
+                for (auto handler : route->handlers)
+                    if (!handler(req, res))
                         break;
 
                 // evaluate the actual function
-                if (route.fptrCallback)
-                    route.fptrCallback(req, res);
+                if (route->fptrCallback)
+                    route->fptrCallback(req, res);
 
                 // go to the next middleware
                 return true;
             }
         }
 
+        // evalaate child mounting paths
         for (auto [mountPath, express] : mount_paths_)
             if (express->evaluate(req, res))
                 return true;
@@ -246,35 +274,37 @@ private:
     /// @param uri
     /// @param fptrCallback
     /// @return
-    void
-    METHOD(Method method, String path, const MiddlewareCallback fptrMiddleware, const requestCallback fptrCallback)
+    Route *
+    METHOD(Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback)
     {
         if (path == F("/"))
             path = F("");
 
         path = mountpath + path;
 
-        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("fptrMiddleware:"), (nullptr == fptrMiddleware));
+        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), (nullptr == handler));
 
-        Route route{};
-        route.method = method;
-        route.path = path;
-        route.fptrCallback = fptrCallback;
-        if (nullptr != fptrMiddleware)
-            route.fptrMiddlewares.push_back(fptrMiddleware);
-        route.splitToVector(route.path);
+        auto route = new Route();
+        route->method = method;
+        route->path = path;
+        route->fptrCallback = fptrCallback;
+        if (nullptr != handler)
+            route->handlers.push_back(handler);
+        route->splitToVector(route->path);
         // Add to collection
         routes_.push_back(route);
+
+        return route;
     }
 
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void METHOD(Method method, String path, const requestCallback fptr)
+    Route *METHOD(Method method, String path, const requestCallback fptr)
     {
         EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
-        METHOD(method, path, nullptr, fptr);
+        return METHOD(method, path, nullptr, fptr);
     }
 
 public:
@@ -282,10 +312,6 @@ public:
     express()
     {
         EX_DBG_V(F("Express() constructor"));
-
-        // Set storage for vector
-        //        routes_.setStorage(saRoutes_);
-        //      middlewares_.setStorage(saMiddlewareCallbacks_);
 
         settings[F("env")] = F("production");
         //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
@@ -300,8 +326,6 @@ public:
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
-
-    /// Methods
 
     /// @brief
     /// @param application middleware
@@ -405,41 +429,45 @@ public:
         // TODO
     }
 
+#pragma region HTTP_Methods
+
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void get(const String &path, const requestCallback fptr)
+    Route *get(const String &path, const requestCallback fptr)
     {
-        METHOD(Method::GET, path, fptr);
+        return METHOD(Method::GET, path, fptr);
     };
 
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void post(const String &path, const requestCallback fptr)
+    Route *post(const String &path, const requestCallback fptr)
     {
-        METHOD(Method::POST, path, fptr);
+        return METHOD(Method::POST, path, fptr);
     };
 
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
+    Route *post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
     {
-        METHOD(Method::POST, path, middleware, fptr);
+        return METHOD(Method::POST, path, middleware, fptr);
     };
 
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    void put(const String &path, const requestCallback fptr)
+    Route *put(const String &path, const requestCallback fptr)
     {
-        METHOD(Method::PUT, path, fptr);
+        return METHOD(Method::PUT, path, fptr);
     };
+
+#pragma endregion HTTP_Methods
 
     /// @brief Returns the canonical path of the app, a string.
     /// @return
@@ -452,9 +480,13 @@ public:
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    void route(const String &path)
+    Route &route(const String &path)
     {
-        // TODO
+        for (auto route : routes_)
+        {
+            if (route->path.equalsIgnoreCase(path))
+                return *route;
+        }
     }
 
     /// @brief

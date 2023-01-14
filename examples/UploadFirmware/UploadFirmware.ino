@@ -2,43 +2,42 @@
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 express app;
 
-app.on(F("data"), [](int)
-       { EX_DBG_I(F("data")); });
-app.on(F("end"), []()
-       { EX_DBG_I(F("end")); });
-
-bool downloader(Request &req, Response &res)
-{
-  EX_DBG_I(F("downloader middleware"));
-  return true;
-}
-
-void setup()
-{
+void setup() {
   Serial.begin(115200);
-  while (!Serial && !Serial.available())
-  {
+  while (!Serial && !Serial.available()) {
   }
+  delay(500);
+  Serial.println(F("booting"));
 
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.post("/firmware", downloader, [](Request &req, Response &res)
-           { res.send("lets see"); });
+  auto route = app.post("/firmware", express::raw(), [](Request &req, Response &res) {
+    res.send("lets see");
+  });
 
-  app.listen(80, []()
-             {
+  route->on(F("data"), [](void *chunck) {
+    Serial.println(F("data"));
+  });
+
+  route->on(F("end"), []() {
+    Serial.println(F("end"));
+  });
+
+  Serial.println(route->test);
+
+  app.listen(80, []() {
     Serial.print(F("Example app listening on port "));
     Serial.print(Ethernet.localIP());
     Serial.print(F(" "));
-    Serial.println(app.port); });
+    Serial.println(app.port);
+  });
 }
 
-void loop()
-{
+void loop() {
   app.run();
 }

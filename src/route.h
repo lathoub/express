@@ -9,19 +9,25 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Route
 {
+    friend class express;
+
 private:
     static const char delimiter = '/';
 
-private:
-    MiddlewareCallback saMiddlewareCallbacks_[maxMiddlewareCallbacks];
-    PosLen saPosLens_[maxMiddlewareCallbacks];
+private: /// @brief
+    DataCallback dataCallback_ = nullptr;
+
+    /// @brief
+    EndDataCallback endCallback_ = nullptr;
 
 public:
     Method method = Method::UNDEFINED;
 
-    String path;
+    String path = F("");
 
-    std::vector<MiddlewareCallback> fptrMiddlewares;
+int test = 0;
+
+    std::vector<HandlerCallback> handlers;
 
     requestCallback fptrCallback = nullptr;
 
@@ -29,17 +35,14 @@ public:
     std::vector<PosLen> indices;
 
 public:
-    /// @brief
+    /// @brief constructor
     Route()
     {
         EX_DBG_V(F("Route() constructor"));
-
-//        fptrMiddlewares.setStorage(saMiddlewareCallbacks_);
-  //      indices.setStorage(saPosLens_);
     }
 
-    /// @brief 
-    /// @param path 
+    /// @brief
+    /// @param path
     void splitToVector(const String &path)
     {
         splitToVector(path, indices);
@@ -100,6 +103,29 @@ public:
         }
 
         return true;
+    }
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    void on(const String &name, DataCallback callback)
+    {
+        EX_DBG_I(F("register data callback"), name);
+        dataCallback_ = callback;
+test++;
+        // return *this;
+    }
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    void on(const String &name, EndDataCallback callback)
+    {
+        EX_DBG_I(F("register end callback"), name);
+        endCallback_ = callback;
+test++;
+
+        //  return *this;
     }
 };
 

@@ -24,8 +24,9 @@ const int maxMiddlewareCallbacks = 10;
 class Request;
 class Response;
 
-using requestCallback = void (*)(Request &req, Response &res);
-using MiddlewareCallback = bool (*)(Request &req, Response &res);
+using requestCallback = void (*)(Request &, Response &);
+using MiddlewareCallback = bool (*)(Request &, Response &);
+using HandlerCallback = bool (*)(Request &, Response &);
 using StartedCallback = void (*)();
 using DataCallback = void (*)(void*);
 using EndDataCallback = void (*)();

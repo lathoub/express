@@ -29,11 +29,8 @@ private:
     /// @return
     const express &app_;
 
-    /// @brief
-    DataCallback dataCallback_ = nullptr;
-
-    /// @brief
-    EndDataCallback endCallback_ = nullptr;
+    /// @brief 
+    Route*  route_ = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
@@ -97,23 +94,6 @@ public: /* Methods*/
         return "";
     }
 
-    /// @brief
-    /// @param name
-    /// @param callback
-    void on(const String &name, DataCallback callback)
-    {
-        EX_DBG_I(F("data callback"));
-        dataCallback_ = callback;
-    }
-
-    /// @brief
-    /// @param name
-    /// @param callback
-    void on(const String &name, EndDataCallback callback)
-    {
-        EX_DBG_I(F("end callback"));
-        endCallback_ = callback;
-    }
 };
 
 END_EXPRESS_NAMESPACE
