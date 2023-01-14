@@ -274,7 +274,7 @@ private:
     /// @param uri
     /// @param fptrCallback
     /// @return
-    Route *
+    Route &
     METHOD(Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback)
     {
         if (path == F("/"))
@@ -284,7 +284,7 @@ private:
 
         EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), (nullptr == handler));
 
-        auto route = new Route();
+        const auto route = new Route();
         route->method = method;
         route->path = path;
         route->fptrCallback = fptrCallback;
@@ -294,14 +294,14 @@ private:
         // Add to collection
         routes_.push_back(route);
 
-        return route;
+        return *route;
     }
 
     /// @brief
     /// @param uri
     /// @param fptr
     /// @return
-    Route *METHOD(Method method, String path, const requestCallback fptr)
+    Route &METHOD(Method method, String path, const requestCallback fptr)
     {
         EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
         return METHOD(method, path, nullptr, fptr);
@@ -435,7 +435,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    Route *get(const String &path, const requestCallback fptr)
+    Route &get(const String &path, const requestCallback fptr)
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -444,7 +444,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    Route *post(const String &path, const requestCallback fptr)
+    Route &post(const String &path, const requestCallback fptr)
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -453,7 +453,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    Route *post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
+    Route &post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr)
     {
         return METHOD(Method::POST, path, middleware, fptr);
     };
@@ -462,7 +462,7 @@ public:
     /// @param uri
     /// @param fptr
     /// @return
-    Route *put(const String &path, const requestCallback fptr)
+    Route &put(const String &path, const requestCallback fptr)
     {
         return METHOD(Method::PUT, path, fptr);
     };
