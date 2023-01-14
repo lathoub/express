@@ -30,6 +30,8 @@ private:
     /// @brief
     EthernetServer *server_{}; // TODO: singleton
 
+    static const int rawBufferSize = 512;
+
 private:
     /// @brief routes
     std::vector<Route *> routes_;
@@ -136,20 +138,30 @@ private:
 
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/octet-stream")))
         {
-            auto max_length = req.get(F("content-length")).toInt();
+            auto dataLen = req.get(F("content-length")).toInt();
 
-            EX_DBG_I(F("max_length"), max_length);
+            byte buffer[rawBufferSize];
 
-            if (req.route_->dataCallback_)
+            while (dataLen > 0 && client.connected())
             {
-                EX_DBG_I(F("calling event on data"));
-                req.route_->dataCallback_(nullptr);
-            }
+                if (client.available())
+                {
+                    auto bytesRead = client.read(buffer, sizeof(buffer));
+                    dataLen -= bytesRead;
 
-            if (req.route_->endCallback_)
-            {
-                EX_DBG_I(F("calling event on end"));
-                req.route_->endCallback_();
+                    EX_DBG_I(F("remaining:"), bytesRead, dataLen);
+
+                    if (dataLen > 0)
+                    {
+                        if (req.route_->dataCallback_)
+                            req.route_->dataCallback_(buffer);
+                    }
+                    else
+                    {
+                        if (req.route_->endCallback_)
+                            req.route_->endCallback_();
+                    }
+                }
             }
         }
 
