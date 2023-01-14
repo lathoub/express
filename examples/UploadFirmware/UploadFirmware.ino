@@ -1,4 +1,4 @@
-#define EX_DEBUG_LOGLEVEL EX_DEBUG_LOGLEVEL_VERBOSE
+#define EX_DEBUG_LOGLEVEL EX_DEBUG_LOGLEVEL_INFO
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
@@ -16,13 +16,13 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  Route& route = app.post("/firmware", express::raw(), [](Request &req, Response &res) {
+  Route &route = app.post("/firmware", express::raw(), [](Request &req, Response &res) {
     res.sendStatus(HTTP_STATUS_CREATED);
   });
 
   route.on(F("data"), [](const Buffer &chunck) {
-    Serial.print(F("chunck size: "));
-    Serial.println(chunck.length);
+    //    Serial.print(F("chunck size: "));
+    //  Serial.println(chunck.length);
   });
 
   route.on(F("end"), []() {

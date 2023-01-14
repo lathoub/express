@@ -57,7 +57,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseJson(Request& req, Response& res) -> bool
+    static auto parseJson(Request &req, Response &res) -> bool
     {
         EX_DBG_I(F("> bodyparser parseJson"));
 
@@ -115,9 +115,9 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseRaw(Request& req, Response& res) -> bool
+    static auto parseRaw(Request &req, Response &res) -> bool
     {
-        EX_DBG_I(F("> bodyparser raw"));
+        EX_DBG_V(F("> bodyparser raw"));
 
         EthernetClient &client = const_cast<EthernetClient &>(req.client_);
 
@@ -129,11 +129,11 @@ private:
             {
                 if (client.available())
                 {
-	                Buffer buffer;
-	                buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
+                    Buffer buffer;
+                    buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
                     dataLen -= buffer.length;
 
-                    EX_DBG_I(F("remaining:"), buffer.length, dataLen);
+                    EX_DBG_V(F("remaining:"), buffer.length, dataLen);
 
                     if (dataLen > 0)
                     {
@@ -154,7 +154,7 @@ private:
             }
         }
 
-        EX_DBG_I(F("< bodyparser raw"));
+        EX_DBG_V(F("< bodyparser raw"));
 
         return true;
     }
@@ -166,7 +166,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseText(Request& req, Response& res) -> bool
+    static auto parseText(Request &req, Response &res) -> bool
     {
         return true;
     }
@@ -178,7 +178,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseUrlencoded(Request& req, Response& res) -> bool
+    static auto parseUrlencoded(Request &req, Response &res) -> bool
     {
         return true;
     }
@@ -218,9 +218,9 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(Request& req, Response& res) -> bool
+    auto evaluate(Request &req, Response &res) -> bool
     {
-        EX_DBG_I(F("evaluate"), req.uri_);
+        EX_DBG_V(F("evaluate"), req.uri_);
 
         std::vector<PosLen> req_indices{};
 
@@ -228,8 +228,8 @@ private:
 
         for (auto route : routes_)
         {
-            EX_DBG_I(F("req.method:"), req.method, F("method:"), route->method);
-            EX_DBG_I(F("req.uri:"), req.uri_, F("path:"), route->path);
+            EX_DBG_V(F("req.method:"), req.method, F("method:"), route->method);
+            EX_DBG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
 
             if (req.method == route->method && Route::match(route->path, route->indices,
                                                             req.uri_, req_indices,
@@ -266,7 +266,7 @@ private:
     /// @param handler
     /// @param fptrCallback
     /// @return
-    auto METHOD(const Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback) -> Route&
+    auto METHOD(const Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback) -> Route &
     {
         if (path == F("/"))
             path = F("");
@@ -293,7 +293,7 @@ private:
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route&
+    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &
     {
         EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
         return METHOD(method, path, nullptr, fptr);
@@ -331,7 +331,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    auto use(const String& mount_path, express& other) -> void
+    auto use(const String &mount_path, express &other) -> void
     {
         EX_DBG_I(F("use mountPath:"), mount_path);
 
@@ -343,7 +343,7 @@ public:
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
     /// @param mount_path
     /// @return
-    auto use(const String& mount_path) -> void
+    auto use(const String &mount_path) -> void
     {
         mountpath = mount_path;
     }
@@ -351,7 +351,7 @@ public:
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param path
     /// @param fptr
-    auto all(const String& path, const requestCallback fptr) -> void
+    auto all(const String &path, const requestCallback fptr) -> void
     {
         // TODO: not implemented
     }
@@ -360,7 +360,7 @@ public:
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String& path, const requestCallback fptr) -> void
+    auto Delete(const String &path, const requestCallback fptr) -> void
     {
         METHOD(Method::DELETE, path, fptr);
     }
@@ -369,7 +369,7 @@ public:
     /// the app settings table. Calling app.set('foo', false) for a Boolean property is the
     /// same as calling app.disable('foo').
     /// @param name
-    auto disable(const String& name) -> void
+    auto disable(const String &name) -> void
     {
         settings[name] = "false";
     }
@@ -378,7 +378,7 @@ public:
     /// of the properties from the app settings table.
     /// @param name
     /// @return
-    auto disabled(const String& name) -> String
+    auto disabled(const String &name) -> String
     {
         return settings[name];
     }
@@ -387,7 +387,7 @@ public:
     /// app settings table. Calling app.set('foo', true) for a Boolean property is the same as
     /// calling app.enable('foo').
     /// @param name
-    auto enable(const String& name) -> void
+    auto enable(const String &name) -> void
     {
         settings[name] = "true";
     }
@@ -396,7 +396,7 @@ public:
     /// properties from the app settings table.
     /// @param name
     /// @return
-    auto enabled(const String& name) -> String
+    auto enabled(const String &name) -> String
     {
         return settings[name];
     }
@@ -405,7 +405,7 @@ public:
     /// the app settings table. For example:
     /// @param name
     /// @return
-    auto get(const String& name) -> String
+    auto get(const String &name) -> String
     {
         // TODO
         return F("");
@@ -416,7 +416,7 @@ public:
     /// names are listed in the app settings table.
     /// @param name
     /// @param value
-    auto set(const String& name, const String& value) -> void
+    auto set(const String &name, const String &value) -> void
     {
         // TODO
     }
@@ -427,7 +427,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String& path, const requestCallback fptr) -> Route&
+    auto get(const String &path, const requestCallback fptr) -> Route &
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -436,7 +436,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String& path, const requestCallback fptr) -> Route&
+    auto post(const String &path, const requestCallback fptr) -> Route &
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -446,7 +446,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String& path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route&
+    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
     {
         return METHOD(Method::POST, path, middleware, fptr);
     };
@@ -455,7 +455,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String& path, const requestCallback fptr) -> Route&
+    auto put(const String &path, const requestCallback fptr) -> Route &
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -473,7 +473,7 @@ public:
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    auto route(const String& path) -> void
+    auto route(const String &path) -> void
     {
         // TODO
     }
@@ -511,7 +511,7 @@ public:
 
     /// @brief
     /// @param client
-    auto run(EthernetClient& client) -> void
+    auto run(EthernetClient &client) -> void
     {
         while (client.connected())
         {
@@ -541,7 +541,7 @@ public:
                     if (!res.body_.isEmpty())
                         res.headers_[F("content-length")] = res.body_.length();
                     res.headers_[F("connection")] = F("close");
-                    if (settings[F("X-powered-by")])
+                    if (settings[F("X-powered-by")] != 0)
                         res.headers_[F("X-powered-by")] = settings[F("X-powered-by")];
 
                     // Send headers
