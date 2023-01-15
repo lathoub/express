@@ -2,7 +2,7 @@
 
 #include "vector.h"
 
-template <class T, class U, size_t max_size_>
+template <class T, class U, size_t max_size_ = 10>
 class dictionary
 {
     vector<T, max_size_> keys_{};

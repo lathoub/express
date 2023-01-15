@@ -8,7 +8,7 @@ typedef uint8_t byte;
 #endif
 
 #include "utility/vector.h"
-#include <map>
+#include "utility/dictionary.h"
 
 #include "namespace.h"
 

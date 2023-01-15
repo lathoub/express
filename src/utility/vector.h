@@ -56,7 +56,7 @@ private:
     size_t position_;
 };
 
-template <typename T, size_t max_size_>
+template <typename T, size_t max_size_ = 10>
 class vector
 {
 private:

@@ -50,7 +50,7 @@ public:
     IPAddress ip{};
 
     /// @brief
-    std::map<String, String> headers{};
+    dictionary<String, String> headers{};
 
     /// @brief Contains the path part of the request URL.
     String path{};
@@ -59,12 +59,12 @@ public:
     String protocol{};
 
     /// @brief
-    std::map<String, String> query{};
+    dictionary<String, String> query{};
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as
     //  req.params[name]
-    std::map<String, String> params{};
+    dictionary<String, String> params{};
 
 public: /* Methods*/
     /// @brief Constructor

@@ -21,7 +21,7 @@ private:
 
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
-    std::map<String, String> headers_{};
+    dictionary<String, String> headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return

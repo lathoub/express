@@ -32,16 +32,16 @@ private:
 
 private:
     /// @brief routes
-    vector<Route *, 10> routes_{};
+    vector<Route *> routes_{};
 
     /// @brief Application wide middlewares
-    vector<MiddlewareCallback, 10> middlewares_{};
+    vector<MiddlewareCallback> middlewares_{};
 
     /// @brief
-    std::map<String, express *> mount_paths_{};
+    dictionary<String, express *> mount_paths_{};
 
     /// @brief Application Settings
-    std::map<String, String> locals_{};
+    dictionary<String, String> locals_{};
 
     /// @brief
     express *parent_ = nullptr;
@@ -221,7 +221,7 @@ private:
     {
         EX_DBG_V(F("evaluate"), req.uri_);
 
-        vector<PosLen, 10> req_indices{};
+        vector<PosLen> req_indices{};
 
         Route::splitToVector(req.uri_, req_indices);
 
@@ -312,7 +312,7 @@ public:
     uint16_t port{};
 
     /// @brief Application Settings
-    std::map<String, String> settings{};
+    dictionary<String, String> settings{};
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.

@@ -25,12 +25,12 @@ public:
 
     String path = F("");
 
-    vector<HandlerCallback, 10> handlers{};
+    vector<HandlerCallback> handlers{};
 
     requestCallback fptrCallback = nullptr;
 
     // cache path splitting (avoid doing this for every request * number of paths)
-    vector<PosLen, 10> indices{};
+    vector<PosLen> indices{};
 
 public:
     /// @brief constructor
@@ -49,7 +49,7 @@ public:
     /// @brief
     /// @param path
     /// @return
-    static auto splitToVector(const String& path, vector<PosLen, 10>& poslens) -> void
+    static auto splitToVector(const String& path, vector<PosLen>& poslens) -> void
     {
         size_t p = 0, i = 1;
         for (; i < path.length(); i++)
@@ -70,9 +70,9 @@ public:
     /// @param requestPathItems
     /// @param params
     /// @return
-    static auto match(const String &path, const vector<PosLen, 10> &pathItems,
-                      const String &requestPath, const vector<PosLen, 10> &requestPathItems,
-                      std::map<String, String> &params) -> bool
+    static auto match(const String &path, const vector<PosLen> &pathItems,
+                      const String &requestPath, const vector<PosLen> &requestPathItems,
+                      dictionary<String, String> &params) -> bool
     {
         if (requestPathItems.size() != pathItems.size())
         {
