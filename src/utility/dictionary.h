@@ -3,50 +3,41 @@
 #include "vector.h"
 
 template <class T, class U, size_t max_size_>
-class Dictionary
+class dictionary
 {
-private:
-    vector<T, max_size_> KeyList{};
-    vector<U, max_size_> ValList{};
+    vector<T, max_size_> keys_{};
+    vector<U, max_size_> values_{};
+
+    auto get(T key) -> U&
+    {
+        for (size_t i = 0; i < keys_.size(); i++)
+        {
+            if (keys_.at(i) == key)
+            {
+                return values_.at(i);
+            }
+        }
+
+        // not found, so add it with empty value
+        keys_.push_back(key);
+        values_.push_back(U{});
+
+        return values_.back();
+    }
 
 public:
-    void set(T key, U val)
+    const U& operator[](T key) const
     {
-        for (int i = 0; i < KeyList.size(); i++)
-        {
-            if (KeyList.get(i) == key) {
-                ValList.set(i, val);
-                return;
-            }
-        }
-        KeyList.add(key);
-        ValList.add(val);
+        return get(key);
     }
 
-    U get(T key)
+    U& operator[](T key)
     {
-        for (int i = 0; i < KeyList.size(); i++)
-        {
-            if (KeyList.get(i) == key)
-            {
-                return ValList.get(i);
-            }
-        }
+        return get(key);
     }
 
-    T getKey(U val)
+    auto length() -> size_t
     {
-        for (int i = 0; i < ValList.size(); i++)
-        {
-            if (ValList.get(i) == val)
-            {
-                return KeyList.get(i);
-            }
-        }
-    }
-
-    int length()
-    {
-        return KeyList.size();
+        return keys_.size();
     }
 };
