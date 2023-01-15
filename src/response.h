@@ -21,7 +21,7 @@ private:
 
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
-    dictionary<String, String> headers_{};
+    headers_t headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
@@ -107,8 +107,9 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    auto render(const String& view) -> void
+    auto render(const String& view, locals_t& locals) -> void
     {
+        // TODO
     }
 
     /// @brief Sends the HTTP response.

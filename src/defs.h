@@ -9,10 +9,17 @@ typedef uint8_t byte;
 
 #include "utility/vector.h"
 #include "utility/dictionary.h"
+typedef dictionary<String, String> locals_t;
+typedef dictionary<String, String> query_t;
+typedef dictionary<String, String> params_t;
+typedef dictionary<String, String> headers_t;
+typedef dictionary<String, String> settings_t;
 
 #include "namespace.h"
 
 BEGIN_EXPRESS_NAMESPACE
+
+const String __dirname = F("");
 
 #include "httpMethods.h"
 #include "httpStatusCodes.h"
@@ -34,22 +41,13 @@ public:
     size_t length = 0;
 };
 
+using RenderCallback = void (*)();
 using requestCallback = void (*)(Request &, Response &);
 using MiddlewareCallback = bool (*)(Request &, Response &);
 using HandlerCallback = bool (*)(Request &, Response &);
 using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
-
-struct Options
-{
-};
-
-struct Param
-{
-    String name{};
-    String value{};
-};
 
 struct PosLen
 {

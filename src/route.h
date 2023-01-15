@@ -72,7 +72,7 @@ public:
     /// @return
     static auto match(const String &path, const vector<PosLen> &pathItems,
                       const String &requestPath, const vector<PosLen> &requestPathItems,
-                      dictionary<String, String> &params) -> bool
+                      params_t &params) -> bool
     {
         if (requestPathItems.size() != pathItems.size())
         {

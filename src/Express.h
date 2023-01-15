@@ -40,9 +40,6 @@ private:
     /// @brief
     dictionary<String, express *> mount_paths_{};
 
-    /// @brief Application Settings
-    dictionary<String, String> locals_{};
-
     /// @brief
     express *parent_ = nullptr;
 
@@ -312,11 +309,15 @@ public:
     uint16_t port{};
 
     /// @brief Application Settings
-    dictionary<String, String> settings{};
+    settings_t settings{};
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
+
+    /// @brief properties that are local variables within the application, and will 
+    /// be available in templates rendered with res.render.
+    locals_t locals{};
 
     /// @brief
     /// @param middleware
@@ -418,6 +419,13 @@ public:
     auto set(const String &name, const String &value) -> void
     {
         // TODO
+    }
+
+    /// @brief register the given template engine callback as ext.
+    /// @param name
+    /// @param value
+    auto engine(const String &ext, const RenderCallback callback) -> void
+    {
     }
 
 #pragma region HTTP_Methods

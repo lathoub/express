@@ -50,7 +50,7 @@ public:
     IPAddress ip{};
 
     /// @brief
-    dictionary<String, String> headers{};
+    headers_t headers{};
 
     /// @brief Contains the path part of the request URL.
     String path{};
@@ -59,12 +59,12 @@ public:
     String protocol{};
 
     /// @brief
-    dictionary<String, String> query{};
+    query_t query{};
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as
     //  req.params[name]
-    dictionary<String, String> params{};
+    params_t params{};
 
 public: /* Methods*/
     /// @brief Constructor
