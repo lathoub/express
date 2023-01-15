@@ -32,11 +32,10 @@ private:
 
 private:
     /// @brief routes
-    std::vector<Route *> routes_{};
+    vector<Route *, 10> routes_{};
 
     /// @brief Application wide middlewares
-    //   MiddlewareCallback saMiddlewareCallbacks_[DefaultSettings::maxMiddlewareCallbacks];
-    std::vector<MiddlewareCallback> middlewares_{};
+    vector<MiddlewareCallback, 10> middlewares_{};
 
     /// @brief
     std::map<String, express *> mount_paths_{};
@@ -222,7 +221,7 @@ private:
     {
         EX_DBG_V(F("evaluate"), req.uri_);
 
-        std::vector<PosLen> req_indices{};
+        vector<PosLen, 10> req_indices{};
 
         Route::splitToVector(req.uri_, req_indices);
 
