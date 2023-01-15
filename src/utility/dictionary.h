@@ -13,43 +13,43 @@ public:
 template <class T, class U, size_t MaxSize>
 class dictionary_iterator
 {
-    typedef dictionary_item<T, U> dictionary_item;
-    typedef vector<dictionary_item, MaxSize> dictionary_items;
+    typedef dictionary_item<T, U> dictionary_item_;
+    typedef vector<dictionary_item_, MaxSize> dictionary_items;
     typedef dictionary_iterator<T, U, MaxSize> iterator;
     typedef dictionary_iterator<T, U, MaxSize> const_iterator;
 
 public:
-    explicit dictionary_iterator(dictionary_items* kvps) : values_ptr_{ kvps }, position_{ 0 }
+    explicit dictionary_iterator(dictionary_items *kvps) : values_ptr_{kvps}, position_{0}
     {
     }
 
-    dictionary_iterator(dictionary_items* kvps, const size_t size) : values_ptr_{ kvps }, position_{ size }
+    dictionary_iterator(dictionary_items *kvps, const size_t size) : values_ptr_{kvps}, position_{size}
     {
     }
 
-    bool operator!=(const_iterator& other) const
+    bool operator!=(const_iterator &other) const
     {
         return !(*this == other);
     }
 
-    bool operator==(const_iterator& other) const
+    bool operator==(const_iterator &other) const
     {
         return position_ == other.position_;
     }
 
-    dictionary_iterator& operator++()
+    dictionary_iterator &operator++()
     {
         ++position_;
         return *this;
     }
 
-    dictionary_item& operator*() const
+    dictionary_item_ &operator*() const
     {
         return values_ptr_->at(position_);
     }
 
 private:
-    dictionary_items* values_ptr_;
+    dictionary_items *values_ptr_;
 
     size_t position_;
 };
@@ -57,12 +57,12 @@ private:
 template <class T, class U, size_t MaxSize = 10>
 class dictionary
 {
-    typedef dictionary_item<T, U> dictionary_item;
-    typedef vector<dictionary_item, MaxSize> dictionary_items;
+    typedef dictionary_item<T, U> dictionary_item_;
+    typedef vector<dictionary_item_, MaxSize> dictionary_items;
 
     dictionary_items kvps_{};
 
-    auto get(T key) -> U&
+    auto get(T key) -> U &
     {
         for (size_t i = 0; i < kvps_.size(); i++)
         {
@@ -72,7 +72,7 @@ class dictionary
             }
         }
 
-        dictionary_item item{};
+        dictionary_item_ item{};
         item.key = key;
         item.value = U{};
 
@@ -82,12 +82,12 @@ class dictionary
     }
 
 public:
-    const U& operator[](T key) const
+    const U &operator[](T key) const
     {
         return get(key);
     }
 
-    U& operator[](T key)
+    U &operator[](T key)
     {
         return get(key);
     }
@@ -97,9 +97,13 @@ public:
         return kvps_.size();
     }
 
-public:
+    auto clear() -> void
+    {
+        kvps_.clear();
+    }
 
-    typedef dictionary_iterator<T,U, MaxSize> iterator;
+public:
+    typedef dictionary_iterator<T, U, MaxSize> iterator;
 
     iterator begin()
     {
@@ -111,7 +115,7 @@ public:
         return iterator(&kvps_, kvps_.size());
     }
 
-    typedef dictionary_iterator<T,U, MaxSize> const_iterator;
+    typedef dictionary_iterator<T, U, MaxSize> const_iterator;
 
     const_iterator begin() const
     {
@@ -122,5 +126,4 @@ public:
     {
         return const_iterator(&kvps_, kvps_.size());
     }
-
 };
