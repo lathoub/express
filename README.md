@@ -36,7 +36,7 @@ void loop() {
 ```
 
 ## Dependencies
-Currently uses std containers, will be replaced with built-in ones.
+None.
 
 ## ESP32 with W5500 
 When you combine an ESP32 with the W5500 chip, you need to patch Server.h as reported [here](https://github.com/PaulStoffregen/Ethernet/issues/42).
