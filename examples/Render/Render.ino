@@ -1,6 +1,11 @@
+#define EX_DEBUG
+#define EX_DEBUG_LOGLEVEL EX_DEBUG_LOGLEVEL_VERBOSE
+
 #include <Express.h>
 #include <mustache.h>
 using namespace EXPRESS_NAMESPACE;
+
+#include "index.h";
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
@@ -10,6 +15,7 @@ void setup() {
   Serial.begin(115200);
   while (!Serial && !Serial.available()) {}
 
+  Ethernet.init(5);
   Ethernet.begin(mac);
 
   // Register '.mustache' extension with The Mustache Express
@@ -19,10 +25,10 @@ void setup() {
   app.set(F("views"), __dirname + F("/views"));
 
   app.get("/", [](Request &req, Response &res) {
-    if (false)
-      res.json("{'hello': 'world'}");
-    else
-      res.render(F("index.html"), app.locals);
+    //  if (false)
+    //  res.json("{'hello': 'world'}");
+    //else
+    res.render(index::file, app.locals);
   });
 
   app.listen(80, []() {

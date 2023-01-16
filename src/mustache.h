@@ -21,6 +21,11 @@ public:
 
         int pos = 0;
         int start = format.indexOf(F("{{"), pos);
+
+        // the string does not contain {{}}
+        if (start < 0)
+            return format;
+
         while (start > 0)
         {
             int end = format.indexOf(F("}}"), start);
@@ -35,9 +40,16 @@ public:
 
         return result;
     }
+
+    static String render(const char* format, size_t from, size_t to, locals_t &namedValues)
+    {
+        String result = F("");
+
+        return result;
+    }
 };
 
-static RenderCallback mustacheExpress()
+static RenderEngineCallback mustacheExpress()
 {
     return mustache::renderFile;
 }

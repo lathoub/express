@@ -319,6 +319,9 @@ public:
     /// be available in templates rendered with res.render.
     locals_t locals{};
 
+    /// @brief 
+    engines_t engines{};
+
     /// @brief
     /// @param middleware
     /// @return
@@ -424,8 +427,9 @@ public:
     /// @brief register the given template engine callback as ext.
     /// @param name
     /// @param value
-    auto engine(const String &ext, const RenderCallback callback) -> void
+    auto engine(const String &ext, const RenderEngineCallback callback) -> void
     {
+        engines[ext] = callback;
     }
 
 #pragma region HTTP_Methods
@@ -545,9 +549,8 @@ public:
                     client.println(res.status_);
 
                     // Add to headers
-                    if (!res.body_.isEmpty())
-                        res.headers_[F("content-length")] = res.body_.length();
-                    res.headers_[F("connection")] = F("close");
+                    res.evaluateHeaders(client);
+                    
                     if (settings[F("X-powered-by")] != 0)
                         res.headers_[F("X-powered-by")] = settings[F("X-powered-by")];
 
@@ -561,11 +564,7 @@ public:
                     // headers are done
                     client.println();
 
-                    // send content length *or* close the connection (spec 7.2.2)
-                    if (res.body_ && !res.body_.isEmpty())
-                    {
-                        client.println(res.body_.c_str());
-                    }
+                    res.sendBody(client, locals);
 
                     client.stop();
                 }

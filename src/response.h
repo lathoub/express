@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mustache.h"
+
 #include "namespace.h"
 
 BEGIN_EXPRESS_NAMESPACE
@@ -27,6 +29,58 @@ private:
     /// @return
     const express &app_;
 
+    FileCallback fileCallback_{};
+    RenderCallback renderCallback_{};
+
+private:
+    /// @brief
+    /// @param client
+    void evaluateHeaders(EthernetClient &client)
+    {
+        if (body_ && !body_.isEmpty())
+            headers_[F("content-length")] = body_.length();
+        else
+        {
+            // TODO
+        }
+        headers_[F("connection")] = F("close");
+    }
+
+    /// @brief
+    /// @param client
+    void sendBody(EthernetClient &client, locals_t &locals)
+    {
+        EX_DBG_I(F("sendBody"));
+
+        // send content length *or* close the connection (spec 7.2.2)
+        if (body_ && !body_.isEmpty())
+            client.println(body_.c_str());
+        else if (fileCallback_)
+            render_(client, locals, fileCallback_());
+    }
+
+    /// @brief
+    /// @param client
+    /// @param locals
+    void render_(EthernetClient &client, locals_t &locals, const char *f)
+    {
+        unsigned int i = 0;
+        unsigned int  start = 0;
+        while (f[start + i] != '\0')
+        {
+            while (f[start + i] != '\n' && f[start + i] != '\0')
+                i++;
+
+            //     renderLine_(f, start, start + i, locals);
+
+            if (f[start + i] == '\0')
+                break;
+
+            start += i + 1;
+            i = 0;
+        }
+    }
+
 public: /* Methods*/
     /// @brief Constructor
     Response(const express &express)
@@ -41,7 +95,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    auto append(const String& field, const String& value) -> Response&
+    auto append(const String &field, const String &value) -> Response &
     {
         for (auto [key, header] : headers_)
         {
@@ -64,7 +118,7 @@ public: /* Methods*/
     /// @param data
     /// @param encoding
     /// @return
-    auto end(const String& data, const String& encoding) -> Response&
+    auto end(const String &data, const String &encoding) -> Response &
     {
         return *this;
     }
@@ -76,7 +130,7 @@ public: /* Methods*/
 
     /// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
     /// @return
-    auto get(const String& field) -> String
+    auto get(const String &field) -> String
     {
         for (auto [key, header] : headers_)
         {
@@ -90,14 +144,60 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    auto json(const String& body) -> void
+    auto json(const String &body) -> void
     {
         body_ = body;
 
         set(F("content-type"), F("application/json"));
         // QUESTION: set content-length here?
+    }
 
-        return;
+    int find(const char *zin, const char *ss, const int van, const int tot)
+    {
+        int w = 0;
+        int j = 0;
+        for (auto i = van; i < tot; i++)
+        {
+            if (zin[i] == ss[j])
+            {
+                j++;
+                w = i;
+            }
+            else if (w > 0)
+                break; // optimization: stop after equality is found
+        }
+
+        return (2 == j) ? w : -1;
+    }
+
+    void renderLine_(const char *zin, int van, const int tot, locals_t &locals)
+    {
+        while (van < tot)
+        {
+            auto index = find(zin, "{{", van, tot);
+            if (index < 1)
+                break;
+
+            // for (auto i = van; i < index - 1; i++)
+            //     std::cout << zin[i];
+
+            van = index + 1;
+
+            index = find(zin, "}}", van, tot);
+            if (index < 1)
+                return; // TODO do error handling (no closing found), error in template
+
+            String key(zin + van, (index - van - 1));
+            // std::cout << locals[key];
+
+            van = index + 1;
+        }
+
+        if (van < tot)
+        { // remainder
+          // for (auto i = van; i < tot; i++)
+          //    std::cout << zin[i];
+        }
     }
 
     /// @brief Renders a view and sends the rendered HTML string to the client.
@@ -107,15 +207,23 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    auto render(const String& view, locals_t& locals) -> void
+    auto render(FileCallback fileCallback, locals_t &locals) -> void
     {
-        // TODO
+        //  app_.engines;
+
+        // TODO: don't render here just yet (status and headers need to be prior prior)
+        // so store a backpointer that can be called in the sendBody function.
+        // set this here already, so it gets send out as part of the headers
+
+        fileCallback_ = fileCallback;
+
+        set(F("content-type"), F("text/html"));
     }
 
     /// @brief Sends the HTTP response.
     /// Optional parameters:
     /// @param view
-    auto send(const String& body) -> void
+    auto send(const String &body) -> void
     {
         body_ = body;
     }
@@ -133,7 +241,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    auto set(const String& field, const String& value) -> Response&
+    auto set(const String &field, const String &value) -> Response &
     {
         for (auto [key, header] : headers_)
         {
@@ -155,7 +263,7 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    auto status(const int status) -> Response&
+    auto status(const int status) -> Response &
     {
         status_ = status;
 
