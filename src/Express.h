@@ -6,6 +6,7 @@
 
 #include "debug.h"
 #include "defs.h"
+
 #include "httpResponseParser.h"
 #include "request.h"
 #include "response.h"
@@ -13,17 +14,35 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-struct DefaultSettings
+#define EXPRESS_LIBRARY_VERSION        0x000100
+#define EXPRESS_LIBRARY_VERSION_MAJOR  0
+#define EXPRESS_LIBRARY_VERSION_MINOR  1
+#define EXPRESS_LIBRARY_VERSION_PATCH  0
+
+struct ExpressDefaultSettings
 {
     /// @brief
-    static constexpr int maxRoutes = 10;
+    static constexpr int MaxRoutes = 10;
 
     /// @brief
-    static constexpr int maxMiddlewareCallbacks = 10;
+    static constexpr int MaxMountPaths = 2;
+
+    /// @brief
+    static constexpr int MaxMiddlewareCallbacks = 2;
+
+    /// @brief
+    static constexpr int MaxSettings = 4;
+
+    /// @brief
+    static constexpr int MaxEngines = 4;
 };
 
-class express
+template <class _Settings = ExpressDefaultSettings>
+class Express
 {
+public:
+    typedef _Settings Settings;
+
     friend class HttpRequestHandler;
 
 private:
@@ -32,16 +51,34 @@ private:
 
 private:
     /// @brief routes
-    vector<Route *> routes_{};
+    vector<Route *, Settings::MaxRoutes> routes_{};
 
     /// @brief Application wide middlewares
-    vector<MiddlewareCallback> middlewares_{};
+    vector<MiddlewareCallback, Settings::MaxMiddlewareCallbacks> middlewares_{};
 
     /// @brief
-    dictionary<String, express *> mount_paths_{};
+    dictionary<String, Express *, Settings::MaxMountPaths> mount_paths_{};
 
     /// @brief
-    express *parent_ = nullptr;
+    Express *parent_ = nullptr;
+
+public:
+    /// @brief
+    uint16_t port{};
+
+    /// @brief Application Settings
+    dictionary<String, String, Settings::MaxSettings> settings{};
+
+    /// @brief The app.mountpath property contains the path patterns
+    /// on which a sub-app was mounted.
+    String mountpath{};
+
+    /// @brief properties that are local variables within the application, and will 
+    /// be available in templates rendered with res.render
+    locals_t locals{};
+
+    /// @brief 
+    dictionary<String, RenderEngineCallback, Settings::MaxEngines> engines{};
 
 private:
     // bodyparser
@@ -186,28 +223,28 @@ public:
     /// @return
     static auto raw() -> MiddlewareCallback
     {
-        return express::parseRaw;
+        return Express::parseRaw;
     }
 
     /// @brief
     /// @return
     static auto json() -> MiddlewareCallback
     {
-        return express::parseJson;
+        return Express::parseJson;
     }
 
     /// @brief
     /// @return
     static auto text() -> MiddlewareCallback
     {
-        return express::parseText;
+        return Express::parseText;
     }
 
     /// @brief
     /// @return
     static auto urlencoded() -> MiddlewareCallback
     {
-        return express::parseUrlencoded;
+        return Express::parseUrlencoded;
     }
 
 private:
@@ -297,30 +334,13 @@ private:
 
 public:
     /// @brief Constructor
-    express()
+    Express()
     {
         EX_DBG_V(F("Express() constructor"));
 
         settings[F("env")] = F("production");
         //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
     }
-
-    /// @brief
-    uint16_t port{};
-
-    /// @brief Application Settings
-    settings_t settings{};
-
-    /// @brief The app.mountpath property contains the path patterns
-    /// on which a sub-app was mounted.
-    String mountpath{};
-
-    /// @brief properties that are local variables within the application, and will 
-    /// be available in templates rendered with res.render.
-    locals_t locals{};
-
-    /// @brief 
-    engines_t engines{};
 
     /// @brief
     /// @param middleware
@@ -334,7 +354,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    auto use(const String &mount_path, express &other) -> void
+    auto use(const String &mount_path, Express &other) -> void
     {
         EX_DBG_I(F("use mountPath:"), mount_path);
 
@@ -528,14 +548,14 @@ public:
         {
             if (client.available())
             {
-                Request req(*this, client);
+                Request req(client);
 
                 HttpRequestParser http_request_parser_;
                 http_request_parser_.parseRequest(client, req);
 
                 if (req.method != Method::ERROR)
                 {
-                    Response res(*this);
+                    Response res{};
 
                     /// @brief run the app wide middlewares (ao bodyparsers)
                     for (const auto middleware : middlewares_)
@@ -572,6 +592,8 @@ public:
         }
     };
 };
+
+typedef Express<> express;
 
 END_EXPRESS_NAMESPACE
 

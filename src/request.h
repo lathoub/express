@@ -1,23 +1,24 @@
 #pragma once
 
-#include <map>
-
 #include "namespace.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-class express;
 class Routes;
 class Route;
 
+struct RequestDefaultSettings
+{
+    /// @brief
+    static constexpr int MaxHeaders = 10;
+};
+
+//template <class _Settings = ResponseDefaultSettings>
 class Request
 {
-    friend class express;
-    friend class Routes;
-    friend class Route;
-    friend class HttpRequestParser;
+public:
+//    typedef _Settings Settings;
 
-private:
     String version_{};
 
     String uri_{};
@@ -27,7 +28,7 @@ private:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const express &app_;
+ //   const express &app_;
 
     /// @brief 
     Route*  route_ = nullptr;
@@ -50,7 +51,7 @@ public:
     IPAddress ip{};
 
     /// @brief
-    headers_t headers{};
+    dictionary<String, String, 10> headers{}; // TODO: max using Settings
 
     /// @brief Contains the path part of the request URL.
     String path{};
@@ -59,7 +60,7 @@ public:
     String protocol{};
 
     /// @brief
-    query_t query{};
+    dictionary<String, String, 10> query{}; // TODO: max using Settings
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as
@@ -68,8 +69,8 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(const express &express, EthernetClient &client)
-	    : client_(client), app_(express), method(Method::UNDEFINED)
+    Request(EthernetClient &client)
+	    : client_(client), method(Method::UNDEFINED)
     {
     }
 
@@ -95,5 +96,7 @@ public: /* Methods*/
     }
 
 };
+
+//typedef Request<> response;
 
 END_EXPRESS_NAMESPACE

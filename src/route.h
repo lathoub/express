@@ -9,12 +9,10 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Route
 {
-    friend class express;
-
 private:
     static const char delimiter = '/';
 
-private: /// @brief
+public: /// @brief
     DataCallback dataCallback_ = nullptr;
 
     /// @brief

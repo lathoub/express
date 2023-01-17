@@ -1,38 +1,40 @@
 #pragma once
 
-#include "mustache.h"
-
 #include "namespace.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-class express;
 class Routes;
 class Route;
 class bodyParser;
 
+struct ResponseDefaultSettings
+{
+    /// @brief
+    static constexpr int MaxHeaders = 10;
+};
+
+//template <class _Settings = ResponseDefaultSettings>
 class Response
 {
-    friend class express;
-    friend class Routes;
-    friend class Route;
-    friend class bodyParser;
+public:
+//    typedef _Settings Settings;
 
-private:
     String body_{};
 
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
-    headers_t headers_{};
+    dictionary<String, String> headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const express &app_;
+  //  const express &app_;
 
-    FileCallback fileCallback_{};
-    RenderCallback renderCallback_{};
+    /// @brief derefered rendering
+    FileCallback renderCallback_{};
+    locals_t renderLocals_{};
 
-private:
+public:
     /// @brief
     /// @param client
     void evaluateHeaders(EthernetClient &client)
@@ -55,8 +57,8 @@ private:
         // send content length *or* close the connection (spec 7.2.2)
         if (body_ && !body_.isEmpty())
             client.println(body_.c_str());
-        else if (fileCallback_)
-            render_(client, locals, fileCallback_());
+        else if (renderCallback_)
+            render_(client, locals, renderCallback_()); // TODO: from renderEngine aka mustasche
     }
 
     /// @brief
@@ -83,8 +85,7 @@ private:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(const express &express)
-        : app_(express)
+    Response()
     {
     }
 
@@ -211,11 +212,12 @@ public: /* Methods*/
     {
         //  app_.engines;
 
-        // TODO: don't render here just yet (status and headers need to be prior prior)
+        // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.
         // set this here already, so it gets send out as part of the headers
 
-        fileCallback_ = fileCallback;
+        renderCallback_ = fileCallback;
+        renderLocals_ = locals; // TODO: check if this copies??
 
         set(F("content-type"), F("text/html"));
     }
@@ -270,5 +272,7 @@ public: /* Methods*/
         return *this;
     }
 };
+
+//typedef Response<> response;
 
 END_EXPRESS_NAMESPACE

@@ -9,6 +9,7 @@ BEGIN_EXPRESS_NAMESPACE
 class mustache
 {
 public:
+    // Entry point from Express, given by the mustacheExpress()
     static void renderFile()
     {
         EX_DBG_I(F("in renderFile"));
