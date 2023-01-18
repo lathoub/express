@@ -33,18 +33,6 @@ public:
     size_t length = 0;
 };
 
-class Request;
-class Response;
-
-using FileCallback = const char* (*)();
-using RenderEngineCallback = void (*)();
-using requestCallback = void (*)(Request &, Response &);
-using MiddlewareCallback = bool (*)(Request &, Response &);
-using HandlerCallback = bool (*)(Request &, Response &);
-using StartedCallback = void (*)();
-using DataCallback = void (*)(const Buffer &);
-using EndDataCallback = void (*)();
-
 struct PosLen
 {
     size_t pos;

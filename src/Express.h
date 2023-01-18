@@ -7,17 +7,20 @@
 #include "debug.h"
 #include "defs.h"
 
-#include "httpResponseParser.h"
 #include "request.h"
 #include "response.h"
 #include "route.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-#define EXPRESS_LIBRARY_VERSION        0x000100
-#define EXPRESS_LIBRARY_VERSION_MAJOR  0
-#define EXPRESS_LIBRARY_VERSION_MINOR  1
-#define EXPRESS_LIBRARY_VERSION_PATCH  0
+#define EXPRESS_LIBRARY_VERSION 0x000100
+#define EXPRESS_LIBRARY_VERSION_MAJOR 0
+#define EXPRESS_LIBRARY_VERSION_MINOR 1
+#define EXPRESS_LIBRARY_VERSION_PATCH 0
+
+using RenderEngineCallback = void (*)();
+using MiddlewareCallback = bool (*)(request &, response &);
+using StartedCallback = void (*)();
 
 struct ExpressDefaultSettings
 {
@@ -37,7 +40,7 @@ struct ExpressDefaultSettings
     static constexpr int MaxEngines = 4;
 };
 
-template <class _Settings = ExpressDefaultSettings>
+template <class ServerType, class ClientType, class _Settings = ExpressDefaultSettings>
 class Express
 {
 public:
@@ -47,7 +50,7 @@ public:
 
 private:
     /// @brief
-    EthernetServer *server_{}; // TODO: singleton
+    ServerType *server_{}; // TODO: singleton
 
 private:
     /// @brief routes
@@ -73,11 +76,11 @@ public:
     /// on which a sub-app was mounted.
     String mountpath{};
 
-    /// @brief properties that are local variables within the application, and will 
+    /// @brief properties that are local variables within the application, and will
     /// be available in templates rendered with res.render
     locals_t locals{};
 
-    /// @brief 
+    /// @brief
     dictionary<String, RenderEngineCallback, Settings::MaxEngines> engines{};
 
 private:
@@ -90,7 +93,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseJson(Request &req, Response &res) -> bool
+    static auto parseJson(request &req, response &res) -> bool
     {
         EX_DBG_I(F("> bodyparser parseJson"));
 
@@ -100,7 +103,7 @@ private:
             return true;
         }
 
-        EthernetClient &client = const_cast<EthernetClient &>(req.client_);
+        ClientType &client = const_cast<ClientType &>(req.client_);
 
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
         {
@@ -148,11 +151,11 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseRaw(Request &req, Response &res) -> bool
+    static auto parseRaw(request &req, response &res) -> bool
     {
         EX_DBG_V(F("> bodyparser raw"));
 
-        EthernetClient &client = const_cast<EthernetClient &>(req.client_);
+        ClientType &client = const_cast<ClientType &>(req.client_);
 
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/octet-stream")))
         {
@@ -199,7 +202,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseText(Request &req, Response &res) -> bool
+    static auto parseText(request &req, response &res) -> bool
     {
         return true;
     }
@@ -211,7 +214,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseUrlencoded(Request &req, Response &res) -> bool
+    static auto parseUrlencoded(request &req, response &res) -> bool
     {
         return true;
     }
@@ -248,14 +251,55 @@ public:
     }
 
 private:
+
+    /// @brief
+    /// @param path
+    /// @param pathItems
+    /// @param requestPath
+    /// @param requestPathItems
+    /// @param params
+    /// @return
+    static auto match(const String &path, const vector<PosLen> &pathItems,
+                      const String &requestPath, const vector<PosLen> &requestPathItems,
+                      params_t &params) -> bool
+    {
+        if (requestPathItems.size() != pathItems.size())
+        {
+            EX_DBG_I(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+            EX_DBG_I(F("return false in function match"));
+            return false;
+        }
+
+        for (size_t i = 0; i < requestPathItems.size(); i++)
+        {
+            const auto &ave = requestPathItems[i];
+            const auto &bve = pathItems[i];
+
+            if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
+            {
+                auto name = path.substring(bve.pos + 2, bve.pos + bve.len); // Note: + 2 to offset /:
+                name.toLowerCase();
+                const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
+                params[name] = value;
+            }
+            else
+            {
+                if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len))
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(Request &req, Response &res) -> const bool
+    auto evaluate(request &req, response &res) -> const bool
     {
         EX_DBG_V(F("evaluate"), req.uri_);
 
-        vector<PosLen> req_indices{};
+        vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
         Route::splitToVector(req.uri_, req_indices);
 
@@ -264,9 +308,9 @@ private:
             EX_DBG_V(F("req.method:"), req.method, F("method:"), route->method);
             EX_DBG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
 
-            if (req.method == route->method && Route::match(route->path, route->indices,
-                                                            req.uri_, req_indices,
-                                                            req.params))
+            if (req.method == route->method && match(route->path, route->indices,
+                                                     req.uri_, req_indices,
+                                                     req.params))
             {
                 res.status_ = HTTP_STATUS_OK; // assumes all goes OK
                 req.route_ = route;
@@ -379,15 +423,6 @@ public:
         // TODO: not implemented
     }
 
-    /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
-    /// For more information, see the routing guide.
-    /// @param path
-    /// @param fptr
-    auto Delete(const String &path, const requestCallback fptr) -> void
-    {
-        METHOD(Method::DELETE, path, fptr);
-    }
-
     /// @brief Sets the Boolean setting name to false, where name is one of the properties from
     /// the app settings table. Calling app.set('foo', false) for a Boolean property is the
     /// same as calling app.disable('foo').
@@ -403,7 +438,7 @@ public:
     /// @return
     auto disabled(const String &name) -> String
     {
-        return settings[name];
+        return settings[name] == F("false");
     }
 
     /// @brief Sets the Boolean setting name to true, where name is one of the properties from the
@@ -421,17 +456,16 @@ public:
     /// @return
     auto enabled(const String &name) -> String
     {
-        return settings[name];
+        return settings[name] == F("true");
     }
 
     /// @brief Returns the value of name app setting, where name is one of the strings in
-    /// the app settings table. For example:
+    /// the app settings table.
     /// @param name
     /// @return
     auto get(const String &name) -> String
     {
-        // TODO
-        return F("");
+        return settings[name];
     }
 
     /// @brief Assigns setting name to value. You may store any value that you want, but
@@ -441,7 +475,7 @@ public:
     /// @param value
     auto set(const String &name, const String &value) -> void
     {
-        // TODO
+        settings[name] = value;
     }
 
     /// @brief register the given template engine callback as ext.
@@ -491,13 +525,22 @@ public:
         return METHOD(Method::PUT, path, fptr);
     };
 
+    /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
+    /// For more information, see the routing guide.
+    /// @param path
+    /// @param fptr
+    auto Delete(const String &path, const requestCallback fptr) -> Route &
+    {
+        return METHOD(Method::DELETE, path, fptr);
+    }
+
 #pragma endregion HTTP_Methods
 
     /// @brief Returns the canonical path of the app, a string.
     /// @return
     auto path() -> String
     {
-        // TODO: noy sure
+        // TODO: not sure
         return (parent_ == nullptr) ? mountpath : parent_->mountpath;
     }
 
@@ -526,7 +569,7 @@ public:
         // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
         //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-        server_ = new EthernetServer(port);
+        server_ = new ServerType(port);
         server_->begin();
 
         if (startedCallback)
@@ -536,26 +579,24 @@ public:
     /// @brief
     auto run() -> void
     {
-        if (EthernetClient client = server_->available())
+        if (ClientType client = server_->available())
             run(client);
     }
 
     /// @brief
     /// @param client
-    auto run(EthernetClient &client) -> void
+    void run(ClientType &client)
     {
         while (client.connected())
         {
             if (client.available())
             {
-                Request req(client);
-
-                HttpRequestParser http_request_parser_;
-                http_request_parser_.parseRequest(client, req);
+                // Construct request object and read/parse incoming bytes
+                request req(client);
 
                 if (req.method != Method::ERROR)
                 {
-                    Response res{};
+                    response res(client);
 
                     /// @brief run the app wide middlewares (ao bodyparsers)
                     for (const auto middleware : middlewares_)
@@ -565,12 +606,13 @@ public:
                     /// @brief evaluate the request
                     evaluate(req, res);
 
+                    // res.send(); // TODO move to res
                     client.print(F("HTTP/1.1 "));
                     client.println(res.status_);
 
                     // Add to headers
                     res.evaluateHeaders(client);
-                    
+
                     if (settings[F("X-powered-by")] != 0)
                         res.headers_[F("X-powered-by")] = settings[F("X-powered-by")];
 
@@ -593,7 +635,7 @@ public:
     };
 };
 
-typedef Express<> express;
+typedef Express<EthernetServer, EthernetClient> express;
 
 END_EXPRESS_NAMESPACE
 

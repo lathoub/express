@@ -4,8 +4,12 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-#include "request.h"
-#include "response.h"
+#include "express.h"
+
+using DataCallback = void (*)(const Buffer &);
+using EndDataCallback = void (*)();
+using HandlerCallback = bool (*)(request &, response &);
+using requestCallback = void (*)(request &, response &);
 
 class Route
 {
@@ -23,12 +27,12 @@ public:
 
     String path = F("");
 
-    vector<HandlerCallback> handlers{};
+    vector<HandlerCallback, 5> handlers{}; // TODO how many
 
     requestCallback fptrCallback = nullptr;
 
     // cache path splitting (avoid doing this for every request * number of paths)
-    vector<PosLen> indices{};
+    vector<PosLen> indices{}; // TODO how many
 
 public:
     /// @brief constructor
@@ -59,46 +63,6 @@ public:
             }
         }
         poslens.push_back({p, i - p});
-    }
-
-    /// @brief
-    /// @param path
-    /// @param pathItems
-    /// @param requestPath
-    /// @param requestPathItems
-    /// @param params
-    /// @return
-    static auto match(const String &path, const vector<PosLen> &pathItems,
-                      const String &requestPath, const vector<PosLen> &requestPathItems,
-                      params_t &params) -> bool
-    {
-        if (requestPathItems.size() != pathItems.size())
-        {
-            EX_DBG_I(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-            EX_DBG_I(F("return false in function match"));
-            return false;
-        }
-
-        for (size_t i = 0; i < requestPathItems.size(); i++)
-        {
-            const auto &ave = requestPathItems[i];
-            const auto &bve = pathItems[i];
-
-            if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
-            {
-                auto name = path.substring(bve.pos + 2, bve.pos + bve.len); // Note: + 2 to offset /:
-                name.toLowerCase();
-                const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
-                params[name] = value;
-            }
-            else
-            {
-                if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len))
-                    return false;
-            }
-        }
-
-        return true;
     }
 
     /// @brief

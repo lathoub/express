@@ -7,28 +7,34 @@ BEGIN_EXPRESS_NAMESPACE
 class Routes;
 class Route;
 class bodyParser;
+#include "express.h"
+
+using FileCallback = const char *(*)();
 
 struct ResponseDefaultSettings
 {
     /// @brief
-    static constexpr int MaxHeaders = 10;
+    static constexpr int MaxHeaders = 5;
 };
 
-//template <class _Settings = ResponseDefaultSettings>
+template <class ClientType, class _Settings = ResponseDefaultSettings>
 class Response
 {
 public:
-//    typedef _Settings Settings;
+    typedef _Settings Settings;
 
     String body_{};
 
+    /// @brief
+    const ClientType &client_;
+
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
-    dictionary<String, String> headers_{};
+    dictionary<String, String, Settings::MaxHeaders> headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-  //  const express &app_;
+  //    const express &app_;
 
     /// @brief derefered rendering
     FileCallback renderCallback_{};
@@ -37,7 +43,7 @@ public:
 public:
     /// @brief
     /// @param client
-    void evaluateHeaders(EthernetClient &client)
+    void evaluateHeaders(ClientType &client)
     {
         if (body_ && !body_.isEmpty())
             headers_[F("content-length")] = body_.length();
@@ -50,7 +56,7 @@ public:
 
     /// @brief
     /// @param client
-    void sendBody(EthernetClient &client, locals_t &locals)
+    void sendBody(ClientType &client, locals_t &locals)
     {
         EX_DBG_I(F("sendBody"));
 
@@ -64,10 +70,10 @@ public:
     /// @brief
     /// @param client
     /// @param locals
-    void render_(EthernetClient &client, locals_t &locals, const char *f)
+    void render_(ClientType &client, locals_t &locals, const char *f)
     {
         unsigned int i = 0;
-        unsigned int  start = 0;
+        unsigned int start = 0;
         while (f[start + i] != '\0')
         {
             while (f[start + i] != '\n' && f[start + i] != '\0')
@@ -83,9 +89,39 @@ public:
         }
     }
 
+    void send()
+    {
+/*        ClientType &client = const_cast<ClientType &>(client_);
+
+        client.print(F("HTTP/1.1 "));
+        client.println(status_);
+
+        // Add to headers
+        evaluateHeaders(client);
+
+        if (app.settings[F("X-powered-by")] != 0)
+            headers_[F("X-powered-by")] = app.settings[F("X-powered-by")];
+
+        // Send headers
+        for (auto [first, second] : headers_)
+        {
+            client.print(first);
+            client.print(": ");
+            client.println(second);
+        }
+        // headers are done
+        client.println();
+
+        sendBody(client, app.locals);
+
+        client.stop();
+*/
+    }
+
 public: /* Methods*/
     /// @brief Constructor
-    Response()
+    Response(ClientType &client)
+        : client_(client)
     {
     }
 
@@ -273,6 +309,6 @@ public: /* Methods*/
     }
 };
 
-//typedef Response<> response;
+typedef Response<EthernetClient> response;
 
 END_EXPRESS_NAMESPACE
