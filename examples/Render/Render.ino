@@ -24,7 +24,7 @@ void setup() {
   app.set(F("view engine"), F("mustache"));
   app.set(F("views"), __dirname + F("/views"));
 
-  app.get("/", [](Request &req, Response &res) {
+  app.get("/", [](request &req, response &res) {
     //  if (false)
     //  res.json("{'hello': 'world'}");
     //else

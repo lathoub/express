@@ -6,7 +6,7 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Routes;
 class Route;
-class bodyParser;
+
 #include "express.h"
 
 using FileCallback = const char *(*)();
@@ -34,10 +34,10 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-  //    const express &app_;
+    /// Express<EthernetServer, EthernetClient>  *app_;
 
     /// @brief derefered rendering
-    FileCallback renderCallback_{};
+    FileCallback contentsCallback_{};
     locals_t renderLocals_{};
 
 public:
@@ -47,10 +47,7 @@ public:
     {
         if (body_ && !body_.isEmpty())
             headers_[F("content-length")] = body_.length();
-        else
-        {
-            // TODO
-        }
+
         headers_[F("connection")] = F("close");
     }
 
@@ -63,8 +60,8 @@ public:
         // send content length *or* close the connection (spec 7.2.2)
         if (body_ && !body_.isEmpty())
             client.println(body_.c_str());
-        else if (renderCallback_)
-            render_(client, locals, renderCallback_()); // TODO: from renderEngine aka mustasche
+        else if (contentsCallback_)
+            render_(client, locals, contentsCallback_()); // TODO: from renderEngine aka mustasche
     }
 
     /// @brief
@@ -91,31 +88,31 @@ public:
 
     void send()
     {
-/*        ClientType &client = const_cast<ClientType &>(client_);
+        /*        ClientType &client = const_cast<ClientType &>(client_);
 
-        client.print(F("HTTP/1.1 "));
-        client.println(status_);
+                client.print(F("HTTP/1.1 "));
+                client.println(status_);
 
-        // Add to headers
-        evaluateHeaders(client);
+                // Add to headers
+                evaluateHeaders(client);
 
-        if (app.settings[F("X-powered-by")] != 0)
-            headers_[F("X-powered-by")] = app.settings[F("X-powered-by")];
+                if (app.settings[F("X-powered-by")] != 0)
+                    headers_[F("X-powered-by")] = app.settings[F("X-powered-by")];
 
-        // Send headers
-        for (auto [first, second] : headers_)
-        {
-            client.print(first);
-            client.print(": ");
-            client.println(second);
-        }
-        // headers are done
-        client.println();
+                // Send headers
+                for (auto [first, second] : headers_)
+                {
+                    client.print(first);
+                    client.print(": ");
+                    client.println(second);
+                }
+                // headers are done
+                client.println();
 
-        sendBody(client, app.locals);
+                sendBody(client, app.locals);
 
-        client.stop();
-*/
+                client.stop();
+        */
     }
 
 public: /* Methods*/
@@ -246,13 +243,13 @@ public: /* Methods*/
     /// @param view
     auto render(FileCallback fileCallback, locals_t &locals) -> void
     {
-        //  app_.engines;
+        //  auto renderEngine = app_.engines;
 
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.
         // set this here already, so it gets send out as part of the headers
 
-        renderCallback_ = fileCallback;
+        contentsCallback_ = fileCallback;
         renderLocals_ = locals; // TODO: check if this copies??
 
         set(F("content-type"), F("text/html"));
