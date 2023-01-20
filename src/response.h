@@ -55,33 +55,17 @@ public:
     void sendBody(EthernetClient &client, locals_t &locals)
     {
         EX_DBG_I(F("sendBody"));
-
-        // send content length *or* close the connection (spec 7.2.2)
+        
         if (body_ && !body_.isEmpty())
-            client.println(body_.c_str());
+            client.println(body_.c_str()); 
         else if (contentsCallback_)
-            render_(client, locals, contentsCallback_()); // TODO: from renderEngine aka mustasche
-    }
-
-    /// @brief
-    /// @param client
-    /// @param locals
-    void render_(EthernetClient &client, locals_t &locals, const char *f)
-    {
-        unsigned int i = 0;
-        unsigned int start = 0;
-        while (f[start + i] != '\0')
         {
-            while (f[start + i] != '\n' && f[start + i] != '\0')
-                i++;
-
-            //     renderLine_(f, start, start + i, locals);
-
-            if (f[start + i] == '\0')
-                break;
-
-            start += i + 1;
-            i = 0;
+            auto it = app_.engines.begin();
+            if (it != app_.engines.end())
+            {
+                auto engine = *it;
+                engine.second(client, locals, contentsCallback_());
+            }
         }
     }
 
@@ -184,54 +168,6 @@ public: /* Methods*/
         // QUESTION: set content-length here?
     }
 
-    int find(const char *zin, const char *ss, const int van, const int tot)
-    {
-        int w = 0;
-        int j = 0;
-        for (auto i = van; i < tot; i++)
-        {
-            if (zin[i] == ss[j])
-            {
-                j++;
-                w = i;
-            }
-            else if (w > 0)
-                break; // optimization: stop after equality is found
-        }
-
-        return (2 == j) ? w : -1;
-    }
-
-    void renderLine_(const char *zin, int van, const int tot, locals_t &locals)
-    {
-        while (van < tot)
-        {
-            auto index = find(zin, "{{", van, tot);
-            if (index < 1)
-                break;
-
-            // for (auto i = van; i < index - 1; i++)
-            //     std::cout << zin[i];
-
-            van = index + 1;
-
-            index = find(zin, "}}", van, tot);
-            if (index < 1)
-                return; // TODO do error handling (no closing found), error in template
-
-            String key(zin + van, (index - van - 1));
-            // std::cout << locals[key];
-
-            van = index + 1;
-        }
-
-        if (van < tot)
-        { // remainder
-          // for (auto i = van; i < tot; i++)
-          //    std::cout << zin[i];
-        }
-    }
-
     /// @brief Renders a view and sends the rendered HTML string to the client.
     /// Optional parameters:
     ///    - locals, an object whose properties define local variables for the view.
@@ -241,10 +177,6 @@ public: /* Methods*/
     /// @param view
     auto render(FileCallback fileCallback, locals_t &locals) -> void
     {
-        auto it = app_.engines.begin();
-        auto uu = *it;
-        EX_DBG_I("first:", uu.first);
-
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.
         // set this here already, so it gets send out as part of the headers

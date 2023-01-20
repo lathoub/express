@@ -29,6 +29,8 @@ void setup() {
       res.json("{'hello': 'world'}");
     else {
       locals_t locals;
+      locals[F("een")] = F("in de titel");
+      locals[F("twee")] = F("voor chapter 2");
       res.render(index::file, locals);
     }
   });

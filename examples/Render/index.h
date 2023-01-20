@@ -3,10 +3,10 @@ public:
   static const char* file() {
     return "<html>\n"
            "<head>\n"
-           "<title>res.render() Demo</title>\n"
+           "<title>{{een}}</title>\n"
            "</head>\n"
            "<body>\n"
-           "<h2>Render Function Demo</h2>\n"
+           "<h2>{{twee}}</h2>\n"
            "</body>\n"
            "</html>";
   }

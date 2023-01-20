@@ -18,7 +18,7 @@ BEGIN_EXPRESS_NAMESPACE
 #define EXPRESS_LIBRARY_VERSION_MINOR 1
 #define EXPRESS_LIBRARY_VERSION_PATCH 0
 
-using RenderEngineCallback = void (*)();
+using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
 using MiddlewareCallback = bool (*)(request &, response &);
 using StartedCallback = void (*)();
 
@@ -605,7 +605,7 @@ public:
                     /// @brief evaluate the request
                     evaluate(req, res);
 
-                    res.send(); 
+                    res.send();
                 }
             }
         }
