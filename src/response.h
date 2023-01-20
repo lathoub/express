@@ -33,7 +33,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const express &app_;
+    express &app_;
 
     /// @brief derefered rendering
     FileCallback contentsCallback_{};
@@ -96,8 +96,8 @@ public:
         // Add to headers
         evaluateHeaders(client);
 
-        //        if (app_.settings.count(F("X-powered-by")) > 0)
-        //            headers_[F("X-powered-by")] = app_.settings[F("X-powered-by")];
+        if (app_.settings.count(F("X-powered-by")) > 0)
+            headers_[F("X-powered-by")] = app_.settings[F("X-powered-by")];
 
         // Send headers
         for (auto [first, second] : headers_)
@@ -243,6 +243,7 @@ public: /* Methods*/
     {
         auto it = app_.engines.begin();
         auto uu = *it;
+        EX_DBG_I("first:", uu.first);
 
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.

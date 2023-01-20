@@ -12,7 +12,7 @@ class vectorIterator
 public:
     /// @brief
     /// @param values_ptr
-    vectorIterator(T *values_ptr)
+    explicit vectorIterator(T *values_ptr)
         : values_ptr_{values_ptr}, position_{0}
     {
     }

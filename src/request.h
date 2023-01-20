@@ -34,7 +34,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const express &app_;
+    express &app_;
 
     /// @brief
     Route *route_ = nullptr;

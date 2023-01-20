@@ -27,14 +27,14 @@ class dictionary_iterator
 public:
     /// @brief
     /// @param kvps
-    dictionary_iterator(dictionary_items *kvps)
+    explicit dictionary_iterator(dictionary_items *kvps)
         : values_ptr_{kvps}, position_{0}
     {
     }
 
     /// @brief
     /// @param kvps
-    dictionary_iterator(const dictionary_items *kvps)
+    explicit dictionary_iterator(const dictionary_items *kvps)
         : values_ptr_{kvps}, position_{0}
     {
     }
