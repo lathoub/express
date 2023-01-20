@@ -9,6 +9,8 @@ BEGIN_EXPRESS_NAMESPACE
 class mustache
 {
 private:
+
+private:
     /// @brief
     /// @return
     static signed int find(const char *line, const char *ss, const int from, const int to)
@@ -46,8 +48,11 @@ private:
             if (index < 1)
                 return; // TODO do error handling (no closing found), error in template
 
-            String key(line + from, (index - from - 1));
-            client.print(locals[key]);
+            char key_[15];
+            strncpy(key_, line + from, index - from - 1);
+            key_[index - from - 1] = '\0';
+
+            client.print(locals[key_]);
 
             from = index + 1;
         }
