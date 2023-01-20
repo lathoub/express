@@ -25,10 +25,12 @@ void setup() {
   app.set(F("views"), __dirname + F("/views"));
 
   app.get("/", [](request &req, response &res) {
-    //  if (false)
-    //  res.json("{'hello': 'world'}");
-    //else
-    res.render(index::file, app.locals);
+    if (false)
+      res.json("{'hello': 'world'}");
+    else {
+      locals_t locals;
+      res.render(index::file, locals);
+    }
   });
 
   app.listen(80, []() {

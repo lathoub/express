@@ -4,30 +4,47 @@
 // https://github.com/janelia-arduino/vector
 // (modified to fit into 1 header file)
 
+/// @brief 
+/// @tparam T 
 template <typename T>
 class vectorIterator
 {
 public:
-    explicit vectorIterator(T *values_ptr) : values_ptr_{values_ptr}, position_{0} {}
+    /// @brief 
+    /// @param values_ptr 
+    vectorIterator(T *values_ptr) : values_ptr_{values_ptr}, position_{0} {}
 
+    /// @brief 
+    /// @param values_ptr 
+    /// @param size 
     vectorIterator(T *values_ptr, const size_t size) : values_ptr_{values_ptr}, position_{size} {}
 
+    /// @brief 
+    /// @param other 
+    /// @return 
     bool operator!=(const vectorIterator<T> &other) const
     {
         return !(*this == other);
     }
 
+    /// @brief 
+    /// @param other 
+    /// @return 
     bool operator==(const vectorIterator<T> &other) const
     {
         return position_ == other.position_;
     }
 
+    /// @brief 
+    /// @return 
     vectorIterator &operator++()
     {
         ++position_;
         return *this;
     }
 
+    /// @brief 
+    /// @return 
     T &operator*() const
     {
         return *(values_ptr_ + position_);

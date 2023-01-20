@@ -6,8 +6,7 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Routes;
 class Route;
-
-#include "express.h"
+class express;
 
 using FileCallback = const char *(*)();
 
@@ -17,7 +16,7 @@ struct ResponseDefaultSettings
     static constexpr int MaxHeaders = 5;
 };
 
-template <class ClientType, class _Settings = ResponseDefaultSettings>
+template <class _Settings = ResponseDefaultSettings>
 class Response
 {
 public:
@@ -26,15 +25,15 @@ public:
     String body_{};
 
     /// @brief
-    const ClientType &client_;
+    const EthernetClient &client_;
 
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
-    dictionary<String, String, Settings::MaxHeaders> headers_{};
+    dictionary<String, String, 10> headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    /// Express<EthernetServer, EthernetClient>  *app_;
+    const express &app_;
 
     /// @brief derefered rendering
     FileCallback contentsCallback_{};
@@ -43,7 +42,7 @@ public:
 public:
     /// @brief
     /// @param client
-    void evaluateHeaders(ClientType &client)
+    void evaluateHeaders(EthernetClient &client)
     {
         if (body_ && !body_.isEmpty())
             headers_[F("content-length")] = body_.length();
@@ -53,7 +52,7 @@ public:
 
     /// @brief
     /// @param client
-    void sendBody(ClientType &client, locals_t &locals)
+    void sendBody(EthernetClient &client, locals_t &locals)
     {
         EX_DBG_I(F("sendBody"));
 
@@ -67,7 +66,7 @@ public:
     /// @brief
     /// @param client
     /// @param locals
-    void render_(ClientType &client, locals_t &locals, const char *f)
+    void render_(EthernetClient &client, locals_t &locals, const char *f)
     {
         unsigned int i = 0;
         unsigned int start = 0;
@@ -86,39 +85,38 @@ public:
         }
     }
 
+    /// @brief
     void send()
     {
-        /*        ClientType &client = const_cast<ClientType &>(client_);
+        auto &client = const_cast<EthernetClient &>(client_);
 
-                client.print(F("HTTP/1.1 "));
-                client.println(status_);
+        client.print(F("HTTP/1.1 "));
+        client.println(status_);
 
-                // Add to headers
-                evaluateHeaders(client);
+        // Add to headers
+        evaluateHeaders(client);
 
-                if (app.settings[F("X-powered-by")] != 0)
-                    headers_[F("X-powered-by")] = app.settings[F("X-powered-by")];
+        //        if (app_.settings.count(F("X-powered-by")) > 0)
+        //            headers_[F("X-powered-by")] = app_.settings[F("X-powered-by")];
 
-                // Send headers
-                for (auto [first, second] : headers_)
-                {
-                    client.print(first);
-                    client.print(": ");
-                    client.println(second);
-                }
-                // headers are done
-                client.println();
+        // Send headers
+        for (auto [first, second] : headers_)
+        {
+            client.print(first);
+            client.print(": ");
+            client.println(second);
+        }
+        client.println();
 
-                sendBody(client, app.locals);
+        sendBody(client, renderLocals_);
 
-                client.stop();
-        */
+        client.stop();
     }
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(ClientType &client)
-        : client_(client)
+    Response(express &app, EthernetClient &client)
+        : app_(app), client_(client)
     {
     }
 
@@ -243,7 +241,7 @@ public: /* Methods*/
     /// @param view
     auto render(FileCallback fileCallback, locals_t &locals) -> void
     {
-        //  auto renderEngine = app_.engines;
+        auto it = app_.engines.begin();
 
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.
@@ -306,6 +304,6 @@ public: /* Methods*/
     }
 };
 
-typedef Response<EthernetClient> response;
+typedef Response<> response;
 
 END_EXPRESS_NAMESPACE

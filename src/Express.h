@@ -40,37 +40,37 @@ struct ExpressDefaultSettings
     static constexpr int MaxEngines = 4;
 };
 
-template <class ServerType, class ClientType, class _Settings = ExpressDefaultSettings>
-class Express
+// template <class ServerType, class ClientType, class _Settings = ExpressDefaultSettings>
+class express
 {
 public:
-    typedef _Settings Settings;
+    //  typedef _Settings Settings;
 
     friend class HttpRequestHandler;
 
 private:
     /// @brief
-    ServerType *server_{}; // TODO: singleton
+    EthernetServer *server_{}; // TODO: singleton
 
 private:
     /// @brief routes
-    vector<Route *, Settings::MaxRoutes> routes_{};
+    vector<Route *, 10> routes_{};
 
     /// @brief Application wide middlewares
-    vector<MiddlewareCallback, Settings::MaxMiddlewareCallbacks> middlewares_{};
+    vector<MiddlewareCallback, 10> middlewares_{};
 
     /// @brief
-    dictionary<String, Express *, Settings::MaxMountPaths> mount_paths_{};
+    dictionary<String, express *, 10> mount_paths_{};
 
     /// @brief
-    Express *parent_ = nullptr;
+    express *parent_ = nullptr;
 
 public:
     /// @brief
     uint16_t port{};
 
     /// @brief Application Settings
-    dictionary<String, String, Settings::MaxSettings> settings{};
+    dictionary<String, String, 10> settings{};
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
@@ -81,7 +81,7 @@ public:
     locals_t locals{};
 
     /// @brief
-    dictionary<String, RenderEngineCallback, Settings::MaxEngines> engines{};
+    dictionary<String, RenderEngineCallback, 10> engines{};
 
 private:
     // bodyparser
@@ -103,7 +103,7 @@ private:
             return true;
         }
 
-        ClientType &client = const_cast<ClientType &>(req.client_);
+        auto &client = const_cast<EthernetClient &>(req.client_);
 
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
         {
@@ -155,7 +155,7 @@ private:
     {
         EX_DBG_V(F("> bodyparser raw"));
 
-        ClientType &client = const_cast<ClientType &>(req.client_);
+        auto &client = const_cast<EthernetClient &>(req.client_);
 
         if (req.get(F("content-type")).equalsIgnoreCase(F("application/octet-stream")))
         {
@@ -226,32 +226,31 @@ public:
     /// @return
     static auto raw() -> MiddlewareCallback
     {
-        return Express::parseRaw;
+        return express::parseRaw;
     }
 
     /// @brief
     /// @return
     static auto json() -> MiddlewareCallback
     {
-        return Express::parseJson;
+        return express::parseJson;
     }
 
     /// @brief
     /// @return
     static auto text() -> MiddlewareCallback
     {
-        return Express::parseText;
+        return express::parseText;
     }
 
     /// @brief
     /// @return
     static auto urlencoded() -> MiddlewareCallback
     {
-        return Express::parseUrlencoded;
+        return express::parseUrlencoded;
     }
 
 private:
-
     /// @brief
     /// @param path
     /// @param pathItems
@@ -378,9 +377,9 @@ private:
 
 public:
     /// @brief Constructor
-    Express()
+    express()
     {
-        EX_DBG_V(F("Express() constructor"));
+        EX_DBG_V(F("express() constructor"));
 
         settings[F("env")] = F("production");
         //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
@@ -398,7 +397,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    auto use(const String &mount_path, Express &other) -> void
+    auto use(const String &mount_path, express &other) -> void
     {
         EX_DBG_I(F("use mountPath:"), mount_path);
 
@@ -429,16 +428,16 @@ public:
     /// @param name
     auto disable(const String &name) -> void
     {
-        settings[name] = "false";
+        settings[name] = F("false");
     }
 
     /// @brief Returns true if the Boolean setting name is disabled (false), where name is one
     /// of the properties from the app settings table.
     /// @param name
     /// @return
-    auto disabled(const String &name) -> String
+    auto disabled(const String &name) -> bool
     {
-        return settings[name] == F("false");
+        return settings[name].equalsIgnoreCase(F("false"));
     }
 
     /// @brief Sets the Boolean setting name to true, where name is one of the properties from the
@@ -447,16 +446,16 @@ public:
     /// @param name
     auto enable(const String &name) -> void
     {
-        settings[name] = "true";
+        settings[name] = F("false");
     }
 
     /// @brief Returns true if the setting name is enabled (true), where name is one of the
     /// properties from the app settings table.
     /// @param name
     /// @return
-    auto enabled(const String &name) -> String
+    auto enabled(const String &name) -> bool
     {
-        return settings[name] == F("true");
+        return settings[name].equalsIgnoreCase(F("true"));
     }
 
     /// @brief Returns the value of name app setting, where name is one of the strings in
@@ -569,7 +568,7 @@ public:
         // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
         //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-        server_ = new ServerType(port);
+        server_ = new EthernetServer(port);
         server_->begin();
 
         if (startedCallback)
@@ -579,24 +578,24 @@ public:
     /// @brief
     auto run() -> void
     {
-        if (ClientType client = server_->available())
+        if (auto client = server_->available())
             run(client);
     }
 
     /// @brief
     /// @param client
-    void run(ClientType &client)
+    void run(EthernetClient &client)
     {
         while (client.connected())
         {
             if (client.available())
             {
                 // Construct request object and read/parse incoming bytes
-                request req(client);
+                request req(*this, client);
 
                 if (req.method != Method::ERROR)
                 {
-                    response res(client);
+                    response res(*this, client);
 
                     /// @brief run the app wide middlewares (ao bodyparsers)
                     for (const auto middleware : middlewares_)
@@ -606,36 +605,14 @@ public:
                     /// @brief evaluate the request
                     evaluate(req, res);
 
-                    // res.send(); // TODO move to res
-                    client.print(F("HTTP/1.1 "));
-                    client.println(res.status_);
-
-                    // Add to headers
-                    res.evaluateHeaders(client);
-
-                    if (settings[F("X-powered-by")] != 0)
-                        res.headers_[F("X-powered-by")] = settings[F("X-powered-by")];
-
-                    // Send headers
-                    for (auto [first, second] : res.headers_)
-                    {
-                        client.print(first);
-                        client.print(": ");
-                        client.println(second);
-                    }
-                    // headers are done
-                    client.println();
-
-                    res.sendBody(client, locals);
-
-                    client.stop();
+                    res.send(); 
                 }
             }
         }
     };
 };
 
-typedef Express<EthernetServer, EthernetClient> express;
+// typedef Express<EthernetServer, EthernetClient> express;
 
 END_EXPRESS_NAMESPACE
 

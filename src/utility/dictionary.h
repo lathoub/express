@@ -2,6 +2,9 @@
 
 #include "vector.h"
 
+/// @brief
+/// @tparam T
+/// @tparam U
 template <class T, class U>
 class dictionary_item
 {
@@ -10,6 +13,10 @@ public:
     U value;
 };
 
+/// @brief
+/// @tparam T
+/// @tparam U
+/// @tparam MaxSize
 template <class T, class U, size_t MaxSize>
 class dictionary_iterator
 {
@@ -19,30 +26,45 @@ class dictionary_iterator
     typedef dictionary_iterator<T, U, MaxSize> const_iterator;
 
 public:
+    /// @brief
+    /// @param kvps
     explicit dictionary_iterator(dictionary_items *kvps) : values_ptr_{kvps}, position_{0}
     {
     }
 
+    /// @brief
+    /// @param kvps
+    /// @param size
     dictionary_iterator(dictionary_items *kvps, const size_t size) : values_ptr_{kvps}, position_{size}
     {
     }
 
+    /// @brief
+    /// @param other
+    /// @return
     bool operator!=(const_iterator &other) const
     {
         return !(*this == other);
     }
 
+    /// @brief
+    /// @param other
+    /// @return
     bool operator==(const_iterator &other) const
     {
         return position_ == other.position_;
     }
 
+    /// @brief
+    /// @return
     dictionary_iterator &operator++()
     {
         ++position_;
         return *this;
     }
 
+    /// @brief
+    /// @return
     dictionary_item_ &operator*() const
     {
         return values_ptr_->at(position_);
@@ -54,6 +76,10 @@ private:
     size_t position_;
 };
 
+/// @brief
+/// @tparam T
+/// @tparam U
+/// @tparam MaxSize
 template <class T, class U, size_t MaxSize = 10>
 class dictionary
 {
@@ -65,12 +91,8 @@ class dictionary
     auto get(T key) -> U &
     {
         for (size_t i = 0; i < kvps_.size(); i++)
-        {
             if (kvps_.at(i).key == key)
-            {
                 return kvps_.at(i).value;
-            }
-        }
 
         dictionary_item_ item{};
         item.key = key;
@@ -92,9 +114,24 @@ public:
         return get(key);
     }
 
+    /// @brief 
+    /// @return 
     auto length() -> size_t
     {
         return kvps_.size();
+    }
+
+    /// @brief Count elements with a specific key. Searches the container for elements 
+    /// with a key equivalent to k and returns the number of matches.
+    /// @param key 
+    /// @return 
+    auto count(T key) -> size_t
+    {
+        size_t n = 0;
+        for (size_t i = 0; i < kvps_.size(); i++)
+            if (kvps_.at(i).key == key)
+                n++;
+        return n;
     }
 
     auto clear() -> void

@@ -8,7 +8,7 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Routes;
 class Route;
-#include "express.h"
+class express;
 
 struct RequestDefaultSettings
 {
@@ -19,7 +19,7 @@ struct RequestDefaultSettings
     static constexpr int MaxQueries = 10;
 };
 
-template <class ClientType, class _Settings = RequestDefaultSettings>
+template <class _Settings = RequestDefaultSettings>
 class Request
 {
 public:
@@ -30,14 +30,14 @@ public:
     String uri_{};
 
     /// @brief
-    const ClientType &client_;
+    const EthernetClient &client_;
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
- //   const express &app_;
+    const express &app_;
 
-    /// @brief 
-    Route*  route_ = nullptr;
+    /// @brief
+    Route *route_ = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
@@ -57,7 +57,7 @@ public:
     IPAddress ip{};
 
     /// @brief
-    dictionary<String, String, Settings::MaxHeaders> headers{}; 
+    dictionary<String, String, Settings::MaxHeaders> headers{};
 
     /// @brief Contains the path part of the request URL.
     String path{};
@@ -66,7 +66,7 @@ public:
     String protocol{};
 
     /// @brief
-    dictionary<String, String, Settings::MaxQueries> query{};
+    dictionary<String, String, 10> query{};
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as
@@ -75,8 +75,8 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(ClientType &client)
-	    : client_(client), method(Method::UNDEFINED)
+    Request(express &app, EthernetClient &client)
+        : app_(app), client_(client), method(Method::UNDEFINED)
     {
         parse(client);
     }
@@ -84,7 +84,7 @@ public: /* Methods*/
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    auto accepts(const String& types) -> bool
+    auto accepts(const String &types) -> bool
     {
         return false;
     }
@@ -92,7 +92,7 @@ public: /* Methods*/
     /// @brief Returns the specified HTTP request header field (case-insensitive match).
     /// @param field
     /// @return
-    auto get(const String& field) -> String
+    auto get(const String &field) -> String
     {
         for (auto [key, header] : headers)
         {
@@ -103,10 +103,10 @@ public: /* Methods*/
     }
 
 private:
-    /// @brief 
-    /// @param client 
-    /// @return 
-    bool parse(ClientType& client) 
+    /// @brief
+    /// @param client
+    /// @return
+    bool parse(EthernetClient &client)
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');
@@ -152,7 +152,8 @@ private:
         }
 
         uri_ = url;
-        if (uri_ == F("/")) uri_ = F("");
+        if (uri_ == F("/"))
+            uri_ = F("");
 
         method = Method::GET;
         if (method_str == F("HEAD"))
@@ -205,7 +206,7 @@ private:
 
     /// @brief
     /// @param data
-    auto parseArguments(const String& data) -> void
+    auto parseArguments(const String &data) -> void
     {
         if (data.length() == 0)
             return;
@@ -257,10 +258,10 @@ private:
             EX_DBG_V(F("argument:"), argument, F("value:"), value);
     }
 
-    /// @brief 
-    /// @param text 
-    /// @return 
-    static auto urlDecode(const String& text) -> String
+    /// @brief
+    /// @param text
+    /// @return
+    static auto urlDecode(const String &text) -> String
     {
         String decoded = "";
         char temp[] = "0x00";
@@ -289,9 +290,8 @@ private:
 
         return decoded;
     }
-
 };
 
-typedef Request<EthernetClient> request;
+typedef Request<> request;
 
 END_EXPRESS_NAMESPACE
