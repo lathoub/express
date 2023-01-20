@@ -242,6 +242,7 @@ public: /* Methods*/
     auto render(FileCallback fileCallback, locals_t &locals) -> void
     {
         auto it = app_.engines.begin();
+        auto uu = *it;
 
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.

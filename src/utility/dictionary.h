@@ -9,8 +9,8 @@ template <class T, class U>
 class dictionary_item
 {
 public:
-    T key;
-    U value;
+    T first;
+    U second;
 };
 
 /// @brief
@@ -23,26 +23,42 @@ class dictionary_iterator
     typedef dictionary_item<T, U> dictionary_item_;
     typedef vector<dictionary_item_, MaxSize> dictionary_items;
     typedef dictionary_iterator<T, U, MaxSize> iterator;
-    typedef dictionary_iterator<T, U, MaxSize> const_iterator;
 
 public:
     /// @brief
     /// @param kvps
-    explicit dictionary_iterator(dictionary_items *kvps) : values_ptr_{kvps}, position_{0}
+    dictionary_iterator(dictionary_items *kvps)
+        : values_ptr_{kvps}, position_{0}
+    {
+    }
+
+    /// @brief
+    /// @param kvps
+    dictionary_iterator(const dictionary_items *kvps)
+        : values_ptr_{kvps}, position_{0}
     {
     }
 
     /// @brief
     /// @param kvps
     /// @param size
-    dictionary_iterator(dictionary_items *kvps, const size_t size) : values_ptr_{kvps}, position_{size}
+    dictionary_iterator(dictionary_items *kvps, const size_t size)
+        : values_ptr_{kvps}, position_{size}
+    {
+    }
+
+    /// @brief
+    /// @param kvps
+    /// @param size
+    dictionary_iterator(const dictionary_items *kvps, const size_t size)
+        : values_ptr_{kvps}, position_{size}
     {
     }
 
     /// @brief
     /// @param other
     /// @return
-    bool operator!=(const_iterator &other) const
+    bool operator!=(const iterator &other) const
     {
         return !(*this == other);
     }
@@ -50,7 +66,7 @@ public:
     /// @brief
     /// @param other
     /// @return
-    bool operator==(const_iterator &other) const
+    bool operator==(const iterator &other) const
     {
         return position_ == other.position_;
     }
@@ -65,13 +81,13 @@ public:
 
     /// @brief
     /// @return
-    dictionary_item_ &operator*() const
+    const dictionary_item<T, U> &operator*() const
     {
         return values_ptr_->at(position_);
     }
 
 private:
-    dictionary_items *values_ptr_;
+    const vector<dictionary_item<T, U>, MaxSize> *values_ptr_;
 
     size_t position_;
 };
@@ -88,48 +104,48 @@ class dictionary
 
     dictionary_items kvps_{};
 
-    auto get(T key) -> U &
+    auto get(T first) -> U &
     {
         for (size_t i = 0; i < kvps_.size(); i++)
-            if (kvps_.at(i).key == key)
-                return kvps_.at(i).value;
+            if (kvps_.at(i).first == first)
+                return kvps_.at(i).second;
 
         dictionary_item_ item{};
-        item.key = key;
-        item.value = U{};
+        item.first = first;
+        item.second = U{};
 
         kvps_.push_back(item);
 
-        return kvps_.back().value;
+        return kvps_.back().second;
     }
 
 public:
-    const U &operator[](T key) const
+    const U &operator[](T first) const
     {
-        return get(key);
+        return get(first);
     }
 
-    U &operator[](T key)
+    U &operator[](T first)
     {
-        return get(key);
+        return get(first);
     }
 
-    /// @brief 
-    /// @return 
+    /// @brief
+    /// @return
     auto length() -> size_t
     {
         return kvps_.size();
     }
 
-    /// @brief Count elements with a specific key. Searches the container for elements 
+    /// @brief Count elements with a specific key. Searches the container for elements
     /// with a key equivalent to k and returns the number of matches.
-    /// @param key 
-    /// @return 
-    auto count(T key) -> size_t
+    /// @param first
+    /// @return
+    auto count(T first) -> size_t
     {
         size_t n = 0;
         for (size_t i = 0; i < kvps_.size(); i++)
-            if (kvps_.at(i).key == key)
+            if (kvps_.at(i).first == first)
                 n++;
         return n;
     }
