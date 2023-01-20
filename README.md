@@ -16,11 +16,9 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 Express app;
 
 void setup() {
-  // ... setup for logging
-
   Ethernet.begin(mac); // no check for brevity
 
-  app.get(F("/"), [](Request &req, Response &res) {
+  app.get(F("/"), [](request &req, response &res) {
     res.send(F("Hello World!"));
   });
 
