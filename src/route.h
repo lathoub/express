@@ -25,7 +25,7 @@ public: /// @brief
 public:
     Method method = Method::UNDEFINED;
 
-    String path = F("");
+    String path{};
 
     vector<HandlerCallback, 5> handlers{}; // TODO how many
 
@@ -43,7 +43,7 @@ public:
 
     /// @brief
     /// @param path
-    auto splitToVector(const String& path) -> void
+    auto splitToVector(const String &path) -> void
     {
         splitToVector(path, indices);
     }
@@ -51,7 +51,7 @@ public:
     /// @brief
     /// @param path
     /// @return
-    static auto splitToVector(const String& path, vector<PosLen>& poslens) -> void
+    static auto splitToVector(const String &path, vector<PosLen> &poslens) -> void
     {
         size_t p = 0, i = 1;
         for (; i < path.length(); i++)
@@ -68,7 +68,7 @@ public:
     /// @brief
     /// @param name
     /// @param callback
-    auto on(const String& name, const DataCallback callback) -> void
+    auto on(const String &name, const DataCallback callback) -> void
     {
         EX_DBG_I(F("register data callback"), name);
         dataCallback_ = callback;
@@ -78,7 +78,7 @@ public:
     /// @brief
     /// @param name
     /// @param callback
-    auto on(const String& name, const EndDataCallback callback) -> void
+    auto on(const String &name, const EndDataCallback callback) -> void
     {
         EX_DBG_I(F("register end callback"), name);
         endCallback_ = callback;

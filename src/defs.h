@@ -18,7 +18,7 @@ BEGIN_EXPRESS_NAMESPACE
 
 #include "settings.h"
 
-const String __dirname = F("");
+const String __dirname{};
 
 #include "httpMethods.h"
 #include "httpStatusCodes.h"

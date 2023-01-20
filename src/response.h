@@ -44,7 +44,7 @@ public:
     /// @param client
     void evaluateHeaders(EthernetClient &client)
     {
-        if (body_ && !body_.isEmpty())
+        if (body_ && body_ != F(""))
             headers_[F("content-length")] = body_.length();
 
         headers_[F("connection")] = F("close");
@@ -56,7 +56,7 @@ public:
     {
         EX_DBG_I(F("sendBody"));
 
-        if (body_ && !body_.isEmpty())
+        if (body_ && body_ != F(""))
             client.println(body_.c_str());
         else if (contentsCallback_)
         {
