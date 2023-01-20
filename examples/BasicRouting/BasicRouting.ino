@@ -11,8 +11,20 @@ void setup() {
 
   Ethernet.begin(mac);
 
-  app.get("/", [](Request &req, Response &res) {
+  app.get("/", [](request &req, response &res) {
     res.send("Got a GET request");
+  });
+
+  app.post("/", [](request &req, response &res) {
+    res.send("Got a POST request");
+  });
+
+  app.put("/user", [](request &req, response &res) {
+    res.send("Got a PUT request at /user");
+  });
+
+  app.Delete("/user", [](request &req, response &res) {
+    res.send("Got a DELETE request at /user");
   });
 
   app.listen(80, []() {

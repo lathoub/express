@@ -11,11 +11,11 @@ void setup() {
 
   Ethernet.begin(mac);
 
-  app.get(F("/"), [](Request &req, Response &res) {
+  app.get(F("/"), [](request &req, response &res) {
     res.send(F("Visit /user/0"));
   });
 
-  app.get(F("/user/:user"), [](Request &req, Response &res) {
+  app.get(F("/user/:user"), [](request &req, response &res) {
     res.send("user " + req.params["user"]);
   });
 

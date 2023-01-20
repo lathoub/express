@@ -17,17 +17,17 @@ void setup() {
   app.use("/v1", v1);
   app.use("/v2", v2);
 
-  app.get("/user", [](Request &req, Response &res) { 
+  app.get("/user", [](request &req, response &res) { 
     res.status(HTTP_STATUS_OK).send("root path");
   });
 
   // Landing page here is /v1/user
-  v1.get("/user", [](Request &req, Response &res) { 
+  v1.get("/user", [](request &req, response &res) { 
     res.status(HTTP_STATUS_OK).send("route v1");
   });
 
   // Landing page here is /v2/user
-  v2.get("/user", [](Request &req, Response &res) { 
+  v2.get("/user", [](request &req, response &res) { 
     res.status(HTTP_STATUS_OK).send("route v2");
   });
 
