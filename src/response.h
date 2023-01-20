@@ -55,17 +55,15 @@ public:
     void sendBody(EthernetClient &client, locals_t &locals)
     {
         EX_DBG_I(F("sendBody"));
-        
+
         if (body_ && !body_.isEmpty())
-            client.println(body_.c_str()); 
+            client.println(body_.c_str());
         else if (contentsCallback_)
         {
-            auto it = app_.engines.begin();
-            if (it != app_.engines.end())
-            {
-                auto engine = *it;
-                engine.second(client, locals, contentsCallback_());
-            }
+            auto engineName = app_.settings["view engine"];
+            auto engine = app_.engines[engineName];
+            if (engine)
+                engine(client, locals, contentsCallback_());
         }
     }
 
