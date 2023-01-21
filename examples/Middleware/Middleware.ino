@@ -25,7 +25,7 @@ void setup() {
   app.use(middleware2);
 
   app.get("/", [](request &req, response &res) {
-    res.status(HTTP_STATUS_OK).send(req.params[F("demo")]);
+    res.status(HttpStatus::OK).send(req.params[F("demo")]);
   });
 
   app.listen(80, []() {

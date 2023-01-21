@@ -16,7 +16,7 @@ void setup()
   Ethernet.begin(mac);
 
   Route &route = app.post("/firmware", express::raw(), [](request &req, response &res)
-                          { res.sendStatus(HTTP_STATUS_CREATED); });
+                          { res.sendStatus(HttpStatus::CREATED); });
 
   route.on(F("data"), [](const Buffer &chunck)
            {

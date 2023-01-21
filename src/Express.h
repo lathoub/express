@@ -336,7 +336,7 @@ private:
                                                      req.uri_, req_indices,
                                                      req.params))
             {
-                res.status_ = HTTP_STATUS_OK; // assumes all goes OK
+                res.status_ = HttpStatus::OK;
                 req.route_ = route;
 
                 // Route middleware

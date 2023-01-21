@@ -27,7 +27,7 @@ public:
     /// @brief
     const EthernetClient &client_;
 
-    uint16_t status_ = HTTP_STATUS_NOT_FOUND;
+    uint16_t status_ = HttpStatus::NOT_FOUND;
 
     dictionary<String, String, Settings::MaxHeaders> headers_{};
 

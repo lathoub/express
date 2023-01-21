@@ -18,17 +18,17 @@ void setup() {
   app.use("/v2", v2);
 
   app.get("/user", [](request &req, response &res) { 
-    res.status(HTTP_STATUS_OK).send("root path");
+    res.status(HttpStatus::OK).send("root path");
   });
 
   // Landing page here is /v1/user
   v1.get("/user", [](request &req, response &res) { 
-    res.status(HTTP_STATUS_OK).send("route v1");
+    res.status(HttpStatus::OK).send("route v1");
   });
 
   // Landing page here is /v2/user
   v2.get("/user", [](request &req, response &res) { 
-    res.status(HTTP_STATUS_OK).send("route v2");
+    res.status(HttpStatus::OK).send("route v2");
   });
 
   app.listen(80, []() {
