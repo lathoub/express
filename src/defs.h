@@ -19,12 +19,12 @@ BEGIN_EXPRESS_NAMESPACE
 constexpr size_t rawBufferSize = 512;
 
 // cache Strings that are used a lot, to preserve memory
-static const String ContentType F("content-type");
-static const String ContentLength F("content-length");
-static const String XPoweredBy F("X-powered-by");
-static const String ApplicationJson F("application/json");
-static const String True F("true");
-static const String False F("false");
+static const char ContentType[] PROGMEM = "content-type";
+static const char ContentLength[] PROGMEM = "content-length";
+static const char XPoweredBy[] PROGMEM = "X-powered-by";
+static const char ApplicationJson[] PROGMEM = "application/json";
+static const char True[] PROGMEM = "true";
+static const char False[] PROGMEM = "false";
 
 class Buffer
 {

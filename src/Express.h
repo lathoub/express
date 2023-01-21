@@ -101,10 +101,6 @@ public:
     /// on which a sub-app was mounted.
     String mountpath{};
 
-    /// @brief properties that are local variables within the application, and will
-    /// be available in templates rendered with res.render
-    locals_t locals{};
-
     /// @brief
     dictionary<String, RenderEngineCallback, 10> engines{};
 
