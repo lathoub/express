@@ -8,7 +8,7 @@ class Routes;
 class Route;
 class express;
 
-using FileCallback = const char *(*)();
+using ContentCallback = const char *(*)();
 
 struct ResponseDefaultSettings
 {
@@ -29,14 +29,14 @@ public:
 
     uint16_t status_ = HTTP_STATUS_NOT_FOUND;
 
-    dictionary<String, String, 10> headers_{};
+    dictionary<String, String, Settings::MaxHeaders> headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
     express &app_;
 
     /// @brief derefered rendering
-    FileCallback contentsCallback_{};
+    ContentCallback contentsCallback_{};
     locals_t renderLocals_{};
 
 public:
@@ -45,7 +45,7 @@ public:
     void evaluateHeaders(EthernetClient &client)
     {
         if (body_ && body_ != F(""))
-            headers_[F("content-length")] = body_.length();
+            headers_[ContentLength] = body_.length();
 
         headers_[F("connection")] = F("close");
     }
@@ -60,7 +60,7 @@ public:
             client.println(body_.c_str());
         else if (contentsCallback_)
         {
-            auto engineName = app_.settings["view engine"];
+            auto engineName = app_.settings[F("view engine")];
             auto engine = app_.engines[engineName];
             if (engine)
                 engine(client, locals, contentsCallback_());
@@ -78,8 +78,8 @@ public:
         // Add to headers
         evaluateHeaders(client);
 
-        if (app_.settings.count(F("X-powered-by")) > 0)
-            headers_[F("X-powered-by")] = app_.settings[F("X-powered-by")];
+        if (app_.settings.count(XPoweredBy) > 0)
+            headers_[XPoweredBy] = app_.settings[XPoweredBy];
 
         // Send headers
         for (auto [first, second] : headers_)
@@ -162,7 +162,7 @@ public: /* Methods*/
     {
         body_ = body;
 
-        set(F("content-type"), F("application/json"));
+        set(ContentType, ApplicationJson);
         // QUESTION: set content-length here?
     }
 
@@ -173,7 +173,7 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    auto render(FileCallback fileCallback, locals_t &locals) -> void
+    auto render(ContentCallback fileCallback, locals_t &locals) -> void
     {
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.
@@ -182,7 +182,7 @@ public: /* Methods*/
         contentsCallback_ = fileCallback;
         renderLocals_ = locals; // TODO: check if this copies??
 
-        set(F("content-type"), F("text/html"));
+        set(ContentType, F("text/html"));
     }
 
     /// @brief Sends the HTTP response.

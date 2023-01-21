@@ -1,10 +1,35 @@
+/*!
+ *  @file       Express.h
+ *  Project     Arduino Express Library
+ *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
+ *  @author     lathoub
+ *  @date       20/01/23
+ *  @license    GNU GENERAL PUBLIC LICENSE
+ *
+ *   Fast, unopinionated, (very) minimalist web framework for Arduino.
+ *   Copyright (C) 2023 lathoub
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #pragma once
 
 #include <Ethernet.h>
 
 #define EX_DEBUG Serial
 
-#include "debug.h"
+#include "utility/debug.h"
 #include "defs.h"
 
 #include "request.h"
@@ -105,9 +130,9 @@ private:
 
         auto &client = const_cast<EthernetClient &>(req.client_);
 
-        if (req.get(F("content-type")).equalsIgnoreCase(F("application/json")))
+        if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
         {
-            auto max_length = req.get(F("content-length")).toInt();
+            auto max_length = req.get(ContentLength).toInt();
 
             req.body.reserve(max_length);
 
@@ -134,7 +159,7 @@ private:
                     req.body += static_cast<char>(client.read());
             }
 
-            res.headers_["content-type"] = F("application/json");
+            res.headers_[ContentType] = ApplicationJson;
 
             EX_DBG_I(F("< bodyparser parseJson"));
 
@@ -147,7 +172,7 @@ private:
     // TODO: static options
     // inflate, limit, type, verify
 
-    /// @brief defayults to application/octet-stream
+    /// @brief 
     /// @param req
     /// @param res
     /// @return
@@ -157,9 +182,9 @@ private:
 
         auto &client = const_cast<EthernetClient &>(req.client_);
 
-        if (req.get(F("content-type")).equalsIgnoreCase(F("application/octet-stream")))
+        if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
         {
-            auto dataLen = req.get(F("content-length")).toInt();
+            auto dataLen = req.get(ContentLength).toInt();
 
             while (dataLen > 0 && client.connected())
             {
@@ -382,7 +407,7 @@ public:
         EX_DBG_V(F("express() constructor"));
 
         settings[F("env")] = F("production");
-        //  settings[F("X-powered-by")] = F("X-Powered-By: Express for Arduino");
+        //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
     }
 
     /// @brief
@@ -428,7 +453,7 @@ public:
     /// @param name
     auto disable(const String &name) -> void
     {
-        settings[name] = F("false");
+        settings[name] = False;
     }
 
     /// @brief Returns true if the Boolean setting name is disabled (false), where name is one
@@ -437,7 +462,7 @@ public:
     /// @return
     auto disabled(const String &name) -> bool
     {
-        return settings[name].equalsIgnoreCase(F("false"));
+        return settings[name].equalsIgnoreCase(False);
     }
 
     /// @brief Sets the Boolean setting name to true, where name is one of the properties from the
@@ -446,7 +471,7 @@ public:
     /// @param name
     auto enable(const String &name) -> void
     {
-        settings[name] = F("false");
+        settings[name] = True;
     }
 
     /// @brief Returns true if the setting name is enabled (true), where name is one of the
@@ -455,7 +480,7 @@ public:
     /// @return
     auto enabled(const String &name) -> bool
     {
-        return settings[name].equalsIgnoreCase(F("true"));
+        return settings[name].equalsIgnoreCase(True);
     }
 
     /// @brief Returns the value of name app setting, where name is one of the strings in
@@ -615,5 +640,3 @@ public:
 // typedef Express<EthernetServer, EthernetClient> express;
 
 END_EXPRESS_NAMESPACE
-
-#include "Express.hpp"

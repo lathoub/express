@@ -24,11 +24,8 @@ namespace
   EX_DBG_SETUP(unsigned long baud = 115200)
   {
     EX_DEBUG.begin(baud);
-    while (!EX_DEBUG && !EX_DEBUG.available())
-    {
-    }
-    delay(1000);
-    EX_DEBUG.println("booting");
+    while (!EX_DEBUG && !EX_DEBUG.available()) {} delay(500);
+    EX_DEBUG.println(F("booting"));
   }
 #else
 #define EX_DBG_SETUP(...)
