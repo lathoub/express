@@ -38,7 +38,7 @@ public:
     /// @brief constructor
     Route()
     {
-        EX_DBG_V(F("Route() constructor"));
+        LOG_V(F("Route() constructor"));
     }
 
     /// @brief
@@ -70,7 +70,7 @@ public:
     /// @param callback
     auto on(const String &name, const DataCallback callback) -> void
     {
-        EX_DBG_I(F("register data callback"), name);
+        LOG_I(F("register data callback"), name);
         dataCallback_ = callback;
         // return *this;
     }
@@ -80,7 +80,7 @@ public:
     /// @param callback
     auto on(const String &name, const EndDataCallback callback) -> void
     {
-        EX_DBG_I(F("register end callback"), name);
+        LOG_I(F("register end callback"), name);
         endCallback_ = callback;
         //  return *this;
     }

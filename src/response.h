@@ -54,7 +54,7 @@ public:
     /// @param client
     void sendBody(EthernetClient &client, locals_t &locals)
     {
-        EX_DBG_I(F("sendBody"));
+        LOG_I(F("sendBody"));
 
         if (body_ && body_ != F(""))
             client.println(body_.c_str());

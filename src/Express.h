@@ -29,7 +29,7 @@
 
 #define EX_DEBUG Serial
 
-#include "utility/debug.h"
+#include "utility/logger.h"
 #include "defs.h"
 
 #include "request.h"
@@ -116,11 +116,11 @@ private:
     /// @return
     static auto parseJson(request &req, response &res) -> bool
     {
-        EX_DBG_I(F("> bodyparser parseJson"));
+        LOG_I(F("> bodyparser parseJson"));
 
         if (req.body != nullptr && req.body.length() > 0)
         {
-            EX_DBG_I(F("Body already read"));
+            LOG_I(F("Body already read"));
             return true;
         }
 
@@ -157,7 +157,7 @@ private:
 
             res.headers_[ContentType] = ApplicationJson;
 
-            EX_DBG_I(F("< bodyparser parseJson"));
+            LOG_I(F("< bodyparser parseJson"));
 
             return true;
         }
@@ -174,7 +174,7 @@ private:
     /// @return
     static auto parseRaw(request &req, response &res) -> bool
     {
-        EX_DBG_V(F("> bodyparser raw"));
+        LOG_V(F("> bodyparser raw"));
 
         auto &client = const_cast<EthernetClient &>(req.client_);
 
@@ -190,7 +190,7 @@ private:
                     buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
                     dataLen -= buffer.length;
 
-                    EX_DBG_V(F("remaining:"), buffer.length, dataLen);
+                    LOG_V(F("remaining:"), buffer.length, dataLen);
 
                     if (dataLen > 0)
                     {
@@ -211,7 +211,7 @@ private:
             }
         }
 
-        EX_DBG_V(F("< bodyparser raw"));
+        LOG_V(F("< bodyparser raw"));
 
         return true;
     }
@@ -285,8 +285,8 @@ private:
     {
         if (requestPathItems.size() != pathItems.size())
         {
-            EX_DBG_I(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-            EX_DBG_I(F("return false in function match"));
+            LOG_I(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+            LOG_I(F("return false in function match"));
             return false;
         }
 
@@ -317,7 +317,7 @@ private:
     /// @param res
     auto evaluate(request &req, response &res) -> const bool
     {
-        EX_DBG_V(F("evaluate"), req.uri_);
+        LOG_V(F("evaluate"), req.uri_);
 
         vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
@@ -325,8 +325,8 @@ private:
 
         for (auto route : routes_)
         {
-            EX_DBG_V(F("req.method:"), req.method, F("method:"), route->method);
-            EX_DBG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
+            LOG_V(F("req.method:"), req.method, F("method:"), route->method);
+            LOG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
 
             if (req.method == route->method && match(route->path, route->indices,
                                                      req.uri_, req_indices,
@@ -370,7 +370,7 @@ private:
 
         path = mountpath + path;
 
-        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), (nullptr == handler));
+        LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), (nullptr == handler));
 
         const auto route = new Route();
         route->method = method;
@@ -392,7 +392,7 @@ private:
     /// @return
     auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &
     {
-        EX_DBG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
+        LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
         return METHOD(method, path, nullptr, fptr);
     }
 
@@ -400,7 +400,7 @@ public:
     /// @brief Constructor
     express()
     {
-        EX_DBG_V(F("express() constructor"));
+        LOG_V(F("express() constructor"));
 
         settings[F("env")] = F("production");
         //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
@@ -420,7 +420,7 @@ public:
     /// @return
     auto use(const String &mount_path, express &other) -> void
     {
-        EX_DBG_I(F("use mountPath:"), mount_path);
+        LOG_I(F("use mountPath:"), mount_path);
 
         other.mountpath = mount_path;
         other.parent_ = this;
@@ -577,7 +577,7 @@ public:
     {
         if (nullptr != server_)
         {
-            EX_DBG_E(F("The listen method can only be called once! This call is ignored and processing continous."));
+            LOG_E(F("The listen method can only be called once! This call is ignored and processing continous."));
             return;
         }
 

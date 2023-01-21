@@ -131,7 +131,7 @@ private:
 
         if (addr_start == -1 || addr_end == -1)
         {
-            EX_DBG_V(F("_parseRequest: Invalid request: "), reqStr);
+            LOG_V(F("_parseRequest: Invalid request: "), reqStr);
             method = Method::ERROR;
             return false;
         }
@@ -190,12 +190,12 @@ private:
                 hostname = header_value;
         }
 
-        EX_DBG_V(F("Method:"), method_str);
-        EX_DBG_V(F("Uri:"), uri_);
+        LOG_V(F("Method:"), method_str);
+        LOG_V(F("Uri:"), uri_);
 
-        EX_DBG_V(F("Headers"));
+        LOG_V(F("Headers"));
         for (auto [header, value] : headers)
-            EX_DBG_V(F("header:"), header, F("value:"), value);
+            LOG_V(F("header:"), header, F("value:"), value);
 
         parseArguments(search_str);
 
@@ -251,9 +251,9 @@ private:
             pos = next_arg_index + 1;
         }
 
-        EX_DBG_V(F("Query Arguments"));
+        LOG_V(F("Query Arguments"));
         for (auto [argument, value] : query)
-            EX_DBG_V(F("argument:"), argument, F("value:"), value);
+            LOG_V(F("argument:"), argument, F("value:"), value);
     }
 
     /// @brief
