@@ -14,10 +14,7 @@ auto dada(request &req, response &res) -> bool {
 }
 
 void setup() {
-  Serial.begin(115200);
-  while (!Serial && !Serial.available()) {}
-  delay(500);
-  Serial.println(F("booting"));
+  LOG_SETUP();
 
   Ethernet.init(5);
   Ethernet.begin(mac);
@@ -41,10 +38,7 @@ void setup() {
   });
 
   app.listen(80, []() {
-    Serial.print(F("Example app listening on port "));
-    Serial.print(Ethernet.localIP());
-    Serial.print(F(" "));
-    Serial.println(app.port);
+    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
   });
 }
 

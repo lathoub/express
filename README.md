@@ -23,8 +23,7 @@ void setup() {
   });
 
   app.listen(3000, []() { // creates and runs EthernetServer
-    Serial.print(F("Example app listening on port "));
-    Serial.println(express.port);
+    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
   });
 }
 

@@ -1,3 +1,6 @@
+#define LOGGER Serial
+#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
@@ -8,9 +11,7 @@ express v1;
 express v2;
 
 void setup() {
-  Serial.begin(115200);
-  while (!Serial && !Serial.available()) {} delay(250);
-  Serial.println(F("booting"));
+  LOG_SETUP();
 
   Ethernet.begin(mac);
 
@@ -32,10 +33,7 @@ void setup() {
   });
 
   app.listen(80, []() {
-    Serial.print(F("Example app listening on port "));
-    Serial.print(Ethernet.localIP());
-    Serial.print(F(" "));
-    Serial.println(app.port);
+    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
   });
 }
 

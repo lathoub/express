@@ -371,7 +371,8 @@ private:
 
         path = mountpath + path;
 
-        LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), S);
+        LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), S);
+        // F("mountpath:"), mountpath,
 
         const auto route = new Route();
         route->method = method;
@@ -379,7 +380,8 @@ private:
         route->fptrCallback = fptrCallback;
 
         for (auto handler : handlers)
-            route->handlers.push_back(handler);
+            if (nullptr != handler)
+                route->handlers.push_back(handler);
 
         route->splitToVector(route->path);
         // Add to collection
@@ -395,8 +397,8 @@ private:
     /// @return
     auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &
     {
-
-        LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
+        LOG_I(F("METHOD:"), method,  F("path:"), path);
+        // F("mountpath:"), mountpath,
 
         const MiddlewareCallback middlewares[] = {0};
         return METHOD(method, path, middlewares, fptr);
