@@ -1,41 +1,53 @@
-#define EX_DEBUG_LOGLEVEL EX_DEBUG_LOGLEVEL_INFO
+#define LOGGER Serial
+#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 express app;
 
-void setup()
-{
+auto dada(request &req, response &res) -> bool {
+  LOG_I(F("Content-Length"), req.headers[F("Content-Length")]);
+  return true;
+}
+
+void setup() {
   Serial.begin(115200);
-  while (!Serial && !Serial.available())  {} delay(500);
+  while (!Serial && !Serial.available()) {}
+  delay(500);
   Serial.println(F("booting"));
 
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  Route &route = app.post("/firmware", express::raw(), [](request &req, response &res)
-                          { res.sendStatus(HttpStatus::CREATED); });
+  const HandlerCallback handlers[] = { dada, express::raw() };
 
-  route.on(F("data"), [](const Buffer &chunck)
-           {
-             //    Serial.print(F("chunck size: "));
-             //  Serial.println(chunck.length);
-           });
+  Route &route = app.post("/firmware", handlers, [](request &req, response &res) {
+    LOG_V(F("in route"));
+    LOG_V(req.headers["Content-Length"]);
+    res.sendStatus(HttpStatus::ACCEPTED);
+  });
 
-  route.on(F("end"), []()
-           { Serial.println(F("end")); });
+  route.on(F("data"), [](const Buffer &chunck) {
+    LOG_V(F("data"));
+    //    Serial.print(F("chunck size: "));
+    //  Serial.println(chunck.length);
+  });
 
-  app.listen(80, []()
-             {
+  route.on(F("end"), []() {
+    LOG_V(F("end"));
+  });
+
+  app.listen(80, []() {
     Serial.print(F("Example app listening on port "));
     Serial.print(Ethernet.localIP());
     Serial.print(F(" "));
-    Serial.println(app.port); });
+    Serial.println(app.port);
+  });
 }
 
-void loop()
-{
+void loop() {
   app.run();
 }

@@ -168,7 +168,7 @@ private:
     // TODO: static options
     // inflate, limit, type, verify
 
-    /// @brief 
+    /// @brief
     /// @param req
     /// @param res
     /// @return
@@ -363,21 +363,24 @@ private:
     /// @param handler
     /// @param fptrCallback
     /// @return
-    auto METHOD(const Method method, String path, const HandlerCallback handler, const requestCallback fptrCallback) -> Route &
+    template<typename T, std::size_t S>
+    auto METHOD(const Method method, String path, T (&handlers)[S], const requestCallback fptrCallback) -> Route &
     {
         if (path == F("/"))
             path = F("");
 
         path = mountpath + path;
 
-        LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), (nullptr == handler));
+        LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path, F("handler:"), S);
 
         const auto route = new Route();
         route->method = method;
         route->path = path;
         route->fptrCallback = fptrCallback;
-        if (nullptr != handler)
+
+        for (auto handler : handlers)
             route->handlers.push_back(handler);
+
         route->splitToVector(route->path);
         // Add to collection
         routes_.push_back(route);
@@ -392,8 +395,11 @@ private:
     /// @return
     auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &
     {
+
         LOG_I(F("METHOD:"), method, F("mountpath:"), mountpath, F("path:"), path);
-        return METHOD(method, path, nullptr, fptr);
+
+        const MiddlewareCallback middlewares[] = {0};
+        return METHOD(method, path, middlewares, fptr);
     }
 
 public:
@@ -533,7 +539,19 @@ public:
     /// @return
     auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
     {
-        return METHOD(Method::POST, path, middleware, fptr);
+        const MiddlewareCallback middlewares[] = {middleware};
+        return METHOD(Method::POST, path, middlewares, fptr);
+    };
+
+    /// @brief
+    /// @param path
+    /// @param middleware
+    /// @param fptr
+    /// @return
+    template<typename T, std::size_t S>
+    auto post(const String &path, T (&middlewares)[S], const requestCallback fptr) -> Route &
+    {
+        return METHOD(Method::POST, path, middlewares, fptr);
     };
 
     /// @brief
