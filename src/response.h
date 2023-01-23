@@ -92,6 +92,7 @@ public:
 
         sendBody(client, renderLocals_);
 
+        client.setConnectionTimeout(5);
         client.stop();
     }
 
