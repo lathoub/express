@@ -9,7 +9,7 @@ typedef uint8_t byte;
 
 #include "utility/vector.h"
 #include "utility/dictionary.h"
-typedef dictionary<String, String> locals_t;
+typedef dictionary<String, String, 50> locals_t;
 typedef dictionary<String, String> params_t;
 
 #include "namespace.h"
