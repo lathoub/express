@@ -21,7 +21,7 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  // 2 middleware handler, these will be executed in the same order as they are defined.
+  // 2 middleware handlers, these will be executed in the same order as they are defined.
   // so: getContentLength before express::raw(). This way you can get the ContentLength
   // and use that in the events handlers 'data' and 'end' (eg to show % done).
   const HandlerCallback handlers[] = { getContentLength, express::raw() };
