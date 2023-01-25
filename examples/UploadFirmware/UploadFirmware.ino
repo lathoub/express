@@ -27,8 +27,7 @@ void setup() {
   const HandlerCallback handlers[] = { getContentLength, express::raw() };
 
   Route &route = app.post("/firmware", handlers, [](request &req, response &res) {
-    LOG_V(F("in route"));
-    LOG_V(req.headers["Content-Length"]);
+    LOG_V(F("all done"));
     res.sendStatus(HttpStatus::ACCEPTED);
   });
 
