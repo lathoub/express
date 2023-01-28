@@ -27,7 +27,8 @@
 
 #include <Ethernet.h>
 
-#define EX_DEBUG Serial
+#define LOGGER Serial
+#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
 #include "utility/logger.h"
 #include "defs.h"
@@ -116,7 +117,7 @@ private:
     /// @return
     static auto parseJson(request &req, response &res) -> bool
     {
-        LOG_I(F("> bodyparser parseJson"));
+        LOG_I(F("> bodyparser parseJson"), req.get(ContentType));
 
         if (req.body != nullptr && req.body.length() > 0)
         {

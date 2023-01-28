@@ -11,7 +11,7 @@ class express;
 struct RequestDefaultSettings
 {
     /// @brief
-    static constexpr int MaxHeaders = 5;
+    static constexpr int MaxHeaders = 15;
 
     /// @brief
     static constexpr int MaxQueries = 10;
