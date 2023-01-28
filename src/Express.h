@@ -27,8 +27,8 @@
 
 #include <Ethernet.h>
 
-#define LOGGER Serial
-#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+//#define LOGGER Serial
+//#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
 #include "utility/logger.h"
 #include "defs.h"
