@@ -54,8 +54,6 @@ public:
     /// @param client
     void sendBody(EthernetClient &client, locals_t &locals)
     {
-        LOG_I(F("sendBody"));
-
         if (body_ && body_ != F(""))
             client.println(body_.c_str());
         else if (contentsCallback_)

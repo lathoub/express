@@ -117,8 +117,6 @@ private:
     /// @return
     static auto parseJson(request &req, response &res) -> bool
     {
-        LOG_I(F("> bodyparser parseJson"), req.get(ContentType));
-
         if (req.body != nullptr && req.body.length() > 0)
         {
             LOG_I(F("Body already read"));
@@ -129,6 +127,8 @@ private:
 
         if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
         {
+            LOG_I(F("> bodyparser parseJson"));
+
             auto max_length = req.get(ContentLength).toInt();
 
             req.body.reserve(max_length);
@@ -175,12 +175,12 @@ private:
     /// @return
     static auto parseRaw(request &req, response &res) -> bool
     {
-        LOG_V(F("> bodyparser raw"));
-
         auto &client = const_cast<EthernetClient &>(req.client_);
 
         if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
         {
+            LOG_V(F("> bodyparser raw"));
+
             auto dataLen = req.get(ContentLength).toInt();
 
             while (dataLen > 0 && client.connected())
