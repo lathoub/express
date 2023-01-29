@@ -27,8 +27,8 @@
 
 #include <Ethernet.h>
 
-//#define LOGGER Serial
-//#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+#define LOGGER Serial
+#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
 #include "utility/logger.h"
 #include "defs.h"
@@ -123,8 +123,6 @@ private:
             return true;
         }
 
-        auto &client = const_cast<EthernetClient &>(req.client_);
-
         if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
         {
             LOG_I(F("> bodyparser parseJson"));
@@ -137,6 +135,8 @@ private:
                 return false;
 
             req.body[0] = 0;
+
+            auto &client = const_cast<EthernetClient &>(req.client_);
 
             while (req.body.length() < max_length)
             {
@@ -162,6 +162,8 @@ private:
 
             return true;
         }
+        else
+            LOG_V(F("Not an application/json body"));
 
         return true;
     }
@@ -175,13 +177,24 @@ private:
     /// @return
     static auto parseRaw(request &req, response &res) -> bool
     {
-        auto &client = const_cast<EthernetClient &>(req.client_);
+        if (req.body != nullptr && req.body.length() > 0)
+        {
+            LOG_I(F("Body already read"));
+            return true;
+        }
 
         if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
         {
-            LOG_V(F("> bodyparser raw"));
+            LOG_I(F("> bodyparser raw"));
 
-            auto dataLen = req.get(ContentLength).toInt();
+            auto sDataLen = req.get("content-length");
+            LOG_I(F("sDataLen"), sDataLen);
+
+            auto dataLen = sDataLen.toInt();
+
+            LOG_V(F("> contentLength"), dataLen);
+
+            auto &client = const_cast<EthernetClient &>(req.client_);
 
             while (dataLen > 0 && client.connected())
             {
@@ -210,9 +223,11 @@ private:
                     }
                 }
             }
-        }
 
-        LOG_V(F("< bodyparser raw"));
+            LOG_V(F("< bodyparser raw"));
+        }
+        else
+            LOG_V(F("Not an application/octet-stream body"));
 
         return true;
     }
@@ -226,6 +241,12 @@ private:
     /// @return
     static auto parseText(request &req, response &res) -> bool
     {
+        if (req.body != nullptr && req.body.length() > 0)
+        {
+            LOG_I(F("Body already read"));
+            return true;
+        }
+
         return true;
     }
 
@@ -238,6 +259,20 @@ private:
     /// @return
     static auto parseUrlencoded(request &req, response &res) -> bool
     {
+        if (req.body != nullptr && req.body.length() > 0)
+        {
+            LOG_I(F("Body already read"));
+            return true;
+        }
+
+        if (req.get(ContentType).equalsIgnoreCase(F("application/x-www-form-urlencoded")))
+        {
+            LOG_I(F("> bodyparser x-www-form-urlencoded"));
+
+        }
+        else
+            LOG_V(F("Not an application/x-www-form-urlencoded body"));
+
         return true;
     }
 
@@ -364,7 +399,7 @@ private:
     /// @param handler
     /// @param fptrCallback
     /// @return
-    template<typename T, std::size_t S>
+    template <typename T, std::size_t S>
     auto METHOD(const Method method, String path, T (&handlers)[S], const requestCallback fptrCallback) -> Route &
     {
         if (path == F("/"))
@@ -398,7 +433,7 @@ private:
     /// @return
     auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &
     {
-        LOG_I(F("METHOD:"), method,  F("path:"), path);
+        LOG_I(F("METHOD:"), method, F("path:"), path);
         // F("mountpath:"), mountpath,
 
         const MiddlewareCallback middlewares[] = {0};
@@ -551,7 +586,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    template<typename T, std::size_t S>
+    template <typename T, std::size_t S>
     auto post(const String &path, T (&middlewares)[S], const requestCallback fptr) -> Route &
     {
         return METHOD(Method::POST, path, middlewares, fptr);

@@ -97,7 +97,9 @@ public: /* Methods*/
             if (field.equalsIgnoreCase(key))
                 return header;
         }
-        return "";
+
+        static String empty{};
+        return empty;
     }
 
 private:
@@ -184,6 +186,7 @@ private:
             auto header_name = reqStr.substring(0, header_div);
             header_name.toLowerCase();
             auto header_value = reqStr.substring(header_div + 2);
+            header_value.toLowerCase();
             headers[header_name] = header_value; // TODO keep all headers or just a few?
 
             if (header_name.equalsIgnoreCase(F("Host")))
@@ -193,7 +196,7 @@ private:
         LOG_V(F("Method:"), method_str);
         LOG_V(F("Uri:"), uri_);
 
-        LOG_V(F("Headers"));
+        LOG_V(F("Headers (all forced to lowercase)"));
         for (auto [header, value] : headers)
             LOG_V(F("header:"), header, F("value:"), value);
 

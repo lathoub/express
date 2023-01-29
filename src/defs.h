@@ -21,7 +21,7 @@ constexpr size_t rawBufferSize = 512;
 // cache Strings that are used a lot, to preserve memory
 static const char ContentType[] PROGMEM = "content-type";
 static const char ContentLength[] PROGMEM = "content-length";
-static const char XPoweredBy[] PROGMEM = "X-powered-by";
+static const char XPoweredBy[] PROGMEM = "x-powered-by";
 static const char ApplicationJson[] PROGMEM = "application/json";
 static const char True[] PROGMEM = "true";
 static const char False[] PROGMEM = "false";
