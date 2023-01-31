@@ -16,6 +16,8 @@ struct ResponseDefaultSettings
     static constexpr int MaxHeaders = 5;
 };
 
+//class Options;
+
 template <class _Settings = ResponseDefaultSettings>
 class Response
 {
@@ -79,9 +81,12 @@ public:
         if (app_.settings.count(XPoweredBy) > 0)
             headers_[XPoweredBy] = app_.settings[XPoweredBy];
 
+        LOG_V(F("Headers:"));
         // Send headers
         for (auto [first, second] : headers_)
         {
+            LOG_V(first, second);
+
             client.print(first);
             client.print(": ");
             client.println(second);
@@ -190,6 +195,18 @@ public: /* Methods*/
     auto send(const String &body) -> void
     {
         body_ = body;
+    }
+
+    /// @brief .
+    auto sendFile(String &body, Options* options = nullptr) -> void
+    {
+        body_ = body;
+    }
+
+    /// @brief .
+    auto sendFile(const char* body, Options* options = nullptr) -> void
+    {
+    //    body_ = body;
     }
 
     /// @brief Sets the response HTTP status code to statusCode and sends the

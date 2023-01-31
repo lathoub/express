@@ -34,6 +34,12 @@ public:
     size_t length = 0;
 };
 
+class Options
+{
+public:
+    dictionary<String, String, 10> headers{};
+};
+
 struct PosLen
 {
     size_t pos;
