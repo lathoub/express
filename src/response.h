@@ -16,11 +16,37 @@ struct ResponseDefaultSettings
     static constexpr int MaxHeaders = 5;
 };
 
-//class Options;
+struct File
+{
+    String filename;
+    ContentCallback contentsCallback;
+};
 
 template <class _Settings = ResponseDefaultSettings>
 class Response
 {
+private:
+
+    static void renderFile(EthernetClient &client, const char *f)
+    {
+        size_t i = 0;
+        size_t start = 0;
+        while (f[start + i] != '\0')
+        {
+            while (f[start + i] != '\n' && f[start + i] != '\0')
+                i++;
+
+            client.write(f + start, i); 
+            client.write('\n');
+
+            if (f[start + i] == '\0')
+                break;
+
+            start += i + 1;
+            i = 0;
+        }
+    }
+
 public:
     typedef _Settings Settings;
 
@@ -40,6 +66,7 @@ public:
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
     locals_t renderLocals_{};
+    String filename_;
 
 public:
     /// @brief
@@ -60,10 +87,21 @@ public:
             client.println(body_.c_str());
         else if (contentsCallback_)
         {
+            int lastDot = filename_.lastIndexOf('.');
+            auto ext = filename_.substring(lastDot + 1);
+
             auto engineName = app_.settings[F("view engine")];
-            auto engine = app_.engines[engineName];
-            if (engine)
-                engine(client, locals, contentsCallback_());
+            if (engineName.equals(ext))
+            {
+                auto engine = app_.engines[engineName];
+                if (engine)
+                    engine(client, locals, contentsCallback_());
+            }
+            else
+            {
+                // default file renderer
+                renderFile(client, contentsCallback_());
+            }
         }
     }
 
@@ -177,14 +215,15 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    auto render(ContentCallback fileCallback, locals_t &locals) -> void
+    auto render(File &file, locals_t &locals) -> void
     {
         // NOTE: don't render here just yet (status and headers need to be prior prior)
         // so store a backpointer that can be called in the sendBody function.
         // set this here already, so it gets send out as part of the headers
 
-        contentsCallback_ = fileCallback;
+        contentsCallback_ = file.contentsCallback;
         renderLocals_ = locals; // TODO: check if this copies??
+        filename_ = file.filename;
 
         set(ContentType, F("text/html"));
     }
@@ -198,15 +237,19 @@ public: /* Methods*/
     }
 
     /// @brief .
-    auto sendFile(String &body, Options* options = nullptr) -> void
+    auto sendFile(File &file, Options *options = nullptr) -> void
     {
-        body_ = body;
-    }
+        if (options)
+        {
+            for (auto [first, second] : options->headers)
+            {
+                LOG_V(first, second);
+                set(first, second);
+            }
+        }
 
-    /// @brief .
-    auto sendFile(const char* body, Options* options = nullptr) -> void
-    {
-    //    body_ = body;
+        contentsCallback_ = file.contentsCallback;
+        filename_ = file.filename;
     }
 
     /// @brief Sets the response HTTP status code to statusCode and sends the

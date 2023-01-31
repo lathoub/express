@@ -33,9 +33,12 @@
 #include "utility/logger.h"
 #include "defs.h"
 
+using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
+
 #include "request.h"
 #include "response.h"
 #include "route.h"
+//#include "fileRenderer.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -44,7 +47,6 @@ BEGIN_EXPRESS_NAMESPACE
 #define EXPRESS_LIBRARY_VERSION_MINOR 1
 #define EXPRESS_LIBRARY_VERSION_PATCH 0
 
-using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
 using MiddlewareCallback = bool (*)(request &, response &);
 using StartedCallback = void (*)();
 
@@ -103,7 +105,7 @@ public:
     String mountpath{};
 
     /// @brief
-    dictionary<String, RenderEngineCallback, 10> engines{};
+    dictionary<String, RenderEngineCallback, 2> engines{};
 
 private:
     // bodyparser
