@@ -53,13 +53,13 @@ using StartedCallback = void (*)();
 struct ExpressDefaultSettings
 {
     /// @brief
-    static constexpr int MaxRoutes = 10;
+    static constexpr int MaxRoutes = 15;
 
     /// @brief
-    static constexpr int MaxMountPaths = 2;
+    static constexpr int MaxMountPaths = 5;
 
     /// @brief
-    static constexpr int MaxMiddlewareCallbacks = 2;
+    static constexpr int MaxMiddlewareCallbacks = 5;
 
     /// @brief
     static constexpr int MaxSettings = 4;
@@ -82,7 +82,7 @@ private:
 
 private:
     /// @brief routes
-    vector<Route *, 10> routes_{};
+    vector<Route *, 20> routes_{};
 
     /// @brief Application wide middlewares
     vector<MiddlewareCallback, 10> middlewares_{};
@@ -323,8 +323,8 @@ private:
     {
         if (requestPathItems.size() != pathItems.size())
         {
-            LOG_I(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-            LOG_I(F("return false in function match"));
+            LOG_V(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+            LOG_V(F("return false in function match"));
             return false;
         }
 
@@ -342,8 +342,9 @@ private:
             }
             else
             {
-                if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len))
+                if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len)) {
                     return false;
+                }
             }
         }
 
