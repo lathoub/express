@@ -9,6 +9,7 @@ class Route;
 class express;
 
 using ContentCallback = const char *(*)();
+using WriteCallback = void(*)(const char*, int);
 
 struct ResponseDefaultSettings
 {
@@ -98,10 +99,7 @@ public:
                     engine(client, locals, contentsCallback_());
             }
             else
-            {
-                // default file renderer
-                renderFile(client, contentsCallback_());
-            }
+                renderFile(client, contentsCallback_()); // default renderer
         }
     }
 
@@ -208,6 +206,14 @@ public: /* Methods*/
         // QUESTION: set content-length here?
     }
 
+    /// @brief Sends the HTTP response.
+    /// Optional parameters:
+    /// @param view
+    auto send(const String &body) -> void
+    {
+        body_ = body;
+    }
+
     /// @brief Renders a view and sends the rendered HTML string to the client.
     /// Optional parameters:
     ///    - locals, an object whose properties define local variables for the view.
@@ -226,14 +232,6 @@ public: /* Methods*/
         filename_ = file.filename;
 
         set(ContentType, F("text/html"));
-    }
-
-    /// @brief Sends the HTTP response.
-    /// Optional parameters:
-    /// @param view
-    auto send(const String &body) -> void
-    {
-        body_ = body;
     }
 
     /// @brief .
