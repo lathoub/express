@@ -18,6 +18,11 @@ BEGIN_EXPRESS_NAMESPACE
 
 constexpr size_t rawBufferSize = 512;
 
+#define EXPRESS_LIBRARY_VERSION 0x000100
+#define EXPRESS_LIBRARY_VERSION_MAJOR 0
+#define EXPRESS_LIBRARY_VERSION_MINOR 1
+#define EXPRESS_LIBRARY_VERSION_PATCH 0
+
 // cache Strings that are used a lot, to preserve memory
 static const char ContentType[] PROGMEM = "content-type";
 static const char ContentLength[] PROGMEM = "content-length";

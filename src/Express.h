@@ -33,18 +33,11 @@
 #include "utility/logger.h"
 #include "defs.h"
 
-using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
-
 #include "request.h"
 #include "response.h"
 #include "route.h"
 
 BEGIN_EXPRESS_NAMESPACE
-
-#define EXPRESS_LIBRARY_VERSION 0x000100
-#define EXPRESS_LIBRARY_VERSION_MAJOR 0
-#define EXPRESS_LIBRARY_VERSION_MINOR 1
-#define EXPRESS_LIBRARY_VERSION_PATCH 0
 
 struct ExpressDefaultSettings
 {
@@ -67,6 +60,7 @@ struct ExpressDefaultSettings
 // template <class ServerType, class ClientType, class _Settings = ExpressDefaultSettings>
 class express
 {
+    using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(request &, response &);
     using StartedCallback = void (*)();
 
