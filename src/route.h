@@ -4,13 +4,13 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-using HandlerCallback = bool (*)(request &, response &);
 using requestCallback = void (*)(request &, response &);
 
 class Route
 {
     using DataCallback = void (*)(const Buffer &);
     using EndDataCallback = void (*)();
+    using HandlerCallback = bool (*)(request &, response &);
 
 private:
     static const char delimiter = '/';
