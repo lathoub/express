@@ -6,7 +6,6 @@ BEGIN_EXPRESS_NAMESPACE
 
 class Routes;
 class Route;
-class express;
 
 using ContentCallback = const char *(*)();
 using WriteCallback = void(*)(const char*, int);
