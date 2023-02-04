@@ -34,12 +34,6 @@ public:
     vector<PosLen> indices{}; // TODO how many
 
 public:
-    /// @brief constructor
-    Route()
-    {
-        LOG_V(F("Route() constructor"));
-    }
-
     /// @brief
     /// @param path
     auto splitToVector(const String &path) -> void
