@@ -4,8 +4,6 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-#include "express.h"
-
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
 using HandlerCallback = bool (*)(request &, response &);
