@@ -4,13 +4,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-template<class, class, class> 
-class Express;
-
-template<class, class, class> 
-class Route;
-
-template <class T = int, class U = int, class Settings = DefaultSettings>
+template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
 class Request
 {
 public:
@@ -19,7 +13,7 @@ public:
     String uri_{};
 
     /// @brief
-    const EthernetClient &client_;
+    const U &client_;
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
@@ -64,7 +58,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express<T, U, Settings> &app, EthernetClient &client)
+    Request(Express<T, U, Settings> &app, U &client)
         : app_(app), client_(client), method(Method::UNDEFINED)
     {
         parse(client);
@@ -97,7 +91,7 @@ private:
     /// @brief
     /// @param client
     /// @return
-    bool parse(EthernetClient &client)
+    bool parse(U &client)
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');

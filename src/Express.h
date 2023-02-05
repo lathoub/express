@@ -33,26 +33,31 @@
 #include "utility/logger.h"
 #include "defs.h"
 
-#include "request.h"
-#include "response.h"
-#include "route.h"
-
 BEGIN_EXPRESS_NAMESPACE
 
-template <class T = int, class U = int, class Settings = DefaultSettings>
+// Forward declarations
+template<class, class, class> class Route;
+template<class, class, class> class Request;
+template<class, class, class> class Response;
+
+/// @brief 
+/// @tparam Settings 
+/// @tparam T 
+/// @tparam U 
+template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
 class Express
 {
     typedef Request<T, U, Settings> request; 
     typedef Response<T, U, Settings> response; 
     typedef Route<T, U, Settings> route_; 
 
-    using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
+    using RenderEngineCallback = void (*)(U &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(request &, response &);
     using StartedCallback = void (*)();
 
 private:
     /// @brief
-    EthernetServer *server_{}; // TODO: singleton
+    T *server_{}; // TODO: singleton
 
 private:
     /// @brief routes
@@ -121,7 +126,7 @@ private:
 
             req.body[0] = 0;
 
-            auto &client = const_cast<EthernetClient &>(req.client_);
+            auto &client = const_cast<U &>(req.client_);
 
             while (req.body.length() < max_length)
             {
@@ -179,7 +184,7 @@ private:
 
             LOG_V(F("> contentLength"), dataLen);
 
-            auto &client = const_cast<EthernetClient &>(req.client_);
+            auto &client = const_cast<U &>(req.client_);
 
             while (dataLen > 0 && client.connected())
             {
@@ -622,7 +627,7 @@ public:
         // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
         //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-        server_ = new EthernetServer(port);
+        server_ = new T(port);
         server_->begin();
 
         if (startedCallback)
@@ -638,7 +643,7 @@ public:
 
     /// @brief
     /// @param client
-    void run(EthernetClient &client)
+    void run(U &client)
     {
         while (client.connected())
         {
@@ -667,18 +672,20 @@ public:
 };
 
 END_EXPRESS_NAMESPACE
-/*
-*/
 
 #define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
     typedef Express<ServerType, ClientType, Settings> express; \
     typedef Route<ServerType, ClientType, Settings> route; \
     typedef Request<ServerType, ClientType, Settings> request; \
     typedef Response<ServerType, ClientType, Settings> response; \
-    Express<int, int, Settings> Name;
+    Express<ServerType, ClientType, Settings> Name;
 
 #define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \
-    EXPRESS_CREATE_INSTANCE(Name, int, int, DefaultSettings);
+    EXPRESS_CREATE_INSTANCE(Name, EthernetServer, EthernetClient, DefaultSettings);
 
 #define EXPRESS_CREATE_DEFAULT_INSTANCE() \
     EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(app);
+
+#include "request.h"
+#include "response.h"
+#include "route.h"

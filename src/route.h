@@ -4,7 +4,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-template <class T = int, class U = int, class Settings = DefaultSettings>
+template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
 class Route
 {
 public:

@@ -4,9 +4,6 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-template<class, class, class> 
-class Express;
-
 using ContentCallback = const char *(*)();
 using WriteCallback = void(*)(const char*, int);
 
@@ -16,11 +13,11 @@ struct File
     ContentCallback contentsCallback;
 };
 
-template <class T = int, class U = int, class Settings = DefaultSettings>
+template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
 class Response
 {
 private:
-    static void renderFile(EthernetClient &client, const char *f)
+    static void renderFile(U &client, const char *f)
     {
         size_t i = 0;
         size_t start = 0;
@@ -44,7 +41,7 @@ public:
     String body_{};
 
     /// @brief
-    const EthernetClient &client_;
+    const U &client_;
 
     uint16_t status_ = HttpStatus::NOT_FOUND;
 
@@ -62,7 +59,7 @@ public:
 public:
     /// @brief
     /// @param client
-    void evaluateHeaders(EthernetClient &client)
+    void evaluateHeaders(U &client)
     {
         if (body_ && body_ != F(""))
             headers_[ContentLength] = body_.length();
@@ -72,7 +69,7 @@ public:
 
     /// @brief
     /// @param client
-    void sendBody(EthernetClient &client, locals_t &locals)
+    void sendBody(U &client, locals_t &locals)
     {
         if (body_ && body_ != F(""))
             client.println(body_.c_str());
@@ -96,7 +93,7 @@ public:
     /// @brief
     void send()
     {
-        auto &client = const_cast<EthernetClient &>(client_);
+        auto &client = const_cast<U &>(client_);
 
         client.print(F("HTTP/1.1 "));
         client.println(status_);
@@ -127,7 +124,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express<T, U, Settings> &app, EthernetClient &client)
+    Response(Express<T, U, Settings> &app, U &client)
         : app_(app), client_(client)
     {
     }
