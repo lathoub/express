@@ -675,7 +675,7 @@ END_EXPRESS_NAMESPACE
     typedef express::Route route; \
     typedef express::Request request; \
     typedef express::Response response; \
-    Express<ServerType, ClientType, Settings> Name;
+    express Name;
 
 #define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \
     EXPRESS_CREATE_INSTANCE(Name, EthernetServer, EthernetClient, DefaultSettings);

@@ -22,7 +22,7 @@ void setup() {
     res.send(F("Hello World!"));
   });
 
-  app.listen(3000, []() { // creates and runs EthernetServer
+  app.listen(3000, []() { // creates and runs server
     LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
   });
 }
