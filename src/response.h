@@ -283,6 +283,4 @@ public: /* Methods*/
     }
 };
 
-typedef Response<> response;
-
 END_EXPRESS_NAMESPACE

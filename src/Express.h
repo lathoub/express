@@ -42,6 +42,10 @@ BEGIN_EXPRESS_NAMESPACE
 template <class T = int, class U = int, class Settings = DefaultSettings>
 class Express
 {
+    typedef Request<T, U, Settings> request; 
+    typedef Response<T, U, Settings> response; 
+    typedef Route<T, U, Settings> route_; 
+
     using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(request &, response &);
     using StartedCallback = void (*)();
@@ -52,7 +56,7 @@ private:
 
 private:
     /// @brief routes
-    vector<Route<T, U, Settings> *, Settings::MaxRoutes> routes_{};
+    vector<route_ *, Settings::MaxRoutes> routes_{};
 
     /// @brief Application wide middlewares
     vector<MiddlewareCallback, Settings::MaxMiddlewareCallbacks> middlewares_{};
@@ -339,7 +343,7 @@ private:
 
         vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
-        Route<T, U, Settings> ::splitToVector(req.uri_, req_indices);
+        route_ ::splitToVector(req.uri_, req_indices);
 
         for (auto route : routes_)
         {
@@ -382,7 +386,7 @@ private:
     /// @param fptrCallback
     /// @return
     template <typename ArrayType, std::size_t ArraySize>
-    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename Route<T,U,Settings>::requestCallback fptrCallback) -> Route<T, U, Settings>  &
+    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename route_::requestCallback fptrCallback) -> route_  &
     {
         if (path == F("/"))
             path = F("");
@@ -392,7 +396,7 @@ private:
         LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), ArraySize);
         // F("mountpath:"), mountpath,
 
-        const auto route = new Route<T, U, Settings>();
+        const auto route = new route_();
         route->method = method;
         route->path = path;
         route->fptrCallback = fptrCallback;
@@ -413,7 +417,7 @@ private:
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto METHOD(const Method method, String path, const typename route_::requestCallback fptr) -> route_  &
     {
         LOG_I(F("METHOD:"), method, F("path:"), path);
         // F("mountpath:"), mountpath,
@@ -529,7 +533,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto get(const String &path, const typename route_::requestCallback fptr) -> route_  &
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -538,7 +542,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto post(const String &path, const typename route_::requestCallback fptr) -> route_  &
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -548,7 +552,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto post(const String &path, const MiddlewareCallback middleware, const typename route_::requestCallback fptr) -> route_  &
     {
         const MiddlewareCallback middlewares[] = {middleware};
         return METHOD(Method::POST, path, middlewares, fptr);
@@ -560,7 +564,7 @@ public:
     /// @param fptr
     /// @return
     template <typename ArrayType, std::size_t ArraySize>
-    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename route_::requestCallback fptr) -> route_  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);
     };
@@ -569,7 +573,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto put(const String &path, const typename route_::requestCallback fptr) -> route_  &
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -578,7 +582,7 @@ public:
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
+    auto Delete(const String &path, const typename route_::requestCallback fptr) -> route_  &
     {
         return METHOD(Method::DELETE, path, fptr);
     }
@@ -664,13 +668,13 @@ public:
 
 END_EXPRESS_NAMESPACE
 /*
-    typedef Request<ServerType, ClientType, Settings> request; \
-    typedef Response<ServerType, ClientType, Settings> response; \
 */
 
 #define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
     typedef Express<ServerType, ClientType, Settings> express; \
     typedef Route<ServerType, ClientType, Settings> route; \
+    typedef Request<ServerType, ClientType, Settings> request; \
+    typedef Response<ServerType, ClientType, Settings> response; \
     Express<int, int, Settings> Name;
 
 #define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \

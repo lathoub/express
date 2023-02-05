@@ -284,6 +284,4 @@ private:
     }
 };
 
-typedef Request<> request;
-
 END_EXPRESS_NAMESPACE
