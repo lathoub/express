@@ -666,7 +666,7 @@ typedef Express<> express;
 
 END_EXPRESS_NAMESPACE
 
-#define EXPRESS_CREATE_INSTANCE(Name, Settings) \
+#define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
     Express<Settings> Name;
 
 #define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \

@@ -7,8 +7,8 @@ using namespace EXPRESS_NAMESPACE;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 EXPRESS_CREATE_DEFAULT_INSTANCE();
-express v1;
-express v2;
+EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(v1);
+EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(v2);
 
 void setup() {
   LOG_SETUP();
