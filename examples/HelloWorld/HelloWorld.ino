@@ -11,6 +11,7 @@ EXPRESS_CREATE_DEFAULT_INSTANCE();
 void setup() {
   LOG_SETUP();
 
+  Ethernet.init(5);
   Ethernet.begin(mac);
 
   app.get(F("/"), [](request &req, response &res) {

@@ -2,11 +2,13 @@
 
 #include "vector.h"
 
+namespace std {
+
 /// @brief
 /// @tparam T
 /// @tparam U
 template <class T, class U>
-class dictionary_item
+class map_item
 {
 public:
     T first;
@@ -18,23 +20,23 @@ public:
 /// @tparam U
 /// @tparam MaxSize
 template <class T, class U, size_t MaxSize>
-class dictionary_iterator
+class map_iterator
 {
-    typedef dictionary_item<T, U> dictionary_item_;
-    typedef vector<dictionary_item_, MaxSize> dictionary_items;
-    typedef dictionary_iterator<T, U, MaxSize> iterator;
+    typedef map_item<T, U> dictionary_item_;
+    typedef vector<dictionary_item_, MaxSize> map_items;
+    typedef map_iterator<T, U, MaxSize> iterator;
 
 public:
     /// @brief
     /// @param kvps
-    explicit dictionary_iterator(dictionary_items *kvps)
+    explicit map_iterator(map_items *kvps)
         : values_ptr_{kvps}, position_{0}
     {
     }
 
     /// @brief
     /// @param kvps
-    explicit dictionary_iterator(const dictionary_items *kvps)
+    explicit map_iterator(const map_items *kvps)
         : values_ptr_{kvps}, position_{0}
     {
     }
@@ -42,7 +44,7 @@ public:
     /// @brief
     /// @param kvps
     /// @param size
-    dictionary_iterator(dictionary_items *kvps, const size_t size)
+    map_iterator(map_items *kvps, const size_t size)
         : values_ptr_{kvps}, position_{size}
     {
     }
@@ -50,7 +52,7 @@ public:
     /// @brief
     /// @param kvps
     /// @param size
-    dictionary_iterator(const dictionary_items *kvps, const size_t size)
+    map_iterator(const map_items *kvps, const size_t size)
         : values_ptr_{kvps}, position_{size}
     {
     }
@@ -73,7 +75,7 @@ public:
 
     /// @brief
     /// @return
-    dictionary_iterator &operator++()
+    map_iterator &operator++()
     {
         ++position_;
         return *this;
@@ -81,13 +83,13 @@ public:
 
     /// @brief
     /// @return
-    const dictionary_item<T, U> &operator*() const
+    const map_item<T, U> &operator*() const
     {
         return values_ptr_->at(position_);
     }
 
 private:
-    const vector<dictionary_item<T, U>, MaxSize> *values_ptr_;
+    const vector<map_item<T, U>, MaxSize> *values_ptr_;
 
     size_t position_;
 };
@@ -97,12 +99,12 @@ private:
 /// @tparam U
 /// @tparam MaxSize
 template <class T, class U, size_t MaxSize = 10>
-class dictionary
+class map
 {
-    typedef dictionary_item<T, U> dictionary_item_;
-    typedef vector<dictionary_item_, MaxSize> dictionary_items;
+    typedef map_item<T, U> dictionary_item_;
+    typedef vector<dictionary_item_, MaxSize> map_items;
 
-    dictionary_items kvps_{};
+    map_items kvps_{};
 
     auto get(T first) -> U &
     {
@@ -156,7 +158,7 @@ public:
     }
 
 public:
-    typedef dictionary_iterator<T, U, MaxSize> iterator;
+    typedef map_iterator<T, U, MaxSize> iterator;
 
     iterator begin()
     {
@@ -168,7 +170,7 @@ public:
         return iterator(&kvps_, kvps_.size());
     }
 
-    typedef dictionary_iterator<T, U, MaxSize> const_iterator;
+    typedef map_iterator<T, U, MaxSize> const_iterator;
 
     const_iterator begin() const
     {
@@ -180,3 +182,5 @@ public:
         return const_iterator(&kvps_, kvps_.size());
     }
 };
+
+}

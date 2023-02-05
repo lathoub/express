@@ -58,13 +58,13 @@ private:
 
 private:
     /// @brief routes
-    vector<Route *, Settings::MaxRoutes> routes_{};
+    std::vector<Route *> routes_{};
 
     /// @brief Application wide middlewares
-    vector<MiddlewareCallback, Settings::MaxMiddlewareCallbacks> middlewares_{};
+    std::vector<MiddlewareCallback> middlewares_{};
 
     /// @brief
-    dictionary<String, Express *, Settings::MaxMountPaths> mount_paths_{};
+    std::map<String, Express *> mount_paths_{};
 
     /// @brief
     Express *parent_ = nullptr;
@@ -83,14 +83,14 @@ public:
     uint16_t port{};
 
     /// @brief Application Settings
-    dictionary<String, String, Settings::MaxSettings> settings{};
+    std::map<String, String> settings{};
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
 
     /// @brief
-    dictionary<String, RenderEngineCallback, Settings::MaxEngines> engines{};
+    std::map<String, RenderEngineCallback> engines{};
 
 private:
     // bodyparser
@@ -302,8 +302,8 @@ private:
     /// @param requestPathItems
     /// @param params
     /// @return
-    static auto match(const String &path, const vector<PosLen> &pathItems,
-                      const String &requestPath, const vector<PosLen> &requestPathItems,
+    static auto match(const String &path, const std::vector<PosLen> &pathItems,
+                      const String &requestPath, const std::vector<PosLen> &requestPathItems,
                       params_t &params) -> bool
     {
         if (requestPathItems.size() != pathItems.size())
@@ -343,7 +343,7 @@ private:
     {
         LOG_V(F("evaluate"), req.uri_);
 
-        vector<PosLen> req_indices{}; // TODO how many?? vis Settings
+        std::vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
         Route ::splitToVector(req.uri_, req_indices);
 
@@ -387,7 +387,7 @@ private:
     /// @param handler
     /// @param fptrCallback
     /// @return
-    template <typename ArrayType, std::size_t ArraySize>
+    template <typename ArrayType, size_t ArraySize>
     auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename Route::requestCallback fptrCallback) -> Route  &
     {
         if (path == F("/"))
@@ -565,7 +565,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    template <typename ArrayType, std::size_t ArraySize>
+    template <typename ArrayType, size_t ArraySize>
     auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);

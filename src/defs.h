@@ -33,9 +33,10 @@ typedef uint8_t byte;
 #endif
 
 #include "utility/vector.h"
-#include "utility/dictionary.h"
-typedef dictionary<String, String, 50> locals_t;
-typedef dictionary<String, String> params_t;
+#include "utility/map.h"
+
+typedef std::map<String, String> locals_t;
+typedef std::map<String, String> params_t;
 
 #include "namespace.h"
 
@@ -100,7 +101,7 @@ public:
 class Options
 {
 public:
-    dictionary<String, String, 10> headers{};
+    std::map<String, String> headers{};
 };
 
 struct PosLen

@@ -54,7 +54,7 @@ public:
 
     uint16_t status_ = HttpStatus::NOT_FOUND;
 
-    dictionary<String, String, Settings::MaxHeaders> headers_{};
+    std::map<String, String> headers_{};
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return

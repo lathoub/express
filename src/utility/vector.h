@@ -4,6 +4,8 @@
 // https://github.com/janelia-arduino/vector
 // (modified to fit into 1 header file)
 
+namespace std {
+    
 /// @brief
 /// @tparam T
 template <typename T>
@@ -177,3 +179,5 @@ public:
         return const_iterator(values_, size_);
     }
 };
+
+}

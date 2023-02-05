@@ -45,12 +45,12 @@ class Route
 
         String path{};
 
-        vector<HandlerCallback, 5> handlers{}; // TODO how many
+        std::vector<HandlerCallback> handlers{}; // TODO how many
 
         requestCallback fptrCallback = nullptr;
 
         // cache path splitting (avoid doing this for every request * number of paths)
-        vector<PosLen> indices{}; // TODO how many
+        std::vector<PosLen> indices{}; // TODO how many
 
     public:
         /// @brief
@@ -63,7 +63,7 @@ class Route
         /// @brief
         /// @param path
         /// @return
-        static auto splitToVector(const String &path, vector<PosLen> &poslens) -> void
+        static auto splitToVector(const String &path, std::vector<PosLen> &poslens) -> void
         {
             size_t p = 0, i = 1;
             for (; i < path.length(); i++)
