@@ -7,7 +7,7 @@ BEGIN_EXPRESS_NAMESPACE
 using HandlerCallback = bool (*)(request &, response &);
 using requestCallback = void (*)(request &, response &);
 
-template <class Settings = DefaultSettings>
+template <class T = int, class Settings = DefaultSettings>
 class Route
 {
     using DataCallback = void (*)(const Buffer &);

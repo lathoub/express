@@ -4,13 +4,13 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-template<class> 
+template<class, class> 
 class Express;
 
-template<class> 
+template<class, class> 
 class Route;
 
-template <class Settings = DefaultSettings>
+template <class T = int, class Settings = DefaultSettings>
 class Request
 {
 public:
@@ -23,10 +23,10 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express<Settings> &app_;
+    Express<T, Settings> &app_;
 
     /// @brief intermediate pointer buffer for data callback
-    Route<Settings> *route = nullptr;
+    Route<T, Settings> *route = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
@@ -64,7 +64,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express<Settings> &app, EthernetClient &client)
+    Request(Express<T, Settings> &app, EthernetClient &client)
         : app_(app), client_(client), method(Method::UNDEFINED)
     {
         parse(client);
