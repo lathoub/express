@@ -1,8 +1,8 @@
     class Route
     {
     public:
-        using requestCallback = void (*)(Request<T, U, Settings> &, Response<T, U, Settings> &);
-        using HandlerCallback = bool (*)(Request<T, U, Settings> &, Response<T, U, Settings> &);
+        using requestCallback = void (*)(Request &, Response &);
+        using HandlerCallback = bool (*)(Request &, Response &);
         using DataCallback = void (*)(const Buffer &);
         using EndDataCallback = void (*)();
 

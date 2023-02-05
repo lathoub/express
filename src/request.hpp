@@ -1,10 +1,3 @@
-#pragma once
-
-#include "defs.h"
-
-BEGIN_EXPRESS_NAMESPACE
-
-template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
 class Request
 {
 public:
@@ -277,5 +270,3 @@ private:
         return decoded;
     }
 };
-
-END_EXPRESS_NAMESPACE

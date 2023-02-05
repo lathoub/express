@@ -35,10 +35,6 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-// Forward declarations
-template<class, class, class> class Request;
-template<class, class, class> class Response;
-
 /// @brief 
 /// @tparam Settings 
 /// @tparam T 
@@ -46,15 +42,15 @@ template<class, class, class> class Response;
 template <class T, class U, class Settings>
 class Express
 {
-    typedef Request<T, U, Settings> request; 
-    typedef Response<T, U, Settings> response; 
-
-    using RenderEngineCallback = void (*)(U &, locals_t &locals, const char *f);
-    using MiddlewareCallback = bool (*)(request &, response &);
-    using StartedCallback = void (*)();
-
 public:
+    #include "request.hpp"
+    #include "response.hpp"
     #include "route.hpp"
+
+private:
+    using RenderEngineCallback = void (*)(U &, locals_t &locals, const char *f);
+    using MiddlewareCallback = bool (*)(Request &, Response &);
+    using StartedCallback = void (*)();
 
 private:
     /// @brief
@@ -106,7 +102,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseJson(request &req, response &res) -> bool
+    static auto parseJson(Request &req, Response &res) -> bool
     {
         if (req.body != nullptr && req.body.length() > 0)
         {
@@ -166,7 +162,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseRaw(request &req, response &res) -> bool
+    static auto parseRaw(Request &req, Response &res) -> bool
     {
         if (req.body != nullptr && req.body.length() > 0)
         {
@@ -230,7 +226,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseText(request &req, response &res) -> bool
+    static auto parseText(Request &req, Response &res) -> bool
     {
         if (req.body != nullptr && req.body.length() > 0)
         {
@@ -248,7 +244,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseUrlencoded(request &req, response &res) -> bool
+    static auto parseUrlencoded(Request &req, Response &res) -> bool
     {
         if (req.body != nullptr && req.body.length() > 0)
         {
@@ -343,7 +339,7 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(request &req, response &res) -> const bool
+    auto evaluate(Request &req, Response &res) -> const bool
     {
         LOG_V(F("evaluate"), req.uri_);
 
@@ -651,11 +647,11 @@ public:
             if (client.available())
             {
                 // Construct request object and read/parse incoming bytes
-                request req(*this, client);
+                Request req(*this, client);
 
                 if (req.method != Method::ERROR)
                 {
-                    response res(*this, client);
+                    Response res(*this, client);
 
                     /// @brief run the app wide middlewares (ao bodyparsers)
                     for (const auto middleware : middlewares_)
@@ -677,8 +673,8 @@ END_EXPRESS_NAMESPACE
 #define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
     typedef Express<ServerType, ClientType, Settings> express; \
     typedef express::Route route; \
-    typedef Request<ServerType, ClientType, Settings> request; \
-    typedef Response<ServerType, ClientType, Settings> response; \
+    typedef express::Request request; \
+    typedef express::Response response; \
     Express<ServerType, ClientType, Settings> Name;
 
 #define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \
@@ -686,7 +682,3 @@ END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_DEFAULT_INSTANCE() \
     EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(app);
-
-#include "request.h"
-#include "response.h"
-//#include "route.h"
