@@ -52,13 +52,13 @@ private:
 
 private:
     /// @brief routes
-    vector<Route *, 20> routes_{};
+    vector<Route<Settings> *, Settings::MaxRoutes> routes_{};
 
     /// @brief Application wide middlewares
-    vector<MiddlewareCallback, 10> middlewares_{};
+    vector<MiddlewareCallback, Settings::MaxMiddlewareCallbacks> middlewares_{};
 
     /// @brief
-    dictionary<String, Express *, 10> mount_paths_{};
+    dictionary<String, Express *, Settings::MaxMountPaths> mount_paths_{};
 
     /// @brief
     Express *parent_ = nullptr;
@@ -77,14 +77,14 @@ public:
     uint16_t port{};
 
     /// @brief Application Settings
-    dictionary<String, String, 10> settings{};
+    dictionary<String, String, Settings::MaxSettings> settings{};
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
 
     /// @brief
-    dictionary<String, RenderEngineCallback, 2> engines{};
+    dictionary<String, RenderEngineCallback, Settings::MaxEngines> engines{};
 
 private:
     // bodyparser
@@ -189,18 +189,18 @@ private:
 
                     if (dataLen > 0)
                     {
-                        if (req.route_->dataCallback_)
-                            req.route_->dataCallback_(buffer);
+                        if (req.route->dataCallback_)
+                            req.route->dataCallback_(buffer);
                     }
                     else
                     {
                         if (buffer.length > 0)
                         {
-                            if (req.route_->dataCallback_)
-                                req.route_->dataCallback_(buffer);
+                            if (req.route->dataCallback_)
+                                req.route->dataCallback_(buffer);
                         }
-                        if (req.route_->endCallback_)
-                            req.route_->endCallback_();
+                        if (req.route->endCallback_)
+                            req.route->endCallback_();
                     }
                 }
             }
@@ -339,7 +339,7 @@ private:
 
         vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
-        Route::splitToVector(req.uri_, req_indices);
+        Route<Settings> ::splitToVector(req.uri_, req_indices);
 
         for (auto route : routes_)
         {
@@ -351,7 +351,7 @@ private:
                                                      req.params))
             {
                 res.status_ = HttpStatus::OK;
-                req.route_ = route;
+                req.route = route;
 
                 // Route middleware
                 for (const auto handler : route->handlers)
@@ -382,7 +382,7 @@ private:
     /// @param fptrCallback
     /// @return
     template <typename T, std::size_t S>
-    auto METHOD(const Method method, String path, T (&handlers)[S], const requestCallback fptrCallback) -> Route &
+    auto METHOD(const Method method, String path, T (&handlers)[S], const requestCallback fptrCallback) -> Route<Settings>  &
     {
         if (path == F("/"))
             path = F("");
@@ -392,7 +392,7 @@ private:
         LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), S);
         // F("mountpath:"), mountpath,
 
-        const auto route = new Route();
+        const auto route = new Route<Settings>();
         route->method = method;
         route->path = path;
         route->fptrCallback = fptrCallback;
@@ -413,7 +413,7 @@ private:
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &
+    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route<Settings>  &
     {
         LOG_I(F("METHOD:"), method, F("path:"), path);
         // F("mountpath:"), mountpath,
@@ -529,7 +529,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const requestCallback fptr) -> Route &
+    auto get(const String &path, const requestCallback fptr) -> Route<Settings>  &
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -538,7 +538,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const requestCallback fptr) -> Route &
+    auto post(const String &path, const requestCallback fptr) -> Route<Settings>  &
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -548,7 +548,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
+    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route<Settings>  &
     {
         const MiddlewareCallback middlewares[] = {middleware};
         return METHOD(Method::POST, path, middlewares, fptr);
@@ -560,7 +560,7 @@ public:
     /// @param fptr
     /// @return
     template <typename T, std::size_t S>
-    auto post(const String &path, T (&middlewares)[S], const requestCallback fptr) -> Route &
+    auto post(const String &path, T (&middlewares)[S], const requestCallback fptr) -> Route<Settings>  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);
     };
@@ -569,7 +569,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const requestCallback fptr) -> Route &
+    auto put(const String &path, const requestCallback fptr) -> Route<Settings>  &
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -578,7 +578,7 @@ public:
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const requestCallback fptr) -> Route &
+    auto Delete(const String &path, const requestCallback fptr) -> Route<Settings>  &
     {
         return METHOD(Method::DELETE, path, fptr);
     }

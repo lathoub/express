@@ -7,6 +7,7 @@ BEGIN_EXPRESS_NAMESPACE
 template<class> 
 class Express;
 
+template<class> 
 class Route;
 
 using ContentCallback = const char *(*)();

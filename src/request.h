@@ -7,6 +7,7 @@ BEGIN_EXPRESS_NAMESPACE
 template<class> 
 class Express;
 
+template<class> 
 class Route;
 
 template <class Settings = DefaultSettings>
@@ -25,7 +26,7 @@ public:
     Express<Settings> &app_;
 
     /// @brief intermediate pointer buffer for data callback
-    Route *route_ = nullptr;
+    Route<Settings> *route = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
