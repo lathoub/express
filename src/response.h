@@ -4,15 +4,6 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-using ContentCallback = const char *(*)();
-using WriteCallback = void(*)(const char*, int);
-
-struct File
-{
-    String filename;
-    ContentCallback contentsCallback;
-};
-
 template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
 class Response
 {

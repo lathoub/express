@@ -44,7 +44,7 @@ template<class, class, class> class Response;
 /// @tparam Settings 
 /// @tparam T 
 /// @tparam U 
-template <class T = EthernetServer, class U = EthernetClient, class Settings = DefaultSettings>
+template <class T, class U, class Settings>
 class Express
 {
     typedef Request<T, U, Settings> request; 
