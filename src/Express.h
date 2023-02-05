@@ -36,7 +36,6 @@
 BEGIN_EXPRESS_NAMESPACE
 
 // Forward declarations
-template<class, class, class> class Route;
 template<class, class, class> class Request;
 template<class, class, class> class Response;
 
@@ -49,11 +48,86 @@ class Express
 {
     typedef Request<T, U, Settings> request; 
     typedef Response<T, U, Settings> response; 
-    typedef Route<T, U, Settings> route_; 
 
     using RenderEngineCallback = void (*)(U &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(request &, response &);
     using StartedCallback = void (*)();
+
+public:
+    class Route
+    {
+    public:
+        using requestCallback = void (*)(Request<T, U, Settings> &, Response<T, U, Settings> &);
+        using HandlerCallback = bool (*)(Request<T, U, Settings> &, Response<T, U, Settings> &);
+        using DataCallback = void (*)(const Buffer &);
+        using EndDataCallback = void (*)();
+
+    private:
+        static const char delimiter = '/';
+
+    public: /// @brief
+        DataCallback dataCallback_ = nullptr;
+
+        /// @brief
+        EndDataCallback endCallback_ = nullptr;
+
+    public:
+        Method method = Method::UNDEFINED;
+
+        String path{};
+
+        vector<HandlerCallback, 5> handlers{}; // TODO how many
+
+        requestCallback fptrCallback = nullptr;
+
+        // cache path splitting (avoid doing this for every request * number of paths)
+        vector<PosLen> indices{}; // TODO how many
+
+    public:
+        /// @brief
+        /// @param path
+        auto splitToVector(const String &path) -> void
+        {
+            splitToVector(path, indices);
+        }
+
+        /// @brief
+        /// @param path
+        /// @return
+        static auto splitToVector(const String &path, vector<PosLen> &poslens) -> void
+        {
+            size_t p = 0, i = 1;
+            for (; i < path.length(); i++)
+            {
+                if (path.charAt(i) == delimiter)
+                {
+                    poslens.push_back({p, i - p});
+                    p = i;
+                }
+            }
+            poslens.push_back({p, i - p});
+        }
+
+        /// @brief
+        /// @param name
+        /// @param callback
+        auto on(const String &name, const DataCallback callback) -> void
+        {
+            LOG_I(F("register data callback"), name);
+            dataCallback_ = callback;
+            // return *this;
+        }
+
+        /// @brief
+        /// @param name
+        /// @param callback
+        auto on(const String &name, const EndDataCallback callback) -> void
+        {
+            LOG_I(F("register end callback"), name);
+            endCallback_ = callback;
+            //  return *this;
+        }
+    };
 
 private:
     /// @brief
@@ -61,7 +135,7 @@ private:
 
 private:
     /// @brief routes
-    vector<route_ *, Settings::MaxRoutes> routes_{};
+    vector<Route *, Settings::MaxRoutes> routes_{};
 
     /// @brief Application wide middlewares
     vector<MiddlewareCallback, Settings::MaxMiddlewareCallbacks> middlewares_{};
@@ -348,7 +422,7 @@ private:
 
         vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
-        route_ ::splitToVector(req.uri_, req_indices);
+        Route ::splitToVector(req.uri_, req_indices);
 
         for (auto route : routes_)
         {
@@ -391,7 +465,7 @@ private:
     /// @param fptrCallback
     /// @return
     template <typename ArrayType, std::size_t ArraySize>
-    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename route_::requestCallback fptrCallback) -> route_  &
+    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename Route::requestCallback fptrCallback) -> Route  &
     {
         if (path == F("/"))
             path = F("");
@@ -401,7 +475,7 @@ private:
         LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), ArraySize);
         // F("mountpath:"), mountpath,
 
-        const auto route = new route_();
+        const auto route = new Route();
         route->method = method;
         route->path = path;
         route->fptrCallback = fptrCallback;
@@ -422,7 +496,7 @@ private:
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const typename route_::requestCallback fptr) -> route_  &
+    auto METHOD(const Method method, String path, const typename Route::requestCallback fptr) -> Route  &
     {
         LOG_I(F("METHOD:"), method, F("path:"), path);
         // F("mountpath:"), mountpath,
@@ -464,7 +538,7 @@ public:
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param path
     /// @param fptr
-    auto all(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> void
+    auto all(const String &path, const typename Route::requestCallback fptr) -> void
     {
         // TODO: not implemented
     }
@@ -538,7 +612,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const typename route_::requestCallback fptr) -> route_  &
+    auto get(const String &path, const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -547,7 +621,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const typename route_::requestCallback fptr) -> route_  &
+    auto post(const String &path, const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -557,7 +631,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const typename route_::requestCallback fptr) -> route_  &
+    auto post(const String &path, const MiddlewareCallback middleware, const typename Route::requestCallback fptr) -> Route  &
     {
         const MiddlewareCallback middlewares[] = {middleware};
         return METHOD(Method::POST, path, middlewares, fptr);
@@ -569,7 +643,7 @@ public:
     /// @param fptr
     /// @return
     template <typename ArrayType, std::size_t ArraySize>
-    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename route_::requestCallback fptr) -> route_  &
+    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);
     };
@@ -578,7 +652,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const typename route_::requestCallback fptr) -> route_  &
+    auto put(const String &path, const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -587,7 +661,7 @@ public:
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const typename route_::requestCallback fptr) -> route_  &
+    auto Delete(const String &path, const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::DELETE, path, fptr);
     }
@@ -675,7 +749,7 @@ END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
     typedef Express<ServerType, ClientType, Settings> express; \
-    typedef Route<ServerType, ClientType, Settings> route; \
+    typedef express::Route route; \
     typedef Request<ServerType, ClientType, Settings> request; \
     typedef Response<ServerType, ClientType, Settings> response; \
     Express<ServerType, ClientType, Settings> Name;
@@ -688,4 +762,4 @@ END_EXPRESS_NAMESPACE
 
 #include "request.h"
 #include "response.h"
-#include "route.h"
+//#include "route.h"

@@ -20,7 +20,7 @@ public:
     Express<T, U, Settings> &app_;
 
     /// @brief intermediate pointer buffer for data callback
-    Route<T, U, Settings> *route = nullptr;
+    typename Express<T, U, Settings>::Route *route = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
