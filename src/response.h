@@ -4,10 +4,10 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-template<class, class> 
+template<class, class, class> 
 class Express;
 
-template<class, class> 
+template<class, class, class> 
 class Route;
 
 using ContentCallback = const char *(*)();
@@ -19,7 +19,7 @@ struct File
     ContentCallback contentsCallback;
 };
 
-template <class T = int, class Settings = DefaultSettings>
+template <class T = int, class U = int, class Settings = DefaultSettings>
 class Response
 {
 private:
@@ -55,7 +55,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express<T, Settings> &app_;
+    Express<T, U, Settings> &app_;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -130,7 +130,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express<T, Settings> &app, EthernetClient &client)
+    Response(Express<T, U, Settings> &app, EthernetClient &client)
         : app_(app), client_(client)
     {
     }
