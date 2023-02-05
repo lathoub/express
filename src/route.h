@@ -4,12 +4,12 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-using HandlerCallback = bool (*)(request &, response &);
-using requestCallback = void (*)(request &, response &);
-
 template <class T = int, class U = int, class Settings = DefaultSettings>
 class Route
 {
+public:
+    using requestCallback = void (*)(Request<T, U, Settings> &, Response<T, U, Settings> &);
+    using HandlerCallback = bool (*)(Request<T, U, Settings> &, Response<T, U, Settings> &);
     using DataCallback = void (*)(const Buffer &);
     using EndDataCallback = void (*)();
 

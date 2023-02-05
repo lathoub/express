@@ -382,7 +382,7 @@ private:
     /// @param fptrCallback
     /// @return
     template <typename ArrayType, std::size_t ArraySize>
-    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const requestCallback fptrCallback) -> Route<T, U, Settings>  &
+    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename Route<T,U,Settings>::requestCallback fptrCallback) -> Route<T, U, Settings>  &
     {
         if (path == F("/"))
             path = F("");
@@ -413,7 +413,7 @@ private:
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto METHOD(const Method method, String path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         LOG_I(F("METHOD:"), method, F("path:"), path);
         // F("mountpath:"), mountpath,
@@ -455,7 +455,7 @@ public:
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param path
     /// @param fptr
-    auto all(const String &path, const requestCallback fptr) -> void
+    auto all(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> void
     {
         // TODO: not implemented
     }
@@ -529,7 +529,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto get(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -538,7 +538,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto post(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -548,7 +548,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto post(const String &path, const MiddlewareCallback middleware, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         const MiddlewareCallback middlewares[] = {middleware};
         return METHOD(Method::POST, path, middlewares, fptr);
@@ -560,7 +560,7 @@ public:
     /// @param fptr
     /// @return
     template <typename ArrayType, std::size_t ArraySize>
-    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);
     };
@@ -569,7 +569,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto put(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -578,7 +578,7 @@ public:
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const requestCallback fptr) -> Route<T, U, Settings>  &
+    auto Delete(const String &path, const typename Route<T,U,Settings>::requestCallback fptr) -> Route<T, U, Settings>  &
     {
         return METHOD(Method::DELETE, path, fptr);
     }
