@@ -666,11 +666,11 @@ END_EXPRESS_NAMESPACE
 /*
     typedef Request<ServerType, ClientType, Settings> request; \
     typedef Response<ServerType, ClientType, Settings> response; \
-    typedef Route<ServerType, ClientType, Settings> route; \
 */
 
 #define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
     typedef Express<ServerType, ClientType, Settings> express; \
+    typedef Route<ServerType, ClientType, Settings> route; \
     Express<int, int, Settings> Name;
 
 #define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \

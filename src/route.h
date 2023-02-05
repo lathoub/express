@@ -80,6 +80,4 @@ public:
     }
 };
 
-//typedef Route<> route;
-
 END_EXPRESS_NAMESPACE
