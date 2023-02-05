@@ -1,6 +1,6 @@
 #pragma once
 
-// from Peter Polidoro peter@polidoro.io under MIT license
+// inspired by Peter Polidoro peter@polidoro.io under MIT license
 // https://github.com/janelia-arduino/vector
 // (modified to fit into 1 header file)
 
