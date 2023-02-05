@@ -1,20 +1,16 @@
 #pragma once
 
-#include "namespace.h"
+#include "defs.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-class Routes;
+template<class> 
+class Express;
+
 class Route;
 
 using ContentCallback = const char *(*)();
 using WriteCallback = void(*)(const char*, int);
-
-struct ResponseDefaultSettings
-{
-    /// @brief
-    static constexpr int MaxHeaders = 5;
-};
 
 struct File
 {
@@ -22,11 +18,10 @@ struct File
     ContentCallback contentsCallback;
 };
 
-template <class _Settings = ResponseDefaultSettings>
+template <class Settings = DefaultSettings>
 class Response
 {
 private:
-
     static void renderFile(EthernetClient &client, const char *f)
     {
         size_t i = 0;
@@ -48,8 +43,6 @@ private:
     }
 
 public:
-    typedef _Settings Settings;
-
     String body_{};
 
     /// @brief
@@ -61,7 +54,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    express &app_;
+    Express<Settings> &app_;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -136,7 +129,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(express &app, EthernetClient &client)
+    Response(Express<Settings> &app, EthernetClient &client)
         : app_(app), client_(client)
     {
     }

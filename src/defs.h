@@ -31,6 +31,30 @@ static const char ApplicationJson[] PROGMEM = "application/json";
 static const char True[] PROGMEM = "true";
 static const char False[] PROGMEM = "false";
 
+struct DefaultSettings
+{
+    /// @brief
+    static constexpr int MaxRoutes = 15;
+
+    /// @brief
+    static constexpr int MaxMountPaths = 5;
+
+    /// @brief
+    static constexpr int MaxMiddlewareCallbacks = 5;
+
+    /// @brief
+    static constexpr int MaxSettings = 4;
+
+    /// @brief
+    static constexpr int MaxEngines = 4;
+
+    /// @brief 
+    static constexpr int MaxHeaders = 5;
+
+    /// @brief
+    static constexpr int MaxQueries = 10;
+};
+
 class Buffer
 {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "namespace.h"
+#include "defs.h"
 
 BEGIN_EXPRESS_NAMESPACE
 

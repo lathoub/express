@@ -1,28 +1,18 @@
 #pragma once
 
-#include "namespace.h"
+#include "defs.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-class Routes;
+template<class> 
+class Express;
+
 class Route;
-class express;
 
-struct RequestDefaultSettings
-{
-    /// @brief
-    static constexpr int MaxHeaders = 15;
-
-    /// @brief
-    static constexpr int MaxQueries = 10;
-};
-
-template <class _Settings = RequestDefaultSettings>
+template <class Settings = DefaultSettings>
 class Request
 {
 public:
-    typedef _Settings Settings;
-
     String version_{};
 
     String uri_{};
@@ -32,7 +22,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    express &app_;
+    Express<Settings> &app_;
 
     /// @brief intermediate pointer buffer for data callback
     Route *route_ = nullptr;
@@ -73,7 +63,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(express &app, EthernetClient &client)
+    Request(Express<Settings> &app, EthernetClient &client)
         : app_(app), client_(client), method(Method::UNDEFINED)
     {
         parse(client);

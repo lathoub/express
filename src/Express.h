@@ -39,35 +39,12 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-struct ExpressDefaultSettings
-{
-    /// @brief
-    static constexpr int MaxRoutes = 15;
-
-    /// @brief
-    static constexpr int MaxMountPaths = 5;
-
-    /// @brief
-    static constexpr int MaxMiddlewareCallbacks = 5;
-
-    /// @brief
-    static constexpr int MaxSettings = 4;
-
-    /// @brief
-    static constexpr int MaxEngines = 4;
-};
-
-// template <class ServerType, class ClientType, class _Settings = ExpressDefaultSettings>
-class express
+template <class Settings = DefaultSettings>
+class Express
 {
     using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(request &, response &);
     using StartedCallback = void (*)();
-
-public:
-    //  typedef _Settings Settings;
-
-    friend class HttpRequestHandler;
 
 private:
     /// @brief
@@ -81,12 +58,21 @@ private:
     vector<MiddlewareCallback, 10> middlewares_{};
 
     /// @brief
-    dictionary<String, express *, 10> mount_paths_{};
+    dictionary<String, Express *, 10> mount_paths_{};
 
     /// @brief
-    express *parent_ = nullptr;
+    Express *parent_ = nullptr;
 
 public:
+    /// @brief Constructor
+    Express()
+    {
+        LOG_V(F("express() constructor"));
+
+        settings[F("env")] = F("production");
+        //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
+    }
+
     /// @brief
     uint16_t port{};
 
@@ -278,28 +264,28 @@ public:
     /// @return
     static auto raw() -> MiddlewareCallback
     {
-        return express::parseRaw;
+        return parseRaw;
     }
 
     /// @brief
     /// @return
     static auto json() -> MiddlewareCallback
     {
-        return express::parseJson;
+        return parseJson;
     }
 
     /// @brief
     /// @return
     static auto text() -> MiddlewareCallback
     {
-        return express::parseText;
+        return parseText;
     }
 
     /// @brief
     /// @return
     static auto urlencoded() -> MiddlewareCallback
     {
-        return express::parseUrlencoded;
+        return parseUrlencoded;
     }
 
 private:
@@ -437,15 +423,6 @@ private:
     }
 
 public:
-    /// @brief Constructor
-    express()
-    {
-        LOG_V(F("express() constructor"));
-
-        settings[F("env")] = F("production");
-        //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
-    }
-
     /// @brief
     /// @param middleware
     /// @return
@@ -458,7 +435,7 @@ public:
     /// @param mount_path
     /// @param other
     /// @return
-    auto use(const String &mount_path, express &other) -> void
+    auto use(const String &mount_path, Express &other) -> void
     {
         LOG_I(F("use mountPath:"), mount_path);
 
@@ -685,6 +662,15 @@ public:
     };
 };
 
-// typedef Express<EthernetServer, EthernetClient> express;
+typedef Express<> express;
 
 END_EXPRESS_NAMESPACE
+
+#define EXPRESS_CREATE_INSTANCE(Name, Settings) \
+    Express<Settings> Name;
+
+#define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \
+    express Name;
+
+#define EXPRESS_CREATE_DEFAULT_INSTANCE() \
+    EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(app);

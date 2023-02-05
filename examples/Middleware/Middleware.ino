@@ -6,7 +6,7 @@ using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 
-express app;
+EXPRESS_CREATE_DEFAULT_INSTANCE();
 
 bool middleware1(request &req, response &res) {
   req.params[F("demo")]= "hello";
