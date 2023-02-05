@@ -26,7 +26,7 @@
 class Response
 {
 private:
-    static void renderFile(U &client, const char *f)
+    static void renderFile(ClientType &client, const char *f)
     {
         size_t i = 0;
         size_t start = 0;
@@ -50,7 +50,7 @@ public:
     String body_{};
 
     /// @brief
-    const U &client_;
+    const ClientType &client_;
 
     uint16_t status_ = HttpStatus::NOT_FOUND;
 
@@ -58,7 +58,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express<T, U, Settings> &app_;
+    Express<ServerType, ClientType, Settings> &app_;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -68,7 +68,7 @@ public:
 public:
     /// @brief
     /// @param client
-    void evaluateHeaders(U &client)
+    void evaluateHeaders(ClientType &client)
     {
         if (body_ && body_ != F(""))
             headers_[ContentLength] = body_.length();
@@ -78,7 +78,7 @@ public:
 
     /// @brief
     /// @param client
-    void sendBody(U &client, locals_t &locals)
+    void sendBody(ClientType &client, locals_t &locals)
     {
         if (body_ && body_ != F(""))
             client.println(body_.c_str());
@@ -102,7 +102,7 @@ public:
     /// @brief
     void send()
     {
-        auto &client = const_cast<U &>(client_);
+        auto &client = const_cast<ClientType &>(client_);
 
         client.print(F("HTTP/1.1 "));
         client.println(status_);
@@ -133,7 +133,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express<T, U, Settings> &app, U &client)
+    Response(Express<ServerType, ClientType, Settings> &app, ClientType &client)
         : app_(app), client_(client)
     {
     }

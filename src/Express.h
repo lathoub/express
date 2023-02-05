@@ -37,9 +37,9 @@ BEGIN_EXPRESS_NAMESPACE
 
 /// @brief 
 /// @tparam Settings 
-/// @tparam T 
-/// @tparam U 
-template <class T, class U, class Settings>
+/// @tparam ServerType
+/// @tparam ClientType
+template <class ServerType, class ClientType, class Settings>
 class Express
 {
 public:
@@ -48,13 +48,13 @@ public:
     #include "route.hpp"
 
 private:
-    using RenderEngineCallback = void (*)(U &, locals_t &locals, const char *f);
+    using RenderEngineCallback = void (*)(ClientType &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(Request &, Response &);
     using StartedCallback = void (*)();
 
 private:
     /// @brief
-    T *server_{}; // TODO: singleton
+    ServerType *server_{}; // TODO: singleton
 
 private:
     /// @brief routes
@@ -123,7 +123,7 @@ private:
 
             req.body[0] = 0;
 
-            auto &client = const_cast<U &>(req.client_);
+            auto &client = const_cast<ClientType &>(req.client_);
 
             while (req.body.length() < max_length)
             {
@@ -181,7 +181,7 @@ private:
 
             LOG_V(F("> contentLength"), dataLen);
 
-            auto &client = const_cast<U &>(req.client_);
+            auto &client = const_cast<ClientType &>(req.client_);
 
             while (dataLen > 0 && client.connected())
             {
@@ -624,7 +624,7 @@ public:
         // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
         //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-        server_ = new T(port);
+        server_ = new ServerType(port);
         server_->begin();
 
         if (startedCallback)
@@ -640,7 +640,7 @@ public:
 
     /// @brief
     /// @param client
-    void run(U &client)
+    void run(ClientType &client)
     {
         while (client.connected())
         {
