@@ -52,11 +52,9 @@ private:
     using MiddlewareCallback = bool (*)(Request &, Response &);
     using StartedCallback = void (*)();
 
-private:
     /// @brief
     ServerType *server_{}; // TODO: singleton
 
-private:
     /// @brief routes
     std::vector<Route *> routes_{};
 
@@ -535,6 +533,15 @@ public:
     /// @param path
     /// @param fptr
     /// @return
+    auto head(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    {
+        return METHOD(Method::HEAD, path, fptr);
+    };
+
+    /// @brief
+    /// @param path
+    /// @param fptr
+    /// @return
     auto get(const String &path, const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::GET, path, fptr);
@@ -666,6 +673,8 @@ public:
             }
         }
     };
+
+    #include "mustache.hpp"
 };
 
 END_EXPRESS_NAMESPACE

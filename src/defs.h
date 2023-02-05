@@ -62,6 +62,8 @@ static const char ApplicationJson[] PROGMEM = "application/json";
 static const char True[] PROGMEM = "true";
 static const char False[] PROGMEM = "false";
 
+const String __dirname{};
+
 using ContentCallback = const char *(*)();
 using WriteCallback = void(*)(const char*, int);
 
