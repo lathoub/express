@@ -32,8 +32,13 @@
 typedef uint8_t byte;
 #endif
 
+#ifdef ESP32
+#include <vector>
+#include <map>
+#else
 #include "utility/vector.h"
 #include "utility/map.h"
+#endif
 
 typedef std::map<String, String> locals_t;
 typedef std::map<String, String> params_t;
