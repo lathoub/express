@@ -125,6 +125,10 @@ public:
             --size_;
     }
 
+    void reserve(size_t n)
+    {
+    }
+
     size_t size() const
     {
         return size_;

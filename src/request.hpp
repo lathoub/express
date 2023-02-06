@@ -79,6 +79,12 @@ public: /* Methods*/
     Request(Express<ServerType, ClientType, Settings> &app, ClientType &client)
         : app_(app), client_(client), method(Method::UNDEFINED)
     {
+#ifndef USE_STDCONTAINERS
+        headers.reserve(Settings::MaxHeaders);
+        query.reserve(Settings::MaxQueries);
+        params.reserve(Settings::MaxParams);
+#endif
+
         parse(client);
     }
 

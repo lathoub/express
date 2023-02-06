@@ -1,5 +1,5 @@
-#define LOGGER Serial
-#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+//#define LOGGER Serial
+//#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
@@ -15,6 +15,10 @@ void setup() {
   Ethernet.begin(mac);
 
   app.get(F("/"), [](request &req, response &res) {
+    res.send(F("Hello World!"));
+  });
+
+  app.all(F("/dada"), [](request &req, response &res) {
     res.send(F("Hello World!"));
   });
 

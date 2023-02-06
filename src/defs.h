@@ -33,6 +33,10 @@ typedef uint8_t byte;
 #endif
 
 #ifdef ESP32
+#define USE_STDCONTAINERS
+#endif
+
+#ifdef USE_STDCONTAINERS
 #include <vector>
 #include <map>
 #else
@@ -73,6 +77,9 @@ struct File
     ContentCallback contentsCallback;
 };
 
+/// @brief When std::vector's are not available, an
+/// alternative implementation uses fixed length containers.
+/// The max len is set here - override if needed
 struct DefaultSettings
 {
     /// @brief
@@ -95,6 +102,12 @@ struct DefaultSettings
 
     /// @brief
     static constexpr int MaxQueries = 10;
+
+    /// @brief
+    static constexpr int MaxParams = 10;
+
+    /// @brief
+    static constexpr int MaxLocals = 10;
 };
 
 class Buffer
@@ -128,6 +141,7 @@ enum Method
     OPTIONS, // The OPTIONS method describes the communication options for the target resource.
     TRACE,   // The TRACE method performs a message loop-back test along the path to the target resource.
     PATCH,   // The PATCH method applies partial modifications to a resource.
+    ALL,
     UNDEFINED = 999,
     ERROR = 999,
 };

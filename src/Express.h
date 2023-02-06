@@ -62,7 +62,7 @@ private:
     std::vector<MiddlewareCallback> middlewares_{};
 
     /// @brief
-    std::map<String, Express *> mount_paths_{};
+    std::map<String, Express *> mountPaths_{};
 
     /// @brief
     Express *parent_ = nullptr;
@@ -72,6 +72,12 @@ public:
     Express()
     {
         LOG_V(F("express() constructor"));
+
+#ifndef USE_STDCONTAINERS
+        routes_.reserve(Settings::MaxRoutes);
+        middlewares_.reserve(Settings::MaxMiddlewareCallbacks);
+        mountPaths_.reserve(Settings::MaxMountPaths);
+#endif
 
         settings[F("env")] = F("production");
         //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
@@ -350,9 +356,8 @@ private:
             LOG_V(F("req.method:"), req.method, F("method:"), route->method);
             LOG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
 
-            if (req.method == route->method && match(route->path, route->indices,
-                                                     req.uri_, req_indices,
-                                                     req.params))
+            if ((route->method == Method::ALL || req.method == route->method) 
+            && match(route->path, route->indices, req.uri_, req_indices, req.params))
             {
                 res.status_ = HttpStatus::OK;
                 req.route = route;
@@ -372,7 +377,7 @@ private:
         }
 
         // evaluate child mounting paths
-        for (auto [mountPath, express] : mount_paths_)
+        for (auto [mountPath, express] : mountPaths_)
             if (express->evaluate(req, res))
                 return true;
 
@@ -445,7 +450,7 @@ public:
 
         other.mountpath = mount_path;
         other.parent_ = this;
-        mount_paths_[other.mountpath] = &other;
+        mountPaths_[other.mountpath] = &other;
     }
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
@@ -454,14 +459,6 @@ public:
     auto use(const String &mount_path) -> void
     {
         mountpath = mount_path;
-    }
-
-    /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
-    /// @param path
-    /// @param fptr
-    auto all(const String &path, const typename Route::requestCallback fptr) -> void
-    {
-        // TODO: not implemented
     }
 
     /// @brief Sets the Boolean setting name to false, where name is one of the properties from
@@ -594,6 +591,14 @@ public:
     auto Delete(const String &path, const typename Route::requestCallback fptr) -> Route  &
     {
         return METHOD(Method::DELETE, path, fptr);
+    }
+
+    /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
+    /// @param path
+    /// @param fptr
+    auto all(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    {
+        return METHOD(Method::ALL, path, fptr);
     }
 
 #pragma endregion HTTP_Methods

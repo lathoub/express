@@ -132,6 +132,12 @@ public:
         return get(first);
     }
 
+    /// @brief 
+    /// @param n 
+    void reserve(size_t n)
+    {
+    }
+
     /// @brief
     /// @return
     auto length() -> size_t
