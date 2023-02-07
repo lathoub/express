@@ -136,10 +136,6 @@ public: /* Methods*/
     Response(Express<ServerType, ClientType, Settings> &app, ClientType &client)
         : app_(app), client_(client)
     {
-#ifndef USE_STDCONTAINERS
-        headers_.reserve(Settings::MaxHeaders);
-        renderLocals_.reserve(Settings::MaxLocals);
-#endif
     }
 
     /// @brief Appends the specified value to the HTTP response header field. If the header

@@ -56,12 +56,7 @@ class Route
 
         /// @brief 
         Route() {
-#ifndef USE_STDCONTAINERS
-            handlers.reserve(10); // TODO how many
-            indices.reserve(10); // TODO how many
-#endif
         }
-
 
         /// @brief
         /// @param path
