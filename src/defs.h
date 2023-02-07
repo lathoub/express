@@ -44,8 +44,16 @@ typedef uint8_t byte;
 #include "utility/map.h"
 #endif
 
-typedef std::map<String, String> locals_t;
-typedef std::map<String, String> params_t;
+#ifdef USE_STDCONTAINERS
+#define vector(Type, Size) std::vector<Type>
+#define map(Type1, Type2, Size) std::map<Type1, Type2>
+#else
+#define vector(Type, Size) std::vector<Type, Size>
+#define map(Type1, Type2, Size) std::map<Type1, Type2, Size>
+#endif
+
+typedef map(String, String, 10) locals_t;
+typedef map(String, String, 10) params_t;
 
 #include "namespace.h"
 
@@ -121,7 +129,7 @@ public:
 class Options
 {
 public:
-    std::map<String, String> headers{};
+    map(String, String, 10) headers;
 };
 
 struct PosLen

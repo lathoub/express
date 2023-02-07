@@ -56,13 +56,13 @@ private:
     ServerType *server_{}; // TODO: singleton
 
     /// @brief routes
-    std::vector<Route *> routes_{};
+    vector(Route *, Settings::MaxRoutes) routes_;
 
     /// @brief Application wide middlewares
-    std::vector<MiddlewareCallback> middlewares_{};
+    vector(MiddlewareCallback, Settings::MaxMiddlewareCallbacks) middlewares_;
 
     /// @brief
-    std::map<String, Express *> mountPaths_{};
+    map(String, Express *, Settings::MaxMountPaths) mountPaths_;
 
     /// @brief
     Express *parent_ = nullptr;
@@ -73,12 +73,6 @@ public:
     {
         LOG_V(F("express() constructor"));
 
-#ifndef USE_STDCONTAINERS
-        routes_.reserve(Settings::MaxRoutes);
-        middlewares_.reserve(Settings::MaxMiddlewareCallbacks);
-        mountPaths_.reserve(Settings::MaxMountPaths);
-#endif
-
         settings[F("env")] = F("production");
         //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
     }
@@ -87,14 +81,14 @@ public:
     uint16_t port{};
 
     /// @brief Application Settings
-    std::map<String, String> settings{};
+    map(String, String, Settings::MaxSettings) settings;
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
 
     /// @brief
-    std::map<String, RenderEngineCallback> engines{};
+    map(String, RenderEngineCallback, Settings::MaxEngines) engines;
 
 private:
     // bodyparser
@@ -267,8 +261,22 @@ private:
         return true;
     }
 
+    /// @brief Creates a new router object.
+    /// @return 
+    static Route& Router(int options)
+    {
+        const auto route = new Route();
+ //       routes_.push_back(route);
+
+        return *route;
+    }
+
+    /// @brief This is a built-in middleware function in Express. It serves static files and is based on serve-static.
+    //static void Static() {}
+
 public:
-    // bodyparser
+
+#pragma region express
 
     /// @brief
     /// @return
@@ -297,6 +305,8 @@ public:
     {
         return parseUrlencoded;
     }
+
+#pragma endregion express
 
 private:
     /// @brief

@@ -45,12 +45,12 @@ class Route
 
         String path{};
 
-        std::vector<HandlerCallback> handlers{}; 
+        vector(HandlerCallback, 10) handlers; 
 
         requestCallback fptrCallback = nullptr;
 
         // cache path splitting (avoid doing this for every request * number of paths)
-        std::vector<PosLen> indices{}; 
+        vector(PosLen,10) indices; 
 
     public:
 
