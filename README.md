@@ -1,6 +1,8 @@
 # Express for Arduino
 Fast, unopinionated, (subset of a) minimalist web framework for Arduino
 
+**Not** for Arduino Uno
+
 ## Getting started
 
 ### Hello world example
