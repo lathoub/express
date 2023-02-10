@@ -23,7 +23,7 @@ private:
     }
 
     /// @brief
-    static void renderLine(ClientType &client, const char *line, int from, const int to, locals_t &locals)
+    static void renderLine(EthernetClient &client, const char *line, int from, const int to, locals_t &locals)
     {
         while (from < to)
         {
@@ -57,7 +57,7 @@ private:
 
 public:
     /// @brief
-    static void renderFile(ClientType &client, locals_t &locals, const char *f)
+    static void renderFile(EthernetClient &client, locals_t &locals, const char *f)
     {
         size_t i = 0;
         size_t start = 0;

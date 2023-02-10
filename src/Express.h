@@ -36,10 +36,7 @@
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief 
-/// @tparam Settings 
-/// @tparam ServerType
-/// @tparam ClientType
-template <class ServerType, class ClientType, class Settings>
+template <typename T>
 class Express
 {
 public:
@@ -48,12 +45,12 @@ public:
     #include "route.hpp"
 
 private:
-    using RenderEngineCallback = void (*)(ClientType &, locals_t &locals, const char *f);
+    using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
     using MiddlewareCallback = bool (*)(Request &, Response &);
     using StartedCallback = void (*)();
 
     /// @brief
-    ServerType *server_{}; // TODO: singleton
+    EthernetServer *server_{}; // TODO: singleton
 
     /// @brief routes
     std::vector<Route *> routes_;
@@ -121,7 +118,7 @@ private:
 
             req.body[0] = 0;
 
-            auto &client = const_cast<ClientType &>(req.client_);
+            auto &client = const_cast<EthernetClient &>(req.client_);
 
             while (req.body.length() < max_length)
             {
@@ -179,7 +176,7 @@ private:
 
             LOG_V(F("> contentLength"), dataLen);
 
-            auto &client = const_cast<ClientType &>(req.client_);
+            auto &client = const_cast<EthernetClient &>(req.client_);
 
             while (dataLen > 0 && client.connected())
             {
@@ -646,7 +643,7 @@ public:
         // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
         //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-        server_ = new ServerType(port);
+        server_ = new EthernetServer(port);
         server_->begin();
 
         if (startedCallback)
@@ -662,7 +659,7 @@ public:
 
     /// @brief
     /// @param client
-    void run(ClientType &client)
+    void run(EthernetClient &client)
     {
         while (client.connected())
         {
@@ -695,15 +692,12 @@ public:
 
 END_EXPRESS_NAMESPACE
 
-#define EXPRESS_CREATE_INSTANCE(Name, ServerType, ClientType, Settings) \
-    typedef Express<ServerType, ClientType, Settings> express; \
+#define EXPRESS_CREATE_INSTANCE(Name) \
+    typedef Express<int> express; \
     typedef express::Route route; \
     typedef express::Request request; \
     typedef express::Response response; \
     express Name;
 
-#define EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(Name) \
-    EXPRESS_CREATE_INSTANCE(Name, EthernetServer, EthernetClient, DefaultSettings);
-
 #define EXPRESS_CREATE_DEFAULT_INSTANCE() \
-    EXPRESS_CREATE_DEFAULT_NAMED_INSTANCE(app);
+    EXPRESS_CREATE_INSTANCE(app);

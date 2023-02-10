@@ -31,14 +31,14 @@ public:
     String uri_{};
 
     /// @brief
-    const ClientType &client_;
+    const EthernetClient &client_;
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express<ServerType, ClientType, Settings> &app_;
+    Express<T> &app_;
 
     /// @brief intermediate pointer buffer for data callback
-    typename Express<ServerType, ClientType, Settings>::Route *route = nullptr;
+    typename Express<T>::Route *route = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
@@ -76,7 +76,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express<ServerType, ClientType, Settings> &app, ClientType &client)
+    Request(Express<T> &app, EthernetClient &client)
         : app_(app), client_(client), method(Method::UNDEFINED)
     {
         parse(client);
@@ -109,7 +109,7 @@ private:
     /// @brief
     /// @param client
     /// @return
-    bool parse(ClientType &client)
+    bool parse(EthernetClient &client)
     {
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');
