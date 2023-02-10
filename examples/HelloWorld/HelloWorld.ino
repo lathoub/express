@@ -11,14 +11,9 @@ EXPRESS_CREATE_DEFAULT_INSTANCE();
 void setup() {
   LOG_SETUP();
 
-  Ethernet.init(5);
   Ethernet.begin(mac);
 
   app.get(F("/"), [](request &req, response &res) {
-    res.send(F("Hello World!"));
-  });
-
-  app.all(F("/dada"), [](request &req, response &res) {
     res.send(F("Hello World!"));
   });
 
