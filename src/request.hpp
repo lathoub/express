@@ -58,7 +58,7 @@ public:
     IPAddress ip{};
 
     /// @brief
-    map(String, String, 10) headers;
+    std::map<String, String> headers;
 
     /// @brief Contains the path part of the request URL.
     String path{};
@@ -67,7 +67,7 @@ public:
     String protocol{};
 
     /// @brief
-    map(String, String, 10) query;
+    std::map<String, String> query;
 
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as

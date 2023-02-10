@@ -40,20 +40,11 @@ typedef uint8_t byte;
 #include <vector>
 #include <map>
 #else
-#include "utility/vector.h"
-#include "utility/map.h"
+#error "Alternative for std::vector and std::map here"
 #endif
 
-#ifdef USE_STDCONTAINERS
-#define vector(Type, Size) std::vector<Type>
-#define map(Type1, Type2, Size) std::map<Type1, Type2>
-#else
-#define vector(Type, Size) std::vector<Type, Size>
-#define map(Type1, Type2, Size) std::map<Type1, Type2, Size>
-#endif
-
-typedef map(String, String, 10) locals_t;
-typedef map(String, String, 10) params_t;
+typedef std::map<String, String> locals_t;
+typedef std::map<String, String> params_t;
 
 #include "namespace.h"
 
@@ -90,32 +81,6 @@ struct File
 /// The max len is set here - override if needed
 struct DefaultSettings
 {
-    /// @brief
-    static constexpr int MaxRoutes = 15;
-
-    /// @brief
-    static constexpr int MaxMountPaths = 5;
-
-    /// @brief
-    static constexpr int MaxMiddlewareCallbacks = 5;
-
-    /// @brief
-    static constexpr int MaxSettings = 4;
-
-    /// @brief
-    static constexpr int MaxEngines = 4;
-
-    /// @brief 
-    static constexpr int MaxHeaders = 5;
-
-    /// @brief
-    static constexpr int MaxQueries = 10;
-
-    /// @brief
-    static constexpr int MaxParams = 10;
-
-    /// @brief
-    static constexpr int MaxLocals = 10;
 };
 
 class Buffer
@@ -129,7 +94,7 @@ public:
 class Options
 {
 public:
-    map(String, String, 10) headers;
+    std::map<String, String> headers;
 };
 
 struct PosLen

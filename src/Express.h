@@ -56,13 +56,13 @@ private:
     ServerType *server_{}; // TODO: singleton
 
     /// @brief routes
-    vector(Route *, Settings::MaxRoutes) routes_;
+    std::vector<Route *> routes_;
 
     /// @brief Application wide middlewares
-    vector(MiddlewareCallback, Settings::MaxMiddlewareCallbacks) middlewares_;
+    std::vector<MiddlewareCallback> middlewares_;
 
     /// @brief
-    map(String, Express *, Settings::MaxMountPaths) mountPaths_;
+    std::map<String, Express *> mountPaths_;
 
     /// @brief
     Express *parent_ = nullptr;
@@ -81,14 +81,14 @@ public:
     uint16_t port{};
 
     /// @brief Application Settings
-    map(String, String, Settings::MaxSettings) settings;
+    std::map<String, String> settings;
 
     /// @brief The app.mountpath property contains the path patterns
     /// on which a sub-app was mounted.
     String mountpath{};
 
     /// @brief
-    map(String, RenderEngineCallback, Settings::MaxEngines) engines;
+    std::map<String, RenderEngineCallback> engines;
 
 private:
     // bodyparser
@@ -690,6 +690,7 @@ public:
     };
 
     #include "mustache.hpp"
+    #include "basicAuth.hpp"
 };
 
 END_EXPRESS_NAMESPACE
