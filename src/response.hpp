@@ -58,7 +58,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express<T> &app_;
+    Express &app_;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -133,7 +133,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express<T> &app, EthernetClient &client)
+    Response(Express &app, EthernetClient &client)
         : app_(app), client_(client)
     {
     }

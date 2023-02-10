@@ -36,7 +36,6 @@
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief 
-template <typename T>
 class Express
 {
 public:
@@ -693,7 +692,7 @@ public:
 END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_INSTANCE(Name) \
-    typedef Express<int> express; \
+    typedef Express express; \
     typedef express::Route route; \
     typedef express::Request request; \
     typedef express::Response response; \

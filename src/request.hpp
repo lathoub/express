@@ -23,6 +23,8 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+class Route;
+
 class Request
 {
 public:
@@ -35,10 +37,10 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express<T> &app_;
+    Express &app_;
 
     /// @brief intermediate pointer buffer for data callback
-    typename Express<T>::Route *route = nullptr;
+    Express::Route *route = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
@@ -76,7 +78,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express<T> &app, EthernetClient &client)
+    Request(Express &app, EthernetClient &client)
         : app_(app), client_(client), method(Method::UNDEFINED)
     {
         parse(client);
