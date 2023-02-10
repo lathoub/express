@@ -23,7 +23,12 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "defs.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
 class Route;
+class Express;
 
 class Request
 {
@@ -37,10 +42,10 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express &app_;
+    const Express *app_ = nullptr;
 
     /// @brief intermediate pointer buffer for data callback
-    Express::Route *route = nullptr;
+    Route *route = nullptr;
 
 public:
     /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
@@ -78,19 +83,12 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express &app, EthernetClient &client)
-        : app_(app), client_(client), method(Method::UNDEFINED)
-    {
-        parse(client);
-    }
+    Request(Express *app, EthernetClient &client);
 
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    auto accepts(const String &types) -> bool
-    {
-        return false;
-    }
+    auto accepts(const String &types) -> bool;
 
     /// @brief Returns the specified HTTP request header field (case-insensitive match).
     /// @param field
@@ -113,9 +111,13 @@ private:
     /// @return
     bool parse(EthernetClient &client)
     {
+        LOG_V(F("Request::Parse"));
+
         // Read the first line of HTTP request
         String reqStr = client.readStringUntil('\r');
         client.readStringUntil('\n');
+
+        LOG_V(F("First line"), reqStr);
 
         // TODO: clean
         method = Method::UNDEFINED;
@@ -191,7 +193,6 @@ private:
             auto header_name = reqStr.substring(0, header_div);
             header_name.toLowerCase();
             auto header_value = reqStr.substring(header_div + 2);
-            header_value.toLowerCase();
             headers[header_name] = header_value; // TODO keep all headers or just a few?
 
             if (header_name.equalsIgnoreCase(F("Host")))
@@ -297,3 +298,5 @@ private:
         return decoded;
     }
 };
+
+END_EXPRESS_NAMESPACE

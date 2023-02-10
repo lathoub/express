@@ -23,6 +23,12 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "defs.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
+class Express;
+
 class Response
 {
 private:
@@ -35,7 +41,7 @@ private:
             while (f[start + i] != '\n' && f[start + i] != '\0')
                 i++;
 
-            client.write(f + start, i); 
+            client.write(f + start, i);
             client.write('\n');
 
             if (f[start + i] == '\0')
@@ -58,7 +64,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    Express &app_;
+    const Express *app_ = nullptr;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -68,75 +74,18 @@ public:
 public:
     /// @brief
     /// @param client
-    void evaluateHeaders(EthernetClient &client)
-    {
-        if (body_ && body_ != F(""))
-            headers_[ContentLength] = body_.length();
-
-        headers_[F("connection")] = F("close");
-    }
+    void evaluateHeaders(EthernetClient &client);
 
     /// @brief
     /// @param client
-    void sendBody(EthernetClient &client, locals_t &locals)
-    {
-        if (body_ && body_ != F(""))
-            client.println(body_.c_str());
-        else if (contentsCallback_)
-        {
-            int lastDot = filename_.lastIndexOf('.');
-            auto ext = filename_.substring(lastDot + 1);
-
-            auto engineName = app_.settings[F("view engine")];
-            if (engineName.equals(ext))
-            {
-                auto engine = app_.engines[engineName];
-                if (engine)
-                    engine(client, locals, contentsCallback_());
-            }
-            else
-                renderFile(client, contentsCallback_()); // default renderer
-        }
-    }
+    void sendBody(EthernetClient &client, locals_t &locals);
 
     /// @brief
-    void send()
-    {
-        auto &client = const_cast<EthernetClient &>(client_);
-
-        client.print(F("HTTP/1.1 "));
-        client.println(status_);
-
-        // Add to headers
-        evaluateHeaders(client);
-
-        if (app_.settings.count(XPoweredBy) > 0)
-            headers_[XPoweredBy] = app_.settings[XPoweredBy];
-
-        LOG_V(F("Headers:"));
-        // Send headers
-        for (auto [first, second] : headers_)
-        {
-            LOG_V(first, second);
-
-            client.print(first);
-            client.print(": ");
-            client.println(second);
-        }
-        client.println();
-
-        sendBody(client, renderLocals_);
-
-        client.setConnectionTimeout(5);
-        client.stop();
-    }
+    void send();
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express &app, EthernetClient &client)
-        : app_(app), client_(client)
-    {
-    }
+    Response(Express *app, EthernetClient &client);
 
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value
@@ -145,23 +94,7 @@ public: /* Methods*/
     /// @param field
     /// @param value
     /// @return
-    auto append(const String &field, const String &value) -> Response &
-    {
-        for (auto [key, header] : headers_)
-        {
-            if (field.equalsIgnoreCase(key))
-            {
-                // Appends the specified value to the HTTP response header
-                header += value;
-                return *this;
-            }
-        }
-
-        // not found, creates the header with the specified value
-        headers_[field] = value;
-
-        return *this;
-    }
+    auto append(const String &field, const String &value) -> Response &;
 
     /// @brief Ends the response process. This method actually comes from Node core,
     /// specifically the response.end() method of http.ServerResponse.
@@ -288,3 +221,5 @@ public: /* Methods*/
         return *this;
     }
 };
+
+END_EXPRESS_NAMESPACE

@@ -23,13 +23,22 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "defs.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
+class Request;
+class Response;
+
+using HandlerCallback = bool (*)(Request &, Response &);
+using DataCallback = void (*)(const Buffer &);
+using EndDataCallback = void (*)();
+
+using requestCallback = void (*)(Request &, Response &);
+
 class Route
     {
     public:
-        using requestCallback = void (*)(Request &, Response &);
-        using HandlerCallback = bool (*)(Request &, Response &);
-        using DataCallback = void (*)(const Buffer &);
-        using EndDataCallback = void (*)();
 
     private:
         static const char delimiter = '/';
@@ -102,3 +111,5 @@ class Route
             //  return *this;
         }
     };
+
+END_EXPRESS_NAMESPACE

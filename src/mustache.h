@@ -1,3 +1,7 @@
+#include "defs.h"
+
+BEGIN_EXPRESS_NAMESPACE
+
 /// @brief
 class mustache
 {
@@ -76,6 +80,8 @@ public:
         }
     }
 };
+
+END_EXPRESS_NAMESPACE
 
 /// @brief
 /// @return

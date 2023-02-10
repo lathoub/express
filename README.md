@@ -15,7 +15,7 @@ using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-EXPRESS_CREATE_DEFAULT_INSTANCE();
+EXPRESS_CREATE_INSTANCE();
 
 void setup() {
   Ethernet.begin(mac); // no check for brevity

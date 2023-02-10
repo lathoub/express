@@ -32,6 +32,13 @@
 typedef uint8_t byte;
 #endif
 
+#include <Ethernet.h>
+
+#define LOGGER Serial
+#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+
+#include "utility/logger.h"
+
 #ifdef ESP32
 #define USE_STDCONTAINERS
 #endif

@@ -25,29 +25,25 @@
 
 #pragma once
 
-#include <Ethernet.h>
-
-#define LOGGER Serial
-#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
-
-#include "utility/logger.h"
 #include "defs.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
+class Express;
+class Route;
+class Request;
+class Response;
+
+using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
+using MiddlewareCallback = bool (*)(Request &, Response &);
+using StartedCallback = void (*)();
+
+using requestCallback = void (*)(Request &, Response &);
+
 /// @brief 
 class Express
 {
-public:
-    #include "request.hpp"
-    #include "response.hpp"
-    #include "route.hpp"
-
 private:
-    using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
-    using MiddlewareCallback = bool (*)(Request &, Response &);
-    using StartedCallback = void (*)();
-
     /// @brief
     EthernetServer *server_{}; // TODO: singleton
 
@@ -65,13 +61,7 @@ private:
 
 public:
     /// @brief Constructor
-    Express()
-    {
-        LOG_V(F("express() constructor"));
-
-        settings[F("env")] = F("production");
-        //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
-    }
+    Express();
 
     /// @brief
     uint16_t port{};
@@ -86,6 +76,8 @@ public:
     /// @brief
     std::map<String, RenderEngineCallback> engines;
 
+#pragma region express
+
 private:
     // bodyparser
 
@@ -96,58 +88,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseJson(Request &req, Response &res) -> bool
-    {
-        if (req.body != nullptr && req.body.length() > 0)
-        {
-            LOG_I(F("Body already read"));
-            return true;
-        }
-
-        if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
-        {
-            LOG_I(F("> bodyparser parseJson"));
-
-            auto max_length = req.get(ContentLength).toInt();
-
-            req.body.reserve(max_length);
-
-            if (!req.body.reserve(max_length + 1))
-                return false;
-
-            req.body[0] = 0;
-
-            auto &client = const_cast<EthernetClient &>(req.client_);
-
-            while (req.body.length() < max_length)
-            {
-                int tries = 1000;
-                size_t avail;
-
-                while (!((avail = client.available())) && tries--)
-                    delay(1);
-
-                if (!avail)
-                    break;
-
-                if (req.body.length() + avail > max_length)
-                    avail = max_length - req.body.length();
-
-                while (avail--)
-                    req.body += static_cast<char>(client.read());
-            }
-
-            res.headers_[ContentType] = ApplicationJson;
-
-            LOG_I(F("< bodyparser parseJson"));
-
-            return true;
-        }
-        else
-            LOG_V(F("Not an application/json body"));
-
-        return true;
-    }
+    static auto parseJson(Request &req, Response &res) -> bool;
 
     // TODO: static options
     // inflate, limit, type, verify
@@ -156,62 +97,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseRaw(Request &req, Response &res) -> bool
-    {
-        if (req.body != nullptr && req.body.length() > 0)
-        {
-            LOG_I(F("Body already read"));
-            return true;
-        }
-
-        if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
-        {
-            LOG_I(F("> bodyparser raw"));
-
-            auto sDataLen = req.get("content-length");
-            LOG_I(F("sDataLen"), sDataLen);
-
-            auto dataLen = sDataLen.toInt();
-
-            LOG_V(F("> contentLength"), dataLen);
-
-            auto &client = const_cast<EthernetClient &>(req.client_);
-
-            while (dataLen > 0 && client.connected())
-            {
-                if (client.available())
-                {
-                    Buffer buffer;
-                    buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
-                    dataLen -= buffer.length;
-
-                    LOG_V(F("remaining:"), buffer.length, dataLen);
-
-                    if (dataLen > 0)
-                    {
-                        if (req.route->dataCallback_)
-                            req.route->dataCallback_(buffer);
-                    }
-                    else
-                    {
-                        if (buffer.length > 0)
-                        {
-                            if (req.route->dataCallback_)
-                                req.route->dataCallback_(buffer);
-                        }
-                        if (req.route->endCallback_)
-                            req.route->endCallback_();
-                    }
-                }
-            }
-
-            LOG_V(F("< bodyparser raw"));
-        }
-        else
-            LOG_V(F("Not an application/octet-stream body"));
-
-        return true;
-    }
+    static auto parseRaw(Request &req, Response &res) -> bool;
 
     // TODO: static options
     // defaultCharset, inflate, limit, type, verify
@@ -220,16 +106,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseText(Request &req, Response &res) -> bool
-    {
-        if (req.body != nullptr && req.body.length() > 0)
-        {
-            LOG_I(F("Body already read"));
-            return true;
-        }
-
-        return true;
-    }
+    static auto parseText(Request &req, Response &res) -> bool;
 
     // TODO: static options
     // extended, inflate, limit, parameterLimit, type, verify
@@ -238,42 +115,12 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseUrlencoded(Request &req, Response &res) -> bool
-    {
-        if (req.body != nullptr && req.body.length() > 0)
-        {
-            LOG_I(F("Body already read"));
-            return true;
-        }
-
-        if (req.get(ContentType).equalsIgnoreCase(F("application/x-www-form-urlencoded")))
-        {
-            LOG_I(F("> bodyparser x-www-form-urlencoded"));
-
-        }
-        else
-            LOG_V(F("Not an application/x-www-form-urlencoded body"));
-
-        return true;
-    }
-
-    /// @brief Creates a new router object.
-    /// @return 
-    static Route& Router(int options)
-    {
-        const auto route = new Route();
- //       routes_.push_back(route);
-
-        return *route;
-    }
+    static auto parseUrlencoded(Request &req, Response &res) -> bool;
 
     /// @brief This is a built-in middleware function in Express. It serves static files and is based on serve-static.
     //static void Static() {}
 
 public:
-
-#pragma region express
-
     /// @brief
     /// @return
     static auto raw() -> MiddlewareCallback
@@ -349,46 +196,7 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(Request &req, Response &res) -> const bool
-    {
-        LOG_V(F("evaluate"), req.uri_);
-
-        std::vector<PosLen> req_indices{}; // TODO how many?? vis Settings
-
-        Route ::splitToVector(req.uri_, req_indices);
-
-        for (auto route : routes_)
-        {
-            LOG_V(F("req.method:"), req.method, F("method:"), route->method);
-            LOG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
-
-            if ((route->method == Method::ALL || req.method == route->method) 
-            && match(route->path, route->indices, req.uri_, req_indices, req.params))
-            {
-                res.status_ = HttpStatus::OK;
-                req.route = route;
-
-                // Route middleware
-                for (const auto handler : route->handlers)
-                    if (!handler(req, res))
-                        break;
-
-                // evaluate the actual function
-                if (route->fptrCallback)
-                    route->fptrCallback(req, res);
-
-                // go to the next middleware
-                return true;
-            }
-        }
-
-        // evaluate child mounting paths
-        for (auto [mountPath, express] : mountPaths_)
-            if (express->evaluate(req, res))
-                return true;
-
-        return false;
-    }
+    auto evaluate(Request &req, Response &res) -> const bool;
 
     /// @brief
     /// @param method
@@ -397,45 +205,14 @@ private:
     /// @param fptrCallback
     /// @return
     template <typename ArrayType, size_t ArraySize>
-    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const typename Route::requestCallback fptrCallback) -> Route  &
-    {
-        if (path == F("/"))
-            path = F("");
-
-        path = mountpath + path;
-
-        LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), ArraySize);
-        // F("mountpath:"), mountpath,
-
-        const auto route = new Route();
-        route->method = method;
-        route->path = path;
-        route->fptrCallback = fptrCallback;
-
-        for (auto handler : handlers)
-            if (nullptr != handler)
-                route->handlers.push_back(handler);
-
-        route->splitToVector(route->path);
-        // Add to collection
-        routes_.push_back(route);
-
-        return *route;
-    }
+    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const requestCallback fptrCallback) -> Route  &;
 
     /// @brief
     /// @param method
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const typename Route::requestCallback fptr) -> Route  &
-    {
-        LOG_I(F("METHOD:"), method, F("path:"), path);
-        // F("mountpath:"), mountpath,
-
-        const MiddlewareCallback middlewares[] = {0};
-        return METHOD(method, path, middlewares, fptr);
-    }
+    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route  &;
 
 public:
     /// @brief
@@ -536,7 +313,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto head(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    auto head(const String &path, const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::HEAD, path, fptr);
     };
@@ -545,7 +322,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    auto get(const String &path, const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::GET, path, fptr);
     };
@@ -554,7 +331,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    auto post(const String &path, const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::POST, path, fptr);
     };
@@ -564,7 +341,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const typename Route::requestCallback fptr) -> Route  &
+    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route  &
     {
         const MiddlewareCallback middlewares[] = {middleware};
         return METHOD(Method::POST, path, middlewares, fptr);
@@ -576,7 +353,7 @@ public:
     /// @param fptr
     /// @return
     template <typename ArrayType, size_t ArraySize>
-    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const typename Route::requestCallback fptr) -> Route  &
+    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);
     };
@@ -585,7 +362,7 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    auto put(const String &path, const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::PUT, path, fptr);
     };
@@ -594,7 +371,7 @@ public:
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    auto Delete(const String &path, const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::DELETE, path, fptr);
     }
@@ -602,7 +379,7 @@ public:
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param path
     /// @param fptr
-    auto all(const String &path, const typename Route::requestCallback fptr) -> Route  &
+    auto all(const String &path, const requestCallback fptr) -> Route  &
     {
         return METHOD(Method::ALL, path, fptr);
     }
@@ -626,77 +403,28 @@ public:
     }
 
     /// @brief
-    auto listen(uint16_t port, const StartedCallback startedCallback = nullptr) -> void
-    {
-        if (nullptr != server_)
-        {
-            LOG_E(F("The listen method can only be called once! This call is ignored and processing continous."));
-            return;
-        }
-
-        this->port = port;
-
-        // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
-        // change in ESP32 server.h
-        // MacOS:   /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.*/cores/esp32
-        // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
-        //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
-
-        server_ = new EthernetServer(port);
-        server_->begin();
-
-        if (startedCallback)
-            startedCallback();
-    }
+    void listen(uint16_t port, const StartedCallback startedCallback = nullptr);
 
     /// @brief
-    auto run() -> void
-    {
-        if (auto client = server_->available())
-            run(client);
-    }
+    auto run() -> void;
 
     /// @brief
     /// @param client
-    void run(EthernetClient &client)
-    {
-        while (client.connected())
-        {
-            if (client.available())
-            {
-                // Construct request object and read/parse incoming bytes
-                Request req(*this, client);
-
-                if (req.method != Method::ERROR)
-                {
-                    Response res(*this, client);
-
-                    /// @brief run the app wide middlewares (ao bodyparsers)
-                    for (const auto middleware : middlewares_)
-                        if (!middleware(req, res))
-                            break;
-
-                    /// @brief evaluate the request
-                    evaluate(req, res);
-
-                    res.send();
-                }
-            }
-        }
-    };
-
-    #include "mustache.hpp"
-    #include "basicAuth.hpp"
+    void run(EthernetClient &client);
 };
 
 END_EXPRESS_NAMESPACE
 
-#define EXPRESS_CREATE_INSTANCE(Name) \
+#include "response.h"
+#include "request.h"
+#include "route.h"
+
+#define EXPRESS_CREATE_NAMED_INSTANCE(Name) \
     typedef Express express; \
-    typedef express::Route route; \
-    typedef express::Request request; \
-    typedef express::Response response; \
+    typedef Route route; \
+    typedef Request request; \
+    typedef Response response; \
     express Name;
 
-#define EXPRESS_CREATE_DEFAULT_INSTANCE() \
-    EXPRESS_CREATE_INSTANCE(app);
+#define EXPRESS_CREATE_INSTANCE() \
+    EXPRESS_CREATE_NAMED_INSTANCE(app);
