@@ -286,7 +286,6 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 /// @param handlers
 /// @param fptrCallback
 /// @return
-//template <typename T, size_t N>
 auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptrCallback) -> Route &
 {
     if (path == F("/"))
@@ -370,7 +369,6 @@ auto Express::post(const String &path, const MiddlewareCallback middleware, cons
 /// @param middleware
 /// @param fptr
 /// @return
-//template <typename T, size_t N>
 auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptr) -> Route &
 {
     return METHOD(Method::POST, path, middlewares, fptr);

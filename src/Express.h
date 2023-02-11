@@ -174,7 +174,6 @@ private:
     /// @param handler
     /// @param fptrCallback
     /// @return
-  //  template <typename T, size_t N>
     auto METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptrCallback) -> Route &;
 
     /// @brief
@@ -309,7 +308,6 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-   // template <typename T, size_t N>
     auto post(const String &path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptr = nullptr) -> Route &;
 
     /// @brief
