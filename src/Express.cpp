@@ -291,10 +291,10 @@ auto Express::evaluate(Request &req, Response &res, const NextCallback next) -> 
             }
 
             // evaluate the actual function
-            if (route->fptrCallback)
+            if (route->middleware)
             {
                 gotoNext = false;
-                route->fptrCallback(req, res, [gotoNext]() { gotoNext = true; });
+                route->middleware(req, res, [gotoNext]() { gotoNext = true; });
                 if (!gotoNext)
                     break;
             }
@@ -320,10 +320,10 @@ auto Express::evaluate(Request &req, Response &res, const NextCallback next) -> 
 /// @tparam ArraySize
 /// @param method
 /// @param path
-/// @param handlers
-/// @param fptrCallback
+/// @param middlewares
+/// @param middleware
 /// @return
-auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback fptrCallback) -> Route &
+auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback middleware) -> Route &
 {
     if (path == F("/"))
         path = F("");
@@ -336,7 +336,7 @@ auto Express::METHOD(const Method method, String path, const std::vector<Middlew
     const auto route = new Route();
     route->method = method;
     route->path = path;
-    route->fptrCallback = fptrCallback;
+    route->middleware = middleware;
 
     for (auto handler : middlewares)
         if (nullptr != handler)

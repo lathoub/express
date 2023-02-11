@@ -103,7 +103,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseJson(Request &req, Response &res, const NextCallback next) -> void;
+    static auto parseJson(Request &, Response &, const NextCallback) -> void;
 
     // TODO: static options
     // inflate, limit, type, verify
@@ -112,7 +112,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseRaw(Request &req, Response &res, const NextCallback next) -> void;
+    static auto parseRaw(Request &, Response &, const NextCallback) -> void;
 
     // TODO: static options
     // defaultCharset, inflate, limit, type, verify
@@ -121,7 +121,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseText(Request &req, Response &res, const NextCallback next) -> void;
+    static auto parseText(Request &, Response &, const NextCallback) -> void;
 
     // TODO: static options
     // extended, inflate, limit, parameterLimit, type, verify
@@ -130,7 +130,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseUrlencoded(Request &req, Response &res, const NextCallback next) -> void;
+    static auto parseUrlencoded(Request &, Response &, const NextCallback) -> void;
 
     /// @brief This is a built-in middleware function in Express. It serves static files and is based on serve-static.
     // static void Static() {}
@@ -173,22 +173,22 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(Request &req, Response &res, const NextCallback next) -> void;
+    auto evaluate(Request &, Response &, const NextCallback) -> void;
 
     /// @brief
     /// @param method
     /// @param path
-    /// @param handler
-    /// @param fptrCallback
+    /// @param middlewares
+    /// @param middleware
     /// @return
-    auto METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback fptrCallback) -> Route &;
+    auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>, const MiddlewareCallback) -> Route &;
 
     /// @brief
     /// @param method
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const MiddlewareCallback fptr) -> Route &;
+    auto METHOD(const Method, String path, const MiddlewareCallback) -> Route &;
 
 public:
     /// @brief
@@ -283,7 +283,7 @@ public:
     /// @brief
     /// @param name
     /// @param callback
-    auto on(const String &name, const MountCallback callback) -> void;
+    auto on(const String &name, const MountCallback) -> void;
 
 #pragma region HTTP_Methods
 
@@ -291,50 +291,50 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto head(const String &path, const MiddlewareCallback fptr) -> Route &;
+    auto head(const String &path, const MiddlewareCallback) -> Route &;
 
     /// @brief
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const MiddlewareCallback fptr) -> Route &;
+    auto get(const String &path, const MiddlewareCallback) -> Route &;
 
     /// @brief
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback fptr) -> Route &;
-
-    /// @brief
-    /// @param path
-    /// @param middleware
-    /// @param fptr
-    /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const MiddlewareCallback fptr = nullptr) -> Route &;
+    auto post(const String &path, const MiddlewareCallback) -> Route &;
 
     /// @brief
     /// @param path
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback fptr = nullptr) -> Route &;
+    auto post(const String &path, const MiddlewareCallback, const MiddlewareCallback fptr = nullptr) -> Route &;
+
+    /// @brief
+    /// @param path
+    /// @param middleware
+    /// @param fptr
+    /// @return
+    auto post(const String &path, const std::vector<MiddlewareCallback>, const MiddlewareCallback fptr = nullptr) -> Route &;
 
     /// @brief
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const MiddlewareCallback fptr) -> Route &;
+    auto put(const String &path, const MiddlewareCallback) -> Route &;
 
     /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const MiddlewareCallback fptr) -> Route &;
+    auto Delete(const String &path, const MiddlewareCallback) -> Route &;
 
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param path
     /// @param fptr
-    auto all(const String &path, const MiddlewareCallback fptr) -> Route &;
+    auto all(const String &path, const MiddlewareCallback) -> Route &;
 
 #pragma endregion HTTP_Methods
 
@@ -581,7 +581,7 @@ public:
 
     std::vector<MiddlewareCallback> middlewares;
 
-    MiddlewareCallback fptrCallback = nullptr;
+    MiddlewareCallback middleware = nullptr;
 
     // cache path splitting (avoid doing this for every request * number of paths)
     std::vector<PosLen> indices;
