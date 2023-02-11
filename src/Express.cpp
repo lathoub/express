@@ -460,11 +460,11 @@ void Express::run(EthernetClient &client)
         if (client.available())
         {
             // Construct request object and read/parse incoming bytes
-            Request req(this, client);
+            Request req(*this, client);
 
             if (req.method != Method::ERROR)
             {
-                Response res(this, client);
+                Response res(*this, client);
 
                 /// @brief run the app wide middlewares (ao bodyparsers)
                 auto next = true;

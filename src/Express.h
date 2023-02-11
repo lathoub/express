@@ -364,7 +364,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const Express *app = nullptr;
+    const Express &app;
 
     /// @brief intermediate pointer buffer for data callback
     Route *route = nullptr;
@@ -405,7 +405,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express *, EthernetClient &);
+    Request(Express &, EthernetClient &);
 
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
@@ -451,7 +451,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const Express *app = nullptr;
+    const Express &app;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -472,7 +472,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express *, EthernetClient &);
+    Response(Express&, EthernetClient &);
 
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value

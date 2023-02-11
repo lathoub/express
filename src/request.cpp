@@ -28,7 +28,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-Request::Request(Express *express, EthernetClient &client)
+Request::Request(Express &express, EthernetClient &client)
     : app(express), client_(client), method(Method::UNDEFINED)
 {
     parse(client);

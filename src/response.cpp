@@ -32,7 +32,7 @@ BEGIN_EXPRESS_NAMESPACE
 /// @param app
 /// @param client
 /// @return
-Response::Response(Express *express, EthernetClient &client)
+Response::Response(Express &express, EthernetClient &client)
     : app(express), client_(client)
 {
 }
