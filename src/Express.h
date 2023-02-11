@@ -29,10 +29,12 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
+// Forward declaration
 class Request;
 class Response;
 class Route;
 
+// Callback definitions
 using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
 using MiddlewareCallback = bool (*)(Request &, Response &);
 using requestCallback = void (*)(Request &, Response &);
@@ -349,6 +351,7 @@ public:
     void run(EthernetClient &client);
 };
 
+/// @brief 
 class Request
 {
 public:
@@ -361,7 +364,7 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const Express *app_ = nullptr;
+    const Express *app = nullptr;
 
     /// @brief intermediate pointer buffer for data callback
     Route *route = nullptr;
@@ -402,7 +405,7 @@ public:
 
 public: /* Methods*/
     /// @brief Constructor
-    Request(Express *app, EthernetClient &client);
+    Request(Express *, EthernetClient &);
 
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
@@ -430,6 +433,7 @@ private:
     static auto urlDecode(const String &text) -> String;
 };
 
+/// @brief 
 class Response
 {
 private:
@@ -443,11 +447,11 @@ public:
 
     uint16_t status_ = HttpStatus::NOT_FOUND;
 
-    std::map<String, String> headers_;
+    std::map<String, String> headers;
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const Express *app_ = nullptr;
+    const Express *app = nullptr;
 
     /// @brief derefered rendering
     ContentCallback contentsCallback_{};
@@ -457,18 +461,18 @@ public:
 public:
     /// @brief
     /// @param client
-    void evaluateHeaders(EthernetClient &client);
+    void evaluateHeaders(EthernetClient &);
 
     /// @brief
     /// @param client
-    void sendBody(EthernetClient &client, locals_t &locals);
+    void sendBody(EthernetClient &, locals_t &locals);
 
     /// @brief
     void send();
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express *app, EthernetClient &client);
+    Response(Express *, EthernetClient &);
 
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value
@@ -535,6 +539,7 @@ public: /* Methods*/
     auto status(const int status) -> Response &;
 };
 
+/// @brief 
 class Route
 {
 public:

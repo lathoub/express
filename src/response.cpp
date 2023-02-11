@@ -32,14 +32,14 @@ BEGIN_EXPRESS_NAMESPACE
 /// @param app
 /// @param client
 /// @return
-Response::Response(Express *app, EthernetClient &client)
-    : app_(app), client_(client)
+Response::Response(Express *express, EthernetClient &client)
+    : app(express), client_(client)
 {
 }
 
-/// @brief 
-/// @param client 
-/// @param f 
+/// @brief
+/// @param client
+/// @param f
 void Response::renderFile(EthernetClient &client, const char *f)
 {
     size_t i = 0;
@@ -66,7 +66,7 @@ void Response::renderFile(EthernetClient &client, const char *f)
 /// @return
 auto Response::append(const String &field, const String &value) -> Response &
 {
-    for (auto [key, header] : headers_)
+    for (auto [key, header] : headers)
     {
         if (field.equalsIgnoreCase(key))
         {
@@ -77,7 +77,7 @@ auto Response::append(const String &field, const String &value) -> Response &
     }
 
     // not found, creates the header with the specified value
-    headers_[field] = value;
+    headers[field] = value;
 
     return *this;
 }
@@ -101,7 +101,7 @@ void Response::end()
 /// @return
 auto Response::get(const String &field) -> String
 {
-    for (auto [key, header] : headers_)
+    for (auto [key, header] : headers)
     {
         if (field.equalsIgnoreCase(key))
             return header;
@@ -180,7 +180,7 @@ auto Response::sendStatus(const uint16_t statusCode) -> void
 /// @return
 auto Response::set(const String &field, const String &value) -> Response &
 {
-    for (auto [key, header] : headers_)
+    for (auto [key, header] : headers)
     {
         if (field.equalsIgnoreCase(key))
         {
@@ -191,7 +191,7 @@ auto Response::set(const String &field, const String &value) -> Response &
     }
 
     // not found, creates the header with the specified value
-    headers_[field] = value;
+    headers[field] = value;
 
     return *this;
 }
@@ -212,12 +212,12 @@ auto Response::status(const int status) -> Response &
 void Response::evaluateHeaders(EthernetClient &client)
 {
     if (body_ && body_ != F(""))
-        headers_[ContentLength] = body_.length();
+        headers[ContentLength] = body_.length();
 
-    //    if (app_->settings.count(XPoweredBy) > 0)
-    //        headers_[XPoweredBy] = app_->settings[XPoweredBy];
+//    if (app->settings.count(XPoweredBy) > 0)
+//        headers[XPoweredBy] = app->settings[XPoweredBy];
 
-    headers_[F("connection")] = F("close");
+    headers[F("connection")] = F("close");
 }
 
 /// @brief
@@ -256,7 +256,7 @@ void Response::send()
 
     LOG_V(F("Headers:"));
     // Send headers
-    for (auto [first, second] : headers_)
+    for (auto [first, second] : headers)
     {
         LOG_V(first, second);
 

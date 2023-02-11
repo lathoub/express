@@ -82,7 +82,7 @@ auto Express::parseJson(Request &req, Response &res) -> bool
                 req.body += static_cast<char>(client.read());
         }
 
-        res.headers_[ContentType] = ApplicationJson;
+        res.headers[ContentType] = ApplicationJson;
 
         LOG_I(F("< bodyparser parseJson"));
 
