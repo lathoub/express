@@ -88,7 +88,7 @@ public:
     /// are valid only for the lifetime of the request.
     locals_t locals;
 
-#pragma region express
+#pragma region express()
 
 private:
     // bodyparser
@@ -135,24 +135,15 @@ private:
 public:
     /// @brief
     /// @return
-    static auto raw() -> MiddlewareCallback
-    {
-        return Express::parseRaw;
-    }
+    static auto raw() -> MiddlewareCallback;
 
     /// @brief
     /// @return
-    static auto json() -> MiddlewareCallback
-    {
-        return parseJson;
-    }
+    static auto json() -> MiddlewareCallback;
 
     /// @brief
     /// @return
-    static auto text() -> MiddlewareCallback
-    {
-        return parseText;
-    }
+    static auto text() -> MiddlewareCallback;
 
     /// @brief This is a built-in middleware function in Express. It parses incoming requests 
     /// with urlencoded payloads and is based on body-parser.
@@ -160,10 +151,7 @@ public:
     /// @return Returns middleware that only parses urlencoded bodies and only looks at requests 
     /// where the Content-Type header matches the type option. This parser accepts only
     /// UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
-    static auto urlencoded() -> MiddlewareCallback
-    {
-        return parseUrlencoded;
-    }
+    static auto urlencoded() -> MiddlewareCallback;
 
 #pragma endregion express
 
@@ -366,10 +354,6 @@ public:
 class Request
 {
 public:
-    String version{};
-
-    String uri{};
-
     /// @brief
     EthernetClient &client;
 
@@ -377,25 +361,33 @@ public:
     /// @return
     Express &app;
 
-    /// @brief intermediate pointer buffer for data callback
-    Route *route = nullptr;
-
-public:
-    /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
-    Method method;
-
-    /// @brief Contains the hostname derived from the Host HTTP header
-    String hostname{};
-
-    /// @brief A Boolean property that is true if a TLS connection is established.
-    ///  Equivalent to: (protocol === 'https')
-    bool secure{};
+    String uri{};
 
     /// @brief
     String body{};
 
+    /// @brief 
+    bool fresh = true;
+
+    /// @brief Contains the host derived from the Host HTTP header
+    String host{};
+
+    /// @brief Contains the hostname derived from the Host HTTP header
+    String hostname{}; // without port
+
     /// @brief Contains the remote IP address of the request.
     IPAddress ip{};
+
+
+    /// @brief intermediate pointer buffer for data callback
+    Route *route = nullptr;
+
+    /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
+    Method method;
+
+    /// @brief A Boolean property that is true if a TLS connection is established.
+    ///  Equivalent to: (protocol === 'https')
+    bool secure{};
 
     /// @brief
     std::map<String, String> headers;
@@ -405,6 +397,9 @@ public:
 
     /// @brief Contains the request protocol string: either http or (for TLS requests) https.
     String protocol{};
+
+    /// @brief 
+    bool stale = false;
 
     /// @brief
     std::map<String, String> query;

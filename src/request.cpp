@@ -71,7 +71,6 @@ bool Request::parse(EthernetClient &client)
 
     // TODO: clean
     method = Method::UNDEFINED;
-    version = "";
     uri = "";
     hostname = "";
     body = "";
