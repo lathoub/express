@@ -142,9 +142,9 @@ auto Response::render(File &file, locals_t &locals) -> void
     // so store a backpointer that can be called in the sendBody function.
     // set this here already, so it gets send out as part of the headers
 
-    contentsCallback_ = file.contentsCallback;
-    renderLocals_ = locals; // TODO: check if this copies??
-    filename_ = file.filename;
+    contentsCallback = file.contentsCallback;
+    renderLocals = locals; // TODO: check if this copies??
+    filename = file.filename;
 
     set(ContentType, F("text/html"));
 }
@@ -161,8 +161,8 @@ auto Response::sendFile(File &file, Options *options) -> void
         }
     }
 
-    contentsCallback_ = file.contentsCallback;
-    filename_ = file.filename;
+    contentsCallback = file.contentsCallback;
+    filename = file.filename;
 }
 
 /// @brief Sets the response HTTP status code to statusCode and sends the
@@ -214,8 +214,8 @@ void Response::evaluateHeaders(EthernetClient &client)
     if (body_ && body_ != F(""))
         headers[ContentLength] = body_.length();
 
-//    if (app->settings.count(XPoweredBy) > 0)
-//        headers[XPoweredBy] = app->settings[XPoweredBy];
+    if (app.settings.count(XPoweredBy) > 0)
+        headers[XPoweredBy] = app.settings[XPoweredBy];
 
     headers[F("connection")] = F("close");
 }
@@ -226,20 +226,20 @@ void Response::sendBody(EthernetClient &client, locals_t &locals)
 {
     if (body_ && body_ != F(""))
         client.println(body_.c_str());
-    else if (contentsCallback_)
+    else if (contentsCallback)
     {
-        int lastDot = filename_.lastIndexOf('.');
-        auto ext = filename_.substring(lastDot + 1);
+        int lastDot = filename.lastIndexOf('.');
+        auto ext = filename.substring(lastDot + 1);
 
-        //        auto engineName = app_.settings[F("view engine")];
-        //        if (engineName.equals(ext))
-        //        {
-        //            auto engine = app_.engines[engineName];
-        //            if (engine)
-        //                engine(client, locals, contentsCallback_());
-        //        }
-        //        else
-        renderFile(client, contentsCallback_()); // default renderer
+        auto engineName = app.settings[F("view engine")];
+        if (engineName.equals(ext))
+        {
+            auto engine = app.engines[engineName];
+            if (engine)
+                engine(client, locals, contentsCallback());
+        }
+        else
+            renderFile(client, contentsCallback()); // default renderer
     }
 }
 
@@ -266,7 +266,7 @@ void Response::send()
     }
     client.println();
 
-    sendBody(client, renderLocals_);
+    sendBody(client, renderLocals);
 
     client.setConnectionTimeout(5);
     client.stop();

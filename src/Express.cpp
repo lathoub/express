@@ -62,14 +62,12 @@ auto Express::parseJson(Request &req, Response &res) -> bool
 
         req.body[0] = 0;
 
-        auto &client = const_cast<EthernetClient &>(req.client_);
-
         while (req.body.length() < max_length)
         {
             int tries = 1000;
             size_t avail;
 
-            while (!((avail = client.available())) && tries--)
+            while (!((avail = req.client.available())) && tries--)
                 delay(1);
 
             if (!avail)
@@ -79,7 +77,7 @@ auto Express::parseJson(Request &req, Response &res) -> bool
                 avail = max_length - req.body.length();
 
             while (avail--)
-                req.body += static_cast<char>(client.read());
+                req.body += static_cast<char>(req.client.read());
         }
 
         res.headers[ContentType] = ApplicationJson;
@@ -117,14 +115,12 @@ auto Express::parseRaw(Request &req, Response &res) -> bool
 
         LOG_V(F("> contentLength"), dataLen);
 
-        auto &client = const_cast<EthernetClient &>(req.client_);
-
-        while (dataLen > 0 && client.connected())
+        while (dataLen > 0 && req.client.connected())
         {
-            if (client.available())
+            if (req.client.available())
             {
                 Buffer buffer;
-                buffer.length = client.read(buffer.buffer, sizeof(buffer.buffer));
+                buffer.length = req.client.read(buffer.buffer, sizeof(buffer.buffer));
                 dataLen -= buffer.length;
 
                 LOG_V(F("remaining:"), buffer.length, dataLen);
@@ -240,18 +236,18 @@ auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
 /// @return
 auto Express::evaluate(Request &req, Response &res) -> const bool
 {
-    LOG_V(F("evaluate"), req.uri_);
+    LOG_V(F("evaluate"), req.uri);
 
     std::vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
-    Route::splitToVector(req.uri_, req_indices);
+    Route::splitToVector(req.uri, req_indices);
 
-    for (auto route : routes_)
+    for (auto route : routes)
     {
         LOG_V(F("req.method:"), req.method, F("method:"), route->method);
-        LOG_V(F("req.uri:"), req.uri_, F("path:"), route->path);
+        LOG_V(F("req.uri:"), req.uri, F("path:"), route->path);
 
-        if ((route->method == Method::ALL || req.method == route->method) && match(route->path, route->indices, req.uri_, req_indices, req.params))
+        if ((route->method == Method::ALL || req.method == route->method) && match(route->path, route->indices, req.uri, req_indices, req.params))
         {
             res.status_ = HttpStatus::OK;
             req.route = route;
@@ -271,7 +267,7 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
     }
 
     // evaluate child mounting paths
-    for (auto [mountPath, express] : mountPaths_)
+    for (auto [mountPath, express] : mountPaths)
         if (express->evaluate(req, res))
             return true;
 
@@ -307,7 +303,7 @@ auto Express::METHOD(const Method method, String path, const std::vector<Middlew
 
     route->splitToVector(route->path);
     // Add to collection
-    routes_.push_back(route);
+    routes.push_back(route);
 
     return *route;
 }
@@ -405,7 +401,7 @@ auto Express::all(const String &path, const requestCallback fptr) -> Route &
 auto Express::path() -> String
 {
     // TODO: not sure
-    return (parent_ == nullptr) ? mountpath : parent_->mountpath;
+    return (parent == nullptr) ? mountpath : parent->mountpath;
 }
 
 /// @brief Returns an instance of a single route, which you can then use to handle
@@ -422,7 +418,7 @@ auto Express::route(const String &path) -> void
 /// @return
 void Express::listen(uint16_t port, const StartedCallback startedCallback)
 {
-    if (nullptr != server_)
+    if (nullptr != server)
     {
         LOG_E(F("The listen method can only be called once! This call is ignored and processing continous."));
         return;
@@ -436,8 +432,8 @@ void Express::listen(uint16_t port, const StartedCallback startedCallback)
     // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
     //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-    server_ = new EthernetServer(port);
-    server_->begin();
+    server = new EthernetServer(port);
+    server->begin();
 
     if (startedCallback)
         startedCallback();
@@ -447,7 +443,7 @@ void Express::listen(uint16_t port, const StartedCallback startedCallback)
 /// @return
 auto Express::run() -> void
 {
-    if (auto client = server_->available())
+    if (auto client = server->available())
         run(client);
 }
 
@@ -468,7 +464,7 @@ void Express::run(EthernetClient &client)
 
                 /// @brief run the app wide middlewares (ao bodyparsers)
                 auto next = true;
-                for (const auto middleware : middlewares_)
+                for (const auto middleware : middlewares)
                 {
                     if (!middleware(req, res))
                     {

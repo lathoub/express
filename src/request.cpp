@@ -28,8 +28,8 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-Request::Request(Express &express, EthernetClient &client)
-    : app(express), client_(client), method(Method::UNDEFINED)
+Request::Request(Express &express, EthernetClient &ec)
+    : app(express), client(ec), method(Method::UNDEFINED)
 {
     parse(client);
 }
@@ -72,8 +72,8 @@ bool Request::parse(EthernetClient &client)
 
     // TODO: clean
     method = Method::UNDEFINED;
-    version_ = "";
-    uri_ = "";
+    version = "";
+    uri = "";
     hostname = "";
     body = "";
     params.clear();
@@ -109,9 +109,9 @@ bool Request::parse(EthernetClient &client)
         url = url.substring(0, has_search);
     }
 
-    uri_ = url;
-    if (uri_ == F("/"))
-        uri_ = F("");
+    uri = url;
+    if (uri == F("/"))
+        uri = F("");
 
     method = Method::GET;
     if (method_str == F("HEAD"))
@@ -151,7 +151,7 @@ bool Request::parse(EthernetClient &client)
     }
 
     LOG_V(F("Method:"), method_str);
-    LOG_V(F("Uri:"), uri_);
+    LOG_V(F("Uri:"), uri);
 
     LOG_V(F("Headers (all forced to lowercase)"));
     for (auto [header, value] : headers)

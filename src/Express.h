@@ -47,19 +47,19 @@ class Express
 {
 private:
     /// @brief
-    EthernetServer *server_{}; // TODO: singleton
+    EthernetServer *server{}; // TODO: singleton
 
     /// @brief routes
-    std::vector<Route *> routes_;
+    std::vector<Route *> routes;
 
     /// @brief Application wide middlewares
-    std::vector<MiddlewareCallback> middlewares_;
+    std::vector<MiddlewareCallback> middlewares;
 
     /// @brief
-    std::map<String, Express *> mountPaths_;
+    std::map<String, Express *> mountPaths;
 
     /// @brief
-    Express *parent_ = nullptr;
+    Express *parent = nullptr;
 
 public:
     /// @brief Constructor
@@ -191,7 +191,7 @@ public:
     /// @return
     auto use(const MiddlewareCallback middleware) -> void
     {
-        middlewares_.push_back(middleware);
+        middlewares.push_back(middleware);
     }
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
@@ -203,8 +203,8 @@ public:
         LOG_I(F("use mountPath:"), mount_path);
 
         other.mountpath = mount_path;
-        other.parent_ = this;
-        mountPaths_[other.mountpath] = &other;
+        other.parent = this;
+        mountPaths[other.mountpath] = &other;
     }
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
@@ -351,20 +351,20 @@ public:
     void run(EthernetClient &client);
 };
 
-/// @brief 
+/// @brief
 class Request
 {
 public:
-    String version_{};
+    String version{};
 
-    String uri_{};
+    String uri{};
 
     /// @brief
-    const EthernetClient &client_;
+    EthernetClient &client;
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const Express &app;
+    Express &app;
 
     /// @brief intermediate pointer buffer for data callback
     Route *route = nullptr;
@@ -410,34 +410,34 @@ public: /* Methods*/
     /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
     /// header field. The method returns the best match, or if none of the specified content types is
     /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
-    auto accepts(const String &types) -> bool;
+    auto accepts(const String &) -> bool;
 
     /// @brief Returns the specified HTTP request header field (case-insensitive match).
     /// @param field
     /// @return
-    auto get(const String &field) -> String;
+    auto get(const String &) -> String;
 
 private:
     /// @brief
     /// @param client
     /// @return
-    bool parse(EthernetClient &client);
+    bool parse(EthernetClient &);
 
     /// @brief
     /// @param data
-    auto parseArguments(const String &data) -> void;
+    auto parseArguments(const String &) -> void;
 
     /// @brief
     /// @param text
     /// @return
-    static auto urlDecode(const String &text) -> String;
+    static auto urlDecode(const String &) -> String;
 };
 
-/// @brief 
+/// @brief
 class Response
 {
 private:
-    static void renderFile(EthernetClient &client, const char *f);
+    static void renderFile(EthernetClient &, const char *f);
 
 public:
     String body_{};
@@ -451,12 +451,14 @@ public:
 
     /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
     /// @return
-    const Express &app;
+    Express &app;
 
     /// @brief derefered rendering
-    ContentCallback contentsCallback_{};
-    locals_t renderLocals_{};
-    String filename_;
+    ContentCallback contentsCallback{};
+
+    locals_t renderLocals{};
+
+    String filename;
 
 public:
     /// @brief
@@ -465,14 +467,14 @@ public:
 
     /// @brief
     /// @param client
-    void sendBody(EthernetClient &, locals_t &locals);
+    void sendBody(EthernetClient &, locals_t &);
 
     /// @brief
     void send();
 
 public: /* Methods*/
     /// @brief Constructor
-    Response(Express&, EthernetClient &);
+    Response(Express &, EthernetClient &);
 
     /// @brief Appends the specified value to the HTTP response header field. If the header
     /// is not already set, it creates the header with the specified value. The value
@@ -515,16 +517,16 @@ public: /* Methods*/
     ///      possible error and rendered string, but does not perform an automated response.
     ///      When an error occurs, the method invokes next(err) internally.
     /// @param view
-    auto render(File &file, locals_t &locals) -> void;
+    auto render(File &, locals_t &) -> void;
 
     /// @brief .
-    auto sendFile(File &file, Options *options = nullptr) -> void;
+    auto sendFile(File &, Options *options = nullptr) -> void;
 
     /// @brief Sets the response HTTP status code to statusCode and sends the
     ///  registered status message as the text response body. If an unknown
     // status code is specified, the response body will just be the code number.
     /// @param statusCode
-    auto sendStatus(const uint16_t statusCode) -> void;
+    auto sendStatus(const uint16_t) -> void;
 
     /// @brief Sets the response’s HTTP header field to value
     /// @param field
@@ -536,10 +538,10 @@ public: /* Methods*/
     /// that is the parameter converted to a JSON string using JSON.stringify().
     /// @param body
     /// @return
-    auto status(const int status) -> Response &;
+    auto status(const int) -> Response &;
 };
 
-/// @brief 
+/// @brief
 class Route
 {
 public:
