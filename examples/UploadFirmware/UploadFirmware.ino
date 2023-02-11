@@ -24,7 +24,8 @@ void setup() {
   // 2 middleware handlers, these will be executed in the same order as they are defined.
   // so: getContentLength before express::raw(). This way you can get the ContentLength
   // and use that in the events handlers 'data' and 'end' (eg to show % done).
-  const MiddlewareCallback handlers[] = { getContentLength, express::raw() };
+ // const MiddlewareCallback handlers[] = { getContentLength, express::raw() };
+  const std::vector<MiddlewareCallback> handlers = { getContentLength, express::raw() };
 
   route &route = app.post("/firmware", handlers, [](request &req, response &res) {
     LOG_V(F("all done"));

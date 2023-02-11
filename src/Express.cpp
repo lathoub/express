@@ -286,15 +286,15 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 /// @param handlers
 /// @param fptrCallback
 /// @return
-template <typename T, size_t N>
-auto Express::METHOD(const Method method, String path, const T (&middlewares)[N], const requestCallback fptrCallback) -> Route &
+//template <typename T, size_t N>
+auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptrCallback) -> Route &
 {
     if (path == F("/"))
         path = F("");
 
     path = mountpath + path;
 
-    LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"), N);
+    LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"), middlewares.size());
     // F("mountpath:"), mountpath,
 
     const auto route = new Route();
@@ -323,7 +323,7 @@ auto Express::METHOD(const Method method, String path, const requestCallback fpt
     LOG_I(F("METHOD:"), method, F("path:"), path);
     // F("mountpath:"), mountpath,
 
-    const MiddlewareCallback middlewares[] = {0};
+    const std::vector<MiddlewareCallback> middlewares = {};
     return METHOD(method, path, middlewares, fptr);
 }
 
@@ -361,7 +361,7 @@ auto Express::post(const String &path, const requestCallback fptr) -> Route &
 /// @return
 auto Express::post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
 {
-    const MiddlewareCallback middlewares[] = { middleware };
+    const std::vector<MiddlewareCallback> middlewares = { middleware };
     return METHOD(Method::POST, path, middlewares, fptr);
 };
 
@@ -370,8 +370,8 @@ auto Express::post(const String &path, const MiddlewareCallback middleware, cons
 /// @param middleware
 /// @param fptr
 /// @return
-template <typename T, size_t N>
-auto Express::post(const String &path, const T (&middlewares)[N], const requestCallback fptr) -> Route &
+//template <typename T, size_t N>
+auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptr) -> Route &
 {
     return METHOD(Method::POST, path, middlewares, fptr);
 };
