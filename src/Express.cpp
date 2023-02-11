@@ -451,6 +451,13 @@ auto Express::route(const String &path) -> void
 }
 
 /// @brief
+/// @param name
+/// @param callback
+auto Express::on(const String &name, const MountCallback callback) -> void
+{
+}
+
+/// @brief
 /// @param port
 /// @param startedCallback
 /// @return

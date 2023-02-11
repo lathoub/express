@@ -33,6 +33,7 @@ BEGIN_EXPRESS_NAMESPACE
 class Request;
 class Response;
 class Route;
+class Express;
 
 // Callback definitions
 using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
@@ -41,6 +42,7 @@ using requestCallback = void (*)(Request &, Response &);
 using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
+using MountCallback = void (*)(Express*);
 
 /// @brief
 class Express
@@ -77,6 +79,14 @@ public:
 
     /// @brief
     std::map<String, RenderEngineCallback> engines;
+
+    /// @brief The app.locals object has properties that are local variables 
+    /// within the application, and will be available in templates rendered 
+    // with res.render.
+    /// Once set, the value of app.locals properties persist throughout the 
+    // life of the application, in contrast with res.locals properties that 
+    /// are valid only for the lifetime of the request.
+    locals_t locals;
 
 #pragma region express
 
@@ -144,8 +154,12 @@ public:
         return parseText;
     }
 
-    /// @brief
-    /// @return
+    /// @brief This is a built-in middleware function in Express. It parses incoming requests 
+    /// with urlencoded payloads and is based on body-parser.
+    ///
+    /// @return Returns middleware that only parses urlencoded bodies and only looks at requests 
+    /// where the Content-Type header matches the type option. This parser accepts only
+    /// UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
     static auto urlencoded() -> MiddlewareCallback
     {
         return parseUrlencoded;
@@ -269,6 +283,11 @@ public:
     {
         engines[ext] = callback;
     }
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    auto on(const String &name, const MountCallback callback) -> void;
 
 #pragma region HTTP_Methods
 
