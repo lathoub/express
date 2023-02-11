@@ -399,29 +399,29 @@ auto Express::use(const String &mount_path) -> void
 
 /// @brief
 /// @param path
-/// @param fptr
+/// @param middleware
 /// @return
-auto Express::head(const String &path, const MiddlewareCallback fptr) -> Route &
+auto Express::head(const String &path, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::HEAD, path, fptr);
+    return METHOD(Method::HEAD, path, middleware);
 };
 
 /// @brief
 /// @param path
-/// @param fptr
+/// @param middleware
 /// @return
-auto Express::get(const String &path, const MiddlewareCallback fptr) -> Route &
+auto Express::get(const String &path, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::GET, path, fptr);
+    return METHOD(Method::GET, path, middleware);
 };
 
 /// @brief
 /// @param path
-/// @param fptr
+/// @param middleware
 /// @return
-auto Express::post(const String &path, const MiddlewareCallback fptr) -> Route &
+auto Express::post(const String &path, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::POST, path, fptr);
+    return METHOD(Method::POST, path, middleware);
 };
 
 /// @brief
@@ -437,38 +437,38 @@ auto Express::post(const String &path, const MiddlewareCallback middleware, cons
 
 /// @brief
 /// @param path
+/// @param middlewares
 /// @param middleware
-/// @param fptr
 /// @return
-auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback fptr) -> Route &
+auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::POST, path, middlewares, fptr);
+    return METHOD(Method::POST, path, middlewares, middleware);
 };
 
 /// @brief
 /// @param path
-/// @param fptr
+/// @param middleware
 /// @return
-auto Express::put(const String &path, const MiddlewareCallback fptr) -> Route &
+auto Express::put(const String &path, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::PUT, path, fptr);
+    return METHOD(Method::PUT, path, middleware);
 };
 
 /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
 /// For more information, see the routing guide.
 /// @param path
-/// @param fptr
-auto Express::Delete(const String &path, const MiddlewareCallback fptr) -> Route &
+/// @param middleware
+auto Express::Delete(const String &path, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::DELETE, path, fptr);
+    return METHOD(Method::DELETE, path, middleware);
 }
 
 /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
 /// @param path
-/// @param fptr
-auto Express::all(const String &path, const MiddlewareCallback fptr) -> Route &
+/// @param middleware
+auto Express::all(const String &path, const MiddlewareCallback middleware) -> Route &
 {
-    return METHOD(Method::ALL, path, fptr);
+    return METHOD(Method::ALL, path, middleware);
 }
 
 /// @brief Returns the canonical path of the app, a string.

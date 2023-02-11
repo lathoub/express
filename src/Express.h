@@ -36,8 +36,9 @@ class Route;
 class Express;
 
 // Callback definitions
-using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
+using NextCallback = void (*)();
 using MiddlewareCallback = void (*)(Request &, Response &, bool &next);
+using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
 using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
