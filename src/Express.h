@@ -189,31 +189,23 @@ public:
     /// @brief
     /// @param middleware
     /// @return
-    auto use(const MiddlewareCallback middleware) -> void
-    {
-        middlewares.push_back(middleware);
-    }
+    auto use(const MiddlewareCallback) -> void;
+
+    /// @brief
+    /// @param middleware
+    /// @return
+    auto use(const std::vector<MiddlewareCallback>) -> void;
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
     /// @param mount_path
     /// @param other
     /// @return
-    auto use(const String &mount_path, Express &other) -> void
-    {
-        LOG_I(F("use mountPath:"), mount_path);
-
-        other.mountpath = mount_path;
-        other.parent = this;
-        mountPaths[other.mountpath] = &other;
-    }
+    auto use(const String &mount_path, Express &other) -> void;
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
     /// @param mount_path
     /// @return
-    auto use(const String &mount_path) -> void
-    {
-        mountpath = mount_path;
-    }
+    auto use(const String &mount_path) -> void;
 
     /// @brief Sets the Boolean setting name to false, where name is one of the properties from
     /// the app settings table. Calling app.set('foo', false) for a Boolean property is the

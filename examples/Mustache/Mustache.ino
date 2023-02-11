@@ -9,12 +9,12 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 EXPRESS_CREATE_INSTANCE();
 
+// Content that will become a File
 class index {
 public:
-  static constexpr char* filename = "index.mustache";
+  static constexpr char* filename = "index.mustache"; // with .mustache ext
   static const char* content() {
-    return "<!DOCTYPE html>\n"
-           "<html lang='en'>\n";
+    return "<!doctype html><title>{{title}}</title>\n";
   }
 };
 
@@ -29,6 +29,7 @@ void setup() {
 
   app.get(F("/"), [](request &req, response &res) {
     locals_t locals;
+    locals
     File file{ index::filename, index::content };
     res.render(file, locals);
   });

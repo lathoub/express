@@ -13,6 +13,7 @@ EXPRESS_CREATE_NAMED_INSTANCE(v2);
 void setup() {
   LOG_SETUP();
 
+  Ethernet.init(5);
   Ethernet.begin(mac);
 
   app.use("/v1", v1);

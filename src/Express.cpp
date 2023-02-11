@@ -323,6 +323,44 @@ auto Express::METHOD(const Method method, String path, const requestCallback fpt
 }
 
 /// @brief
+/// @param middleware
+/// @return
+auto Express::use(const MiddlewareCallback middleware) -> void
+{
+    middlewares.push_back(middleware);
+}
+
+/// @brief
+/// @param middleware
+/// @return
+auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void
+{
+    for (auto middleware : middlewares)
+        this->middlewares.push_back(middleware);
+}
+
+/// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+/// @param mount_path
+/// @param other
+/// @return
+auto Express::use(const String &mount_path, Express &other) -> void
+{
+    LOG_I(F("use mountPath:"), mount_path);
+
+    other.mountpath = mount_path;
+    other.parent = this;
+    mountPaths[other.mountpath] = &other;
+}
+
+/// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+/// @param mount_path
+/// @return
+auto Express::use(const String &mount_path) -> void
+{
+    mountpath = mount_path;
+}
+
+/// @brief
 /// @param path
 /// @param fptr
 /// @return
@@ -356,7 +394,7 @@ auto Express::post(const String &path, const requestCallback fptr) -> Route &
 /// @return
 auto Express::post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
 {
-    const std::vector<MiddlewareCallback> middlewares = { middleware };
+    const std::vector<MiddlewareCallback> middlewares = {middleware};
     return METHOD(Method::POST, path, middlewares, fptr);
 };
 
