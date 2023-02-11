@@ -37,13 +37,14 @@ public:
 
         if (!authenticated) {
             LOG_V(F("FAILED AUTH"));
-            res.set("WWW-Authenticate", "Basic");
+            if (challenge)
+                res.set("WWW-Authenticate", "Basic");
             res.sendStatus(HttpStatus::DENIED);
             return false;
         }
 
         LOG_V(F("OK AUTH"));
-        return true;
+        return true; // next()
     }
 };
 
@@ -54,7 +55,7 @@ END_EXPRESS_NAMESPACE
 
 /// @brief
 /// @return
-static MiddlewareCallback basicAuth(const std::map<String, String> &users, const bool challenge = false)
+static MiddlewareCallback basicAuth(const std::map<String, String> &users, const bool challenge = true)
 {
     BasicAuth::users = users;
     BasicAuth::challenge = challenge;
