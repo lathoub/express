@@ -4,7 +4,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-/// @brief
+/// @brief inspired by https://github.com/LionC/express-basic-auth
 class BasicAuth
 {
 public:
@@ -18,27 +18,28 @@ public:
 
         LOG_V(F("BasicAuth::auth"), basicAuth);
 
+        bool authenticated = false;
         if (basicAuth.startsWith(F("Basic")))
         {
             basicAuth = basicAuth.substring(6);
             basicAuth.trim();
 
-            bool match = false;
             for (auto const &user : users)
             {
                 auto sum = user.first + ":" + user.second;
                 if (base64::encode(sum) == basicAuth)
                 {
-                    match = true;
+                    authenticated = true;
                     break;
                 }
             }
+        }
 
-            if (!match) {
-                LOG_V(F("FAILED AUTH"));
-                res.sendStatus(HttpStatus::DENIED);
-                return false;
-            }
+        if (!authenticated) {
+            LOG_V(F("FAILED AUTH"));
+            res.set("WWW-Authenticate", "Basic");
+            res.sendStatus(HttpStatus::DENIED);
+            return false;
         }
 
         LOG_V(F("OK AUTH"));
@@ -53,9 +54,10 @@ END_EXPRESS_NAMESPACE
 
 /// @brief
 /// @return
-static MiddlewareCallback basicAuth(const std::map<String, String> &users)
+static MiddlewareCallback basicAuth(const std::map<String, String> &users, const bool challenge = false)
 {
     BasicAuth::users = users;
+    BasicAuth::challenge = challenge;
 
     return BasicAuth::auth;
 }

@@ -15,7 +15,7 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  const std::map<String, String> users = { { F("aaa"), F("bbb") } };
+  const std::map<String, String> users = { { F("admin"), F("supersecret123") } };
   app.use(basicAuth(users));
 
   app.get(F("/"), [](request &req, response &res) {
