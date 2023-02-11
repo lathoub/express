@@ -36,7 +36,7 @@ Response::Response(Express &express, EthernetClient &client)
 {
 }
 
-/// @brief
+/// @brief  // default renderer
 /// @param client
 /// @param f
 void Response::renderFile(EthernetClient &client, const char *f)
@@ -137,7 +137,7 @@ auto Response::send(const String &body) -> void
 /// @param view
 auto Response::render(File &file, locals_t &locals) -> void
 {
-    // NOTE: don't render here just yet (status and headers need to be prior prior)
+    // NOTE: don't render here just yet (status and headers need to be send first)
     // so store a backpointer that can be called in the sendBody function.
     // set this here already, so it gets send out as part of the headers
 
@@ -223,14 +223,22 @@ void Response::evaluateHeaders(EthernetClient &client)
 /// @param client
 void Response::sendBody(EthernetClient &client, locals_t &locals)
 {
+    LOG_V(F("sendBody"));
+
+    // if we already have a body, send that over
     if (body_ && body_ != F(""))
         client.println(body_.c_str());
     else if (contentsCallback)
     {
+        // a request to generate the body was issued earlier,
+        // execute it here.
         int lastDot = filename.lastIndexOf('.');
         auto ext = filename.substring(lastDot + 1);
 
+        LOG_V(F("ext"), ext);
+
         auto engineName = app.settings[F("view engine")];
+        LOG_V(F("engineName"), engineName);
         if (engineName.equals(ext))
         {
             auto engine = app.engines[engineName];
@@ -238,7 +246,7 @@ void Response::sendBody(EthernetClient &client, locals_t &locals)
                 engine(client, locals, contentsCallback());
         }
         else
-            renderFile(client, contentsCallback()); // default renderer
+            renderFile(client, contentsCallback());
     }
 }
 

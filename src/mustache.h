@@ -1,3 +1,6 @@
+#define LOGGER Serial
+#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+
 #include "defs.h"
 
 BEGIN_EXPRESS_NAMESPACE
@@ -35,26 +38,26 @@ private:
             if (index < 1)
                 break;
 
-            client.write(line + from, index - from - 1); // TODO: as callback? (so we don't have to pass the client)
+            client.write(line + from, index - from - 1);
 
             from = index + 1;
 
             index = find(line, "}}", from, to);
             if (index < 1)
-                return; // TODO do error handling (no closing found), error in template
+                return; 
 
-            char key_[15]; // TODO arbitraty length
+            char key_[15];
             strncpy(key_, line + from, index - from - 1);
             key_[index - from - 1] = '\0';
 
-            client.print(locals[key_]); // TODO: as callback?
+            client.print(locals[key_]); 
 
             from = index + 1;
         }
 
         if (from < to)
         {
-            client.write(line + from, to - from); // TODO: as callback?
+            client.write(line + from, to - from); 
             client.write('\n');
         }
     }
@@ -63,6 +66,8 @@ public:
     /// @brief
     static void renderFile(EthernetClient &client, locals_t &locals, const char *f)
     {
+        LOG_V(F("> renderFile"));
+
         size_t i = 0;
         size_t start = 0;
         while (f[start + i] != '\0')
@@ -78,6 +83,8 @@ public:
             start += i + 1;
             i = 0;
         }
+
+        LOG_V(F("< renderFile"));
     }
 };
 

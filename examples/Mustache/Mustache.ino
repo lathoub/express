@@ -27,9 +27,12 @@ void setup() {
   // Register '.mustache' extension with The Mustache MUSTACHE
   app.engine(F("mustache"), mustacheEXPRESS());
 
+  app.set("view engine", "mustache");
+  app.set("views", __dirname + "/views");
+
   app.get(F("/"), [](request &req, response &res) {
     locals_t locals;
-    locals
+    locals[F("title")] = F("hello world!");
     File file{ index::filename, index::content };
     res.render(file, locals);
   });

@@ -69,7 +69,6 @@ bool Request::parse(EthernetClient &client)
 
     LOG_V(F("First line"), reqStr);
 
-    // TODO: clean
     method = Method::UNDEFINED;
     uri = "";
     hostname = "";
@@ -101,7 +100,7 @@ bool Request::parse(EthernetClient &client)
     String search_str = "";
     auto has_search = url.indexOf('?');
 
-    if (has_search != -1) // TODO arguments or params ??
+    if (has_search != -1)
     {
         search_str = url.substring(has_search + 1);
         url = url.substring(0, has_search);

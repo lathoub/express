@@ -190,7 +190,7 @@ auto Express::parseUrlencoded(Request &req, Response &res) -> bool
 
 /// @brief
 /// @return a MiddlewareCallback
-static auto Express::raw() -> MiddlewareCallback
+auto Express::raw() -> MiddlewareCallback
 {
     return Express::parseRaw;
 }
@@ -198,17 +198,15 @@ static auto Express::raw() -> MiddlewareCallback
 /// @brief This is a built-in middleware function in Express.
 /// It parses incoming requests with JSON payloads and is based on body-parser.
 /// @return Returns middleware that only parses JSON and only looks at requests 
-/// where the Content-Type header matches the type option. This parser accepts 
-/// any Unicode encoding of the body and supports automatic inflation of gzip 
-//  and deflate encodings.
-static auto Express::json() -> MiddlewareCallback
+/// where the Content-Type header matches the type option. 
+auto Express::json() -> MiddlewareCallback
 {
     return parseJson;
 }
 
 /// @brief
 /// @return a MiddlewareCallback
-static auto Express::text() -> MiddlewareCallback
+auto Express::text() -> MiddlewareCallback
 {
     return parseText;
 }
@@ -219,7 +217,7 @@ static auto Express::text() -> MiddlewareCallback
 /// @return Returns middleware that only parses urlencoded bodies and only looks at requests
 /// where the Content-Type header matches the type option. This parser accepts only
 /// UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
-static auto Express::urlencoded() -> MiddlewareCallback
+auto Express::urlencoded() -> MiddlewareCallback
 {
     return parseUrlencoded;
 }
@@ -274,7 +272,7 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 {
     LOG_V(F("evaluate"), req.uri);
 
-    std::vector<PosLen> req_indices{}; // TODO how many?? vis Settings
+    std::vector<PosLen> req_indices{};
 
     Route::splitToVector(req.uri, req_indices);
 
@@ -474,7 +472,6 @@ auto Express::all(const String &path, const requestCallback fptr) -> Route &
 /// @return
 auto Express::path() -> String
 {
-    // TODO: not sure
     return (parent == nullptr) ? mountpath : parent->mountpath;
 }
 

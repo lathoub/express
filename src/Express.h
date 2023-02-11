@@ -49,7 +49,7 @@ class Express
 {
 private:
     /// @brief
-    EthernetServer *server{}; // TODO: singleton
+    EthernetServer *server{};
 
     /// @brief routes
     std::vector<Route *> routes;
@@ -407,7 +407,7 @@ public:
     /// @brief This property is an object containing properties mapped to the named route “parameters”.
     /// For example, if you have the route /user/:name, then the “name” property is available as
     //  params[name]
-    params_t params{}; // TODO via Settings
+    params_t params{};
 
 public: /* Methods*/
     /// @brief Constructor
