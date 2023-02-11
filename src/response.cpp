@@ -274,9 +274,6 @@ void Response::send()
     client.println();
 
     sendBody(client, renderLocals);
-
-    client.setConnectionTimeout(5);
-    client.stop();
 }
 
 END_EXPRESS_NAMESPACE

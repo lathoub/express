@@ -571,6 +571,10 @@ void Express::run(EthernetClient &client)
 
                 res.send();
             }
+
+            // Arduino Ethernet stop() is potentially slow, this makes it faster
+            client.setConnectionTimeout(5);
+            client.stop();
         }
     }
 };
