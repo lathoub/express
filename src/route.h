@@ -1,4 +1,4 @@
-    /*!
+/*!
  *  @file       route.h
  *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
@@ -26,90 +26,5 @@
 #include "defs.h"
 
 BEGIN_EXPRESS_NAMESPACE
-
-class Request;
-class Response;
-
-using HandlerCallback = bool (*)(Request &, Response &);
-using DataCallback = void (*)(const Buffer &);
-using EndDataCallback = void (*)();
-
-using requestCallback = void (*)(Request &, Response &);
-
-class Route
-    {
-    public:
-
-    private:
-        static const char delimiter = '/';
-
-    public: /// @brief
-        DataCallback dataCallback_ = nullptr;
-
-        /// @brief
-        EndDataCallback endCallback_ = nullptr;
-
-    public:
-        Method method = Method::UNDEFINED;
-
-        String path{};
-
-        std::vector<HandlerCallback> handlers; 
-
-        requestCallback fptrCallback = nullptr;
-
-        // cache path splitting (avoid doing this for every request * number of paths)
-        std::vector<PosLen> indices; 
-
-    public:
-
-        /// @brief 
-        Route() {
-        }
-
-        /// @brief
-        /// @param path
-        auto splitToVector(const String &path) -> void
-        {
-            splitToVector(path, indices);
-        }
-
-        /// @brief
-        /// @param path
-        /// @return
-        static auto splitToVector(const String &path, std::vector<PosLen> &poslens) -> void
-        {
-            size_t p = 0, i = 1;
-            for (; i < path.length(); i++)
-            {
-                if (path.charAt(i) == delimiter)
-                {
-                    poslens.push_back({p, i - p});
-                    p = i;
-                }
-            }
-            poslens.push_back({p, i - p});
-        }
-
-        /// @brief
-        /// @param name
-        /// @param callback
-        auto on(const String &name, const DataCallback callback) -> void
-        {
-            LOG_I(F("register data callback"), name);
-            dataCallback_ = callback;
-            // return *this;
-        }
-
-        /// @brief
-        /// @param name
-        /// @param callback
-        auto on(const String &name, const EndDataCallback callback) -> void
-        {
-            LOG_I(F("register end callback"), name);
-            endCallback_ = callback;
-            //  return *this;
-        }
-    };
 
 END_EXPRESS_NAMESPACE

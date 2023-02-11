@@ -193,6 +193,48 @@ auto Express::parseUrlencoded(Request &req, Response &res) -> bool
 }
 
 /// @brief
+/// @param path
+/// @param pathItems
+/// @param requestPath
+/// @param requestPathItems
+/// @param params
+/// @return
+auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
+                    const String &requestPath, const std::vector<PosLen> &requestPathItems,
+                    params_t &params) -> bool
+{
+    if (requestPathItems.size() != pathItems.size())
+    {
+        LOG_V(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+        LOG_V(F("return false in function match"));
+        return false;
+    }
+
+    for (size_t i = 0; i < requestPathItems.size(); i++)
+    {
+        const auto &ave = requestPathItems[i];
+        const auto &bve = pathItems[i];
+
+        if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
+        {
+            auto name = path.substring(bve.pos + 2, bve.pos + bve.len); // Note: + 2 to offset /:
+            name.toLowerCase();
+            const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
+            params[name] = value;
+        }
+        else
+        {
+            if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len))
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+/// @brief
 /// @param req
 /// @param res
 /// @return
@@ -202,7 +244,7 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 
     std::vector<PosLen> req_indices{}; // TODO how many?? vis Settings
 
-    Route ::splitToVector(req.uri_, req_indices);
+    Route::splitToVector(req.uri_, req_indices);
 
     for (auto route : routes_)
     {
@@ -215,7 +257,7 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
             req.route = route;
 
             // Route middleware
-            for (const auto handler : route->handlers)
+            for (const auto handler : route->middlewares)
                 if (!handler(req, res))
                     break;
 
@@ -245,14 +287,14 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 /// @param fptrCallback
 /// @return
 template <typename T, size_t N>
-auto Express::METHOD(const Method method, String path, const T (&handlers)[N], const requestCallback fptrCallback) -> Route &
+auto Express::METHOD(const Method method, String path, const T (&middlewares)[N], const requestCallback fptrCallback) -> Route &
 {
     if (path == F("/"))
         path = F("");
 
     path = mountpath + path;
 
-    LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), N);
+    LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"), N);
     // F("mountpath:"), mountpath,
 
     const auto route = new Route();
@@ -260,9 +302,9 @@ auto Express::METHOD(const Method method, String path, const T (&handlers)[N], c
     route->path = path;
     route->fptrCallback = fptrCallback;
 
-    for (auto handler : handlers)
+    for (auto handler : middlewares)
         if (nullptr != handler)
-            route->handlers.push_back(handler);
+            route->middlewares.push_back(handler);
 
     route->splitToVector(route->path);
     // Add to collection
@@ -283,6 +325,97 @@ auto Express::METHOD(const Method method, String path, const requestCallback fpt
 
     const MiddlewareCallback middlewares[] = {0};
     return METHOD(method, path, middlewares, fptr);
+}
+
+/// @brief
+/// @param path
+/// @param fptr
+/// @return
+auto Express::head(const String &path, const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::HEAD, path, fptr);
+};
+
+/// @brief
+/// @param path
+/// @param fptr
+/// @return
+auto Express::get(const String &path, const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::GET, path, fptr);
+};
+
+/// @brief
+/// @param path
+/// @param fptr
+/// @return
+auto Express::post(const String &path, const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::POST, path, fptr);
+};
+
+/// @brief
+/// @param path
+/// @param middleware
+/// @param fptr
+/// @return
+auto Express::post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
+{
+    const MiddlewareCallback middlewares[] = { middleware };
+    return METHOD(Method::POST, path, middlewares, fptr);
+};
+
+/// @brief
+/// @param path
+/// @param middleware
+/// @param fptr
+/// @return
+template <typename T, size_t N>
+auto Express::post(const String &path, const T (&middlewares)[N], const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::POST, path, middlewares, fptr);
+};
+
+/// @brief
+/// @param path
+/// @param fptr
+/// @return
+auto Express::put(const String &path, const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::PUT, path, fptr);
+};
+
+/// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
+/// For more information, see the routing guide.
+/// @param path
+/// @param fptr
+auto Express::Delete(const String &path, const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::DELETE, path, fptr);
+}
+
+/// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
+/// @param path
+/// @param fptr
+auto Express::all(const String &path, const requestCallback fptr) -> Route &
+{
+    return METHOD(Method::ALL, path, fptr);
+}
+
+/// @brief Returns the canonical path of the app, a string.
+/// @return
+auto Express::path() -> String
+{
+    // TODO: not sure
+    return (parent_ == nullptr) ? mountpath : parent_->mountpath;
+}
+
+/// @brief Returns an instance of a single route, which you can then use to handle
+/// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
+/// (and thus typo errors).
+auto Express::route(const String &path) -> void
+{
+    // TODO
 }
 
 /// @brief
@@ -337,8 +470,10 @@ void Express::run(EthernetClient &client)
 
                 /// @brief run the app wide middlewares (ao bodyparsers)
                 auto next = true;
-                for (const auto middleware : middlewares_) {
-                    if (!middleware(req, res)) {
+                for (const auto middleware : middlewares_)
+                {
+                    if (!middleware(req, res))
+                    {
                         next = false;
                         break;
                     }

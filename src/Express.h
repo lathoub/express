@@ -29,18 +29,18 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-class Express;
-class Route;
 class Request;
 class Response;
+class Route;
 
 using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
 using MiddlewareCallback = bool (*)(Request &, Response &);
-using StartedCallback = void (*)();
-
 using requestCallback = void (*)(Request &, Response &);
+using StartedCallback = void (*)();
+using DataCallback = void (*)(const Buffer &);
+using EndDataCallback = void (*)();
 
-/// @brief 
+/// @brief
 class Express
 {
 private:
@@ -118,7 +118,7 @@ private:
     static auto parseUrlencoded(Request &req, Response &res) -> bool;
 
     /// @brief This is a built-in middleware function in Express. It serves static files and is based on serve-static.
-    //static void Static() {}
+    // static void Static() {}
 
 public:
     /// @brief
@@ -161,37 +161,7 @@ private:
     /// @return
     static auto match(const String &path, const std::vector<PosLen> &pathItems,
                       const String &requestPath, const std::vector<PosLen> &requestPathItems,
-                      params_t &params) -> bool
-    {
-        if (requestPathItems.size() != pathItems.size())
-        {
-            LOG_V(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-            LOG_V(F("return false in function match"));
-            return false;
-        }
-
-        for (size_t i = 0; i < requestPathItems.size(); i++)
-        {
-            const auto &ave = requestPathItems[i];
-            const auto &bve = pathItems[i];
-
-            if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
-            {
-                auto name = path.substring(bve.pos + 2, bve.pos + bve.len); // Note: + 2 to offset /:
-                name.toLowerCase();
-                const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
-                params[name] = value;
-            }
-            else
-            {
-                if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
+                      params_t &params) -> bool;
 
     /// @brief
     /// @param req
@@ -205,14 +175,14 @@ private:
     /// @param fptrCallback
     /// @return
     template <typename T, size_t N>
-    auto METHOD(const Method method, String path, const T (&handlers)[N], const requestCallback fptrCallback) -> Route  &;
+    auto METHOD(const Method method, String path, const T (&handlers)[N], const requestCallback fptrCallback) -> Route &;
 
     /// @brief
     /// @param method
     /// @param path
     /// @param fptr
     /// @return
-    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route  &;
+    auto METHOD(const Method method, String path, const requestCallback fptr) -> Route &;
 
 public:
     /// @brief
@@ -313,39 +283,26 @@ public:
     /// @param path
     /// @param fptr
     /// @return
-    auto head(const String &path, const requestCallback fptr) -> Route  &
-    {
-        return METHOD(Method::HEAD, path, fptr);
-    };
+    auto head(const String &path, const requestCallback fptr) -> Route &;
 
     /// @brief
     /// @param path
     /// @param fptr
     /// @return
-    auto get(const String &path, const requestCallback fptr) -> Route  &
-    {
-        return METHOD(Method::GET, path, fptr);
-    };
+    auto get(const String &path, const requestCallback fptr) -> Route &;
 
     /// @brief
     /// @param path
     /// @param fptr
     /// @return
-    auto post(const String &path, const requestCallback fptr) -> Route  &
-    {
-        return METHOD(Method::POST, path, fptr);
-    };
+    auto post(const String &path, const requestCallback fptr) -> Route &;
 
     /// @brief
     /// @param path
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr = nullptr) -> Route  &
-    {
-        const MiddlewareCallback middlewares[] = {middleware};
-        return METHOD(Method::POST, path, middlewares, fptr);
-    };
+    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr = nullptr) -> Route &;
 
     /// @brief
     /// @param path
@@ -353,54 +310,35 @@ public:
     /// @param fptr
     /// @return
     template <typename T, size_t N>
-    auto post(const String &path, const T (&middlewares)[N], const requestCallback fptr = nullptr) -> Route  &
-    {
-        return METHOD(Method::POST, path, middlewares, fptr);
-    };
+    auto post(const String &path, const T (&middlewares)[N], const requestCallback fptr = nullptr) -> Route &;
 
     /// @brief
     /// @param path
     /// @param fptr
     /// @return
-    auto put(const String &path, const requestCallback fptr) -> Route  &
-    {
-        return METHOD(Method::PUT, path, fptr);
-    };
+    auto put(const String &path, const requestCallback fptr) -> Route &;
 
     /// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
     /// For more information, see the routing guide.
     /// @param path
     /// @param fptr
-    auto Delete(const String &path, const requestCallback fptr) -> Route  &
-    {
-        return METHOD(Method::DELETE, path, fptr);
-    }
+    auto Delete(const String &path, const requestCallback fptr) -> Route &;
 
     /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
     /// @param path
     /// @param fptr
-    auto all(const String &path, const requestCallback fptr) -> Route  &
-    {
-        return METHOD(Method::ALL, path, fptr);
-    }
+    auto all(const String &path, const requestCallback fptr) -> Route &;
 
 #pragma endregion HTTP_Methods
 
     /// @brief Returns the canonical path of the app, a string.
     /// @return
-    auto path() -> String
-    {
-        // TODO: not sure
-        return (parent_ == nullptr) ? mountpath : parent_->mountpath;
-    }
+    auto path() -> String;
 
     /// @brief Returns an instance of a single route, which you can then use to handle
     /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
     /// (and thus typo errors).
-    auto route(const String &path) -> void
-    {
-        // TODO
-    }
+    auto route(const String &path) -> void;
 
     /// @brief
     void listen(uint16_t port, const StartedCallback startedCallback = nullptr);
@@ -413,17 +351,247 @@ public:
     void run(EthernetClient &client);
 };
 
+class Request
+{
+public:
+    String version_{};
+
+    String uri_{};
+
+    /// @brief
+    const EthernetClient &client_;
+
+    /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
+    /// @return
+    const Express *app_ = nullptr;
+
+    /// @brief intermediate pointer buffer for data callback
+    Route *route = nullptr;
+
+public:
+    /// @brief Contains a string corresponding to the HTTP method of the request: GET, POST, PUT, and so on.
+    Method method;
+
+    /// @brief Contains the hostname derived from the Host HTTP header
+    String hostname{};
+
+    /// @brief A Boolean property that is true if a TLS connection is established.
+    ///  Equivalent to: (protocol === 'https')
+    bool secure{};
+
+    /// @brief
+    String body{};
+
+    /// @brief Contains the remote IP address of the request.
+    IPAddress ip{};
+
+    /// @brief
+    std::map<String, String> headers;
+
+    /// @brief Contains the path part of the request URL.
+    String path{};
+
+    /// @brief Contains the request protocol string: either http or (for TLS requests) https.
+    String protocol{};
+
+    /// @brief
+    std::map<String, String> query;
+
+    /// @brief This property is an object containing properties mapped to the named route “parameters”.
+    /// For example, if you have the route /user/:name, then the “name” property is available as
+    //  params[name]
+    params_t params{}; // TODO via Settings
+
+public: /* Methods*/
+    /// @brief Constructor
+    Request(Express *app, EthernetClient &client);
+
+    /// @brief Checks if the specified content types are acceptable, based on the request’s Accept HTTP
+    /// header field. The method returns the best match, or if none of the specified content types is
+    /// acceptable, returns false (in which case, the application should respond with 406 "Not Acceptable").
+    auto accepts(const String &types) -> bool;
+
+    /// @brief Returns the specified HTTP request header field (case-insensitive match).
+    /// @param field
+    /// @return
+    auto get(const String &field) -> String;
+
+private:
+    /// @brief
+    /// @param client
+    /// @return
+    bool parse(EthernetClient &client);
+
+    /// @brief
+    /// @param data
+    auto parseArguments(const String &data) -> void;
+
+    /// @brief
+    /// @param text
+    /// @return
+    static auto urlDecode(const String &text) -> String;
+};
+
+class Response
+{
+private:
+    static void renderFile(EthernetClient &client, const char *f);
+
+public:
+    String body_{};
+
+    /// @brief
+    const EthernetClient &client_;
+
+    uint16_t status_ = HttpStatus::NOT_FOUND;
+
+    std::map<String, String> headers_;
+
+    /// @brief This property holds a reference to the instance of the Express application that is using the middleware.
+    /// @return
+    const Express *app_ = nullptr;
+
+    /// @brief derefered rendering
+    ContentCallback contentsCallback_{};
+    locals_t renderLocals_{};
+    String filename_;
+
+public:
+    /// @brief
+    /// @param client
+    void evaluateHeaders(EthernetClient &client);
+
+    /// @brief
+    /// @param client
+    void sendBody(EthernetClient &client, locals_t &locals);
+
+    /// @brief
+    void send();
+
+public: /* Methods*/
+    /// @brief Constructor
+    Response(Express *app, EthernetClient &client);
+
+    /// @brief Appends the specified value to the HTTP response header field. If the header
+    /// is not already set, it creates the header with the specified value. The value
+    /// parameter can be a string or an array.
+    /// Note: calling res.set() after res.append() will reset the previously-set header value.
+    /// @param field
+    /// @param value
+    /// @return
+    auto append(const String &field, const String &value) -> Response &;
+
+    /// @brief Ends the response process. This method actually comes from Node core,
+    /// specifically the response.end() method of http.ServerResponse.
+    /// @param data
+    /// @param encoding
+    /// @return
+    auto end(const String &data, const String &encoding) -> Response &;
+
+    /// @brief Ends the response process
+    static void end();
+
+    /// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
+    /// @return
+    auto get(const String &field) -> String;
+
+    /// @brief Sends a JSON response. This method sends a response (with the correct content-type)
+    /// that is the parameter converted to a JSON string using JSON.stringify().
+    /// @param body
+    /// @return
+    auto json(const String &body) -> void;
+
+    /// @brief Sends the HTTP response.
+    /// Optional parameters:
+    /// @param view
+    auto send(const String &body) -> void;
+
+    /// @brief Renders a view and sends the rendered HTML string to the client.
+    /// Optional parameters:
+    ///    - locals, an object whose properties define local variables for the view.
+    ///    - callback, a callback function. If provided, the method returns both the
+    ///      possible error and rendered string, but does not perform an automated response.
+    ///      When an error occurs, the method invokes next(err) internally.
+    /// @param view
+    auto render(File &file, locals_t &locals) -> void;
+
+    /// @brief .
+    auto sendFile(File &file, Options *options = nullptr) -> void;
+
+    /// @brief Sets the response HTTP status code to statusCode and sends the
+    ///  registered status message as the text response body. If an unknown
+    // status code is specified, the response body will just be the code number.
+    /// @param statusCode
+    auto sendStatus(const uint16_t statusCode) -> void;
+
+    /// @brief Sets the response’s HTTP header field to value
+    /// @param field
+    /// @param value
+    /// @return
+    auto set(const String &field, const String &value) -> Response &;
+
+    /// @brief Sends a JSON response. This method sends a response (with the correct content-type)
+    /// that is the parameter converted to a JSON string using JSON.stringify().
+    /// @param body
+    /// @return
+    auto status(const int status) -> Response &;
+};
+
+class Route
+{
+public:
+private:
+    static const char delimiter = '/';
+
+public: /// @brief
+    DataCallback dataCallback_ = nullptr;
+
+    /// @brief
+    EndDataCallback endCallback_ = nullptr;
+
+public:
+    Method method = Method::UNDEFINED;
+
+    String path{};
+
+    std::vector<MiddlewareCallback> middlewares;
+
+    requestCallback fptrCallback = nullptr;
+
+    // cache path splitting (avoid doing this for every request * number of paths)
+    std::vector<PosLen> indices;
+
+public:
+    /// @brief
+    Route();
+
+    /// @brief
+    /// @param path
+    auto splitToVector(const String &path) -> void;
+
+    /// @brief
+    /// @param path
+    /// @return
+    static auto splitToVector(const String &path, std::vector<PosLen> &poslens) -> void;
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    auto on(const String &name, const DataCallback callback) -> void;
+
+    /// @brief
+    /// @param name
+    /// @param callback
+    auto on(const String &name, const EndDataCallback callback) -> void;
+};
+
 END_EXPRESS_NAMESPACE
 
-#include "response.h"
-#include "request.h"
-#include "route.h"
-
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name) \
-    typedef Express express; \
-    typedef Route route; \
-    typedef Request request; \
-    typedef Response response; \
+    typedef Express express;                \
+    typedef Route route;                    \
+    typedef Request request;                \
+    typedef Response response;              \
     express Name;
 
 #define EXPRESS_CREATE_INSTANCE() \
