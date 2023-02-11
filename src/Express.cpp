@@ -367,6 +367,14 @@ auto Express::use(const MiddlewareCallback middleware) -> void
 /// @brief
 /// @param middleware
 /// @return
+auto Express::use(const String &path, const MiddlewareCallback middleware) -> void
+{
+    // TODO
+}
+
+/// @brief
+/// @param middleware
+/// @return
 auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void
 {
     for (auto middleware : middlewares)

@@ -196,6 +196,11 @@ public:
     /// @brief
     /// @param middleware
     /// @return
+    auto use(const String &path, const MiddlewareCallback) -> void;
+
+    /// @brief
+    /// @param middleware
+    /// @return
     auto use(const std::vector<MiddlewareCallback>) -> void;
 
     /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
@@ -594,6 +599,12 @@ public:
     /// @param name
     /// @param callback
     auto on(const String &name, const EndDataCallback callback) -> void;
+};
+
+class Router
+{
+public:
+    Router();
 };
 
 END_EXPRESS_NAMESPACE
