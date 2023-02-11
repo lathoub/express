@@ -19,17 +19,17 @@ void setup() {
   app.use("/v1", v1);
   app.use("/v2", v2);
 
-  app.get("/user", [](request &req, response &res, bool &next) { 
+  app.get("/user", [](request &req, response &res, const NextCallback next) { 
     res.status(HttpStatus::OK).send("root path");
   });
 
   // Landing page here is /v1/user
-  v1.get("/user", [](request &req, response &res, bool &next) { 
+  v1.get("/user", [](request &req, response &res, const NextCallback next) { 
     res.status(HttpStatus::OK).send("route v1");
   });
 
   // Landing page here is /v2/user
-  v2.get("/user", [](request &req, response &res, bool &next) { 
+  v2.get("/user", [](request &req, response &res, const NextCallback next) { 
     res.status(HttpStatus::OK).send("route v2");
   });
 

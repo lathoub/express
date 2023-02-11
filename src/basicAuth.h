@@ -12,7 +12,7 @@ public:
     static bool challenge;
 
 public:
-    static auto auth(Request &req, Response &res, bool &next) -> void
+    static auto auth(Request &req, Response &res, const NextCallback next) -> void
     {
         auto basicAuth = req.headers["authorization"]; // basic encodeUserPasswd
 
@@ -40,10 +40,10 @@ public:
             if (challenge)
                 res.set("WWW-Authenticate", "Basic");
             res.sendStatus(HttpStatus::DENIED);
-            next = false;
+            return;
         }
 
-        LOG_V(F("OK AUTH"));
+        next();
     }
 };
 

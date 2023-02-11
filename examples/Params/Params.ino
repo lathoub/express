@@ -14,11 +14,11 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.get(F("/"), [](request &req, response &res, bool &next) {
+  app.get(F("/"), [](request &req, response &res, const NextCallback next) {
     res.send(F("Visit /user/0"));
   });
 
-  app.get(F("/user/:user"), [](request &req, response &res, bool &next) {
+  app.get(F("/user/:user"), [](request &req, response &res, const NextCallback next) {
     res.send("user " + req.params["user"]);
   });
 

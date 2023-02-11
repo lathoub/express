@@ -37,7 +37,7 @@ class Express;
 
 // Callback definitions
 using NextCallback = void (*)();
-using MiddlewareCallback = void (*)(Request &, Response &, bool &next);
+using MiddlewareCallback = void (*)(Request &, Response &, const NextCallback next);
 using RenderEngineCallback = void (*)(EthernetClient &, locals_t &locals, const char *f);
 using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
@@ -62,6 +62,9 @@ private:
 
     /// @brief
     Express *parent = nullptr;
+
+    /// @brief 
+    static bool gotoNext;
 
 public:
     /// @brief Constructor
@@ -100,7 +103,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseJson(Request &req, Response &res, bool &next) -> void;
+    static auto parseJson(Request &req, Response &res, const NextCallback next) -> void;
 
     // TODO: static options
     // inflate, limit, type, verify
@@ -109,7 +112,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseRaw(Request &req, Response &res, bool &next) -> void;
+    static auto parseRaw(Request &req, Response &res, const NextCallback next) -> void;
 
     // TODO: static options
     // defaultCharset, inflate, limit, type, verify
@@ -118,7 +121,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseText(Request &req, Response &res, bool &next) -> void;
+    static auto parseText(Request &req, Response &res, const NextCallback next) -> void;
 
     // TODO: static options
     // extended, inflate, limit, parameterLimit, type, verify
@@ -127,7 +130,7 @@ private:
     /// @param req
     /// @param res
     /// @return
-    static auto parseUrlencoded(Request &req, Response &res, bool &next) -> void;
+    static auto parseUrlencoded(Request &req, Response &res, const NextCallback next) -> void;
 
     /// @brief This is a built-in middleware function in Express. It serves static files and is based on serve-static.
     // static void Static() {}
@@ -170,7 +173,7 @@ private:
     /// @brief
     /// @param req
     /// @param res
-    auto evaluate(Request &req, Response &res) -> const bool;
+    auto evaluate(Request &req, Response &res, const NextCallback next) -> void;
 
     /// @brief
     /// @param method
@@ -353,6 +356,12 @@ public:
     /// @brief
     /// @param client
     void run(EthernetClient &client);
+
+    /// @brief 
+    static void dada()
+    {
+        LOG_V(F("dada"));
+    }
 };
 
 /// @brief
@@ -601,6 +610,7 @@ public:
     auto on(const String &name, const EndDataCallback callback) -> void;
 };
 
+/// @brief 
 class Router
 {
 public:

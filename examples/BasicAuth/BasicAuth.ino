@@ -18,7 +18,7 @@ void setup() {
   const std::map<String, String> users = { { F("admin"), F("supersecret123") } };
   app.use(basicAuth(users));
 
-  app.get(F("/"), [](request &req, response &res, bool &next) {
+  app.get(F("/"), [](request &req, response &res, const NextCallback next) {
     res.send(F("Hello World!"));
   });
 

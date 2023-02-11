@@ -27,6 +27,8 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
+bool Express::gotoNext{};
+
 /// @brief
 /// @return
 Express::Express()
@@ -41,7 +43,7 @@ Express::Express()
 /// @param req
 /// @param res
 /// @return
-auto Express::parseJson(Request &req, Response &res, bool &next) -> void
+auto Express::parseJson(Request &req, Response &res, const NextCallback next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
@@ -57,8 +59,8 @@ auto Express::parseJson(Request &req, Response &res, bool &next) -> void
 
         req.body.reserve(max_length);
 
-        if (!req.body.reserve(max_length + 1)) {
-            next = false;
+        if (!req.body.reserve(max_length + 1))
+        {
             return;
         }
 
@@ -94,7 +96,7 @@ auto Express::parseJson(Request &req, Response &res, bool &next) -> void
 /// @param req
 /// @param res
 /// @return
-auto Express::parseRaw(Request &req, Response &res, bool &next) -> void
+auto Express::parseRaw(Request &req, Response &res, const NextCallback next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
@@ -151,7 +153,7 @@ auto Express::parseRaw(Request &req, Response &res, bool &next) -> void
 /// @param req
 /// @param res
 /// @return
-auto Express::parseText(Request &req, Response &res, bool &next) -> void
+auto Express::parseText(Request &req, Response &res, const NextCallback next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
@@ -164,7 +166,7 @@ auto Express::parseText(Request &req, Response &res, bool &next) -> void
 /// @param req
 /// @param res
 /// @return
-auto Express::parseUrlencoded(Request &req, Response &res, bool &next) -> void
+auto Express::parseUrlencoded(Request &req, Response &res, const NextCallback next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
@@ -189,8 +191,8 @@ auto Express::raw() -> MiddlewareCallback
 
 /// @brief This is a built-in middleware function in Express.
 /// It parses incoming requests with JSON payloads and is based on body-parser.
-/// @return Returns middleware that only parses JSON and only looks at requests 
-/// where the Content-Type header matches the type option. 
+/// @return Returns middleware that only parses JSON and only looks at requests
+/// where the Content-Type header matches the type option.
 auto Express::json() -> MiddlewareCallback
 {
     return parseJson;
@@ -259,8 +261,9 @@ auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
 /// @brief
 /// @param req
 /// @param res
+/// @param next
 /// @return
-auto Express::evaluate(Request &req, Response &res) -> const bool
+auto Express::evaluate(Request &req, Response &res, const NextCallback next) -> void
 {
     LOG_V(F("evaluate"), req.uri);
 
@@ -279,28 +282,37 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
             req.route = route;
 
             // Route middleware
-            for (const auto middleware : route->middlewares) {
-                bool next = true;
-                middleware(req, res, next);
+            for (const auto middleware : route->middlewares)
+            {
+                gotoNext = false;
+                middleware(req, res, [gotoNext]() { gotoNext = true; });
+                if (!gotoNext)
+                    break;
             }
 
             // evaluate the actual function
-            if (route->fptrCallback) {
-                bool next = true;
-                route->fptrCallback(req, res, next);
+            if (route->fptrCallback)
+            {
+                gotoNext = false;
+                route->fptrCallback(req, res, [gotoNext]() { gotoNext = true; });
+                if (!gotoNext)
+                    break;
             }
 
             // go to the next middleware
-            return true;
+            next();
         }
     }
 
     // evaluate child mounting paths
-    for (auto [mountPath, express] : mountPaths)
-        if (express->evaluate(req, res))
-            return true;
+    for (auto [mountPath, express] : mountPaths) {
+        gotoNext = false;
+        express->evaluate(req, res, [gotoNext]() { gotoNext = true; });
+        if (!gotoNext)
+            break;
+    }
 
-    return false;
+    next();
 }
 
 /// @brief
@@ -543,17 +555,19 @@ void Express::run(EthernetClient &client)
             {
                 Response res(*this, client);
 
+                gotoNext = true;
+
                 /// @brief run the app wide middlewares (ao bodyparsers)
-                auto next = true;
                 for (const auto middleware : middlewares)
                 {
-                    middleware(req, res, next);
-                    if (!next)
+                    gotoNext = false;
+                    middleware(req, res, [gotoNext]() { gotoNext = true; });
+                    if (!gotoNext)
                         break;
                 }
 
-                if (next)
-                    evaluate(req, res);
+                if (gotoNext)
+                    evaluate(req, res, [](){});
 
                 res.send();
             }
