@@ -26,6 +26,10 @@ void setup() {
   // and use that in the events handlers 'data' and 'end' (eg to show % done).
   const HandlerCallback handlers[] = { getContentLength, express::raw() };
 
+  const std::vector<HandlerCallback> handlerss = { getContentLength, express::raw() };
+
+
+
   route &route = app.post("/firmware", handlers, [](request &req, response &res) {
     LOG_V(F("all done"));
     res.sendStatus(HttpStatus::ACCEPTED);

@@ -244,15 +244,15 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 /// @param handlers
 /// @param fptrCallback
 /// @return
-template <typename ArrayType, size_t ArraySize>
-auto Express::METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const requestCallback fptrCallback) -> Route &
+template <typename T, size_t N>
+auto Express::METHOD(const Method method, String path, const T (&handlers)[N], const requestCallback fptrCallback) -> Route &
 {
     if (path == F("/"))
         path = F("");
 
     path = mountpath + path;
 
-    LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), ArraySize);
+    LOG_I(F("METHOD:"), method, F("path:"), path, F("#handlers:"), N);
     // F("mountpath:"), mountpath,
 
     const auto route = new Route();

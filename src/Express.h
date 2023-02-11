@@ -125,7 +125,7 @@ public:
     /// @return
     static auto raw() -> MiddlewareCallback
     {
-        return parseRaw;
+        return Express::parseRaw;
     }
 
     /// @brief
@@ -204,8 +204,8 @@ private:
     /// @param handler
     /// @param fptrCallback
     /// @return
-    template <typename ArrayType, size_t ArraySize>
-    auto METHOD(const Method method, String path, ArrayType (&handlers)[ArraySize], const requestCallback fptrCallback) -> Route  &;
+    template <typename T, size_t N>
+    auto METHOD(const Method method, String path, const T (&handlers)[N], const requestCallback fptrCallback) -> Route  &;
 
     /// @brief
     /// @param method
@@ -341,7 +341,7 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route  &
+    auto post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr = nullptr) -> Route  &
     {
         const MiddlewareCallback middlewares[] = {middleware};
         return METHOD(Method::POST, path, middlewares, fptr);
@@ -352,8 +352,8 @@ public:
     /// @param middleware
     /// @param fptr
     /// @return
-    template <typename ArrayType, size_t ArraySize>
-    auto post(const String &path, ArrayType (&middlewares)[ArraySize], const requestCallback fptr) -> Route  &
+    template <typename T, size_t N>
+    auto post(const String &path, const T (&middlewares)[N], const requestCallback fptr = nullptr) -> Route  &
     {
         return METHOD(Method::POST, path, middlewares, fptr);
     };
