@@ -17,7 +17,7 @@ void setup() {
 
  // app.use(express::json());
 
-  app.post("/", express::json(), [](request& req, response& res) {
+  app.post("/", express::json(), [](request& req, response& res, bool &next) {
     res.send(req.body);
   });
 

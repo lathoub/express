@@ -10,10 +10,9 @@ EXPRESS_CREATE_INSTANCE();
 
 int contentLength = 0;
 
-auto getContentLength(request &req, response &res) -> bool {
+auto getContentLength(request &req, response &res, bool &next) -> void {
   contentLength = req.headers[ContentLength].toInt();
   LOG_V(F("1st middleware: contentLength"), contentLength);
-  return true;
 }
 
 void setup() {
@@ -28,7 +27,7 @@ void setup() {
   // const MiddlewareCallback handlers[] = { getContentLength, express::raw() };
   const std::vector<MiddlewareCallback> handlers = { getContentLength, express::raw() };
 
-  route &route = app.post("/firmware", handlers, [](request &req, response &res) {
+  route &route = app.post("/firmware", handlers, [](request &req, response &res, bool &next) {
     LOG_V(F("all done"));
     res.sendStatus(HttpStatus::ACCEPTED);
   });

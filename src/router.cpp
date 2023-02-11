@@ -32,4 +32,24 @@ BEGIN_EXPRESS_NAMESPACE
     {
     }
 
+    void Router::all()
+    {
+    }
+
+    void Router::METHOD()
+    {
+    }
+
+    void Router::param()
+    {
+    }
+
+    void Router::route()
+    {
+    }
+
+    void Router::use()
+    {
+    }
+
 END_EXPRESS_NAMESPACE

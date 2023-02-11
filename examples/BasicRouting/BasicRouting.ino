@@ -14,19 +14,19 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.get("/", [](request &req, response &res) {
+  app.get("/", [](request &req, response &res, bool &next) {
     res.send("Got a GET request");
   });
 
-  app.post("/", [](request &req, response &res) {
+  app.post("/", nullptr, [](request &req, response &res, bool &next) {
     res.send("Got a POST request");
   });
 
-  app.put("/user", [](request &req, response &res) {
+  app.put("/user", [](request &req, response &res, bool &next) {
     res.send("Got a PUT request at /user");
   });
 
-  app.Delete("/user", [](request &req, response &res) {
+  app.Delete("/user", [](request &req, response &res, bool &next) {
     res.send("Got a DELETE request at /user");
   });
 

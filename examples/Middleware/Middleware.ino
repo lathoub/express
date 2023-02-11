@@ -8,19 +8,16 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 EXPRESS_CREATE_INSTANCE();
 
-bool middleware1(request &req, response &res) {
+void middleware1(request &req, response &res, bool &next) {
   req.params[F("msg")] = "first here";
-  return true;
 }
 
-bool middleware2(request &req, response &res) {
+void middleware2(request &req, response &res, bool &next) {
   req.params[F("msg")] = req.params[F("msg")] + ", then here";
-  return true;
 }
 
-bool middleware3(request &req, response &res) {
+void middleware3(request &req, response &res, bool &next) {
   req.params[F("msg")] = req.params[F("msg")] + ", and finally here.";
-  return true;
 }
 
 void setup() {
@@ -37,7 +34,7 @@ void setup() {
   app.use(middlewares);
 
   // the middleware will construct the message in the params
-  app.get("/", [](request &req, response &res) {
+  app.get("/", [](request &req, response &res, bool &next) {
     res.status(HttpStatus::OK).send(req.params[F("msg")]);
   });
 

@@ -14,7 +14,7 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.get(F("/"), [](request &req, response &res) {
+  app.get(F("/"), [](request &req, response &res, bool &next) {
     res.send(F("Hello World!"));
   });
 

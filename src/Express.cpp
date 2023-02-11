@@ -41,12 +41,12 @@ Express::Express()
 /// @param req
 /// @param res
 /// @return
-auto Express::parseJson(Request &req, Response &res) -> bool
+auto Express::parseJson(Request &req, Response &res, bool &next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
         LOG_I(F("Body already read"));
-        return true;
+        return;
     }
 
     if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
@@ -57,8 +57,10 @@ auto Express::parseJson(Request &req, Response &res) -> bool
 
         req.body.reserve(max_length);
 
-        if (!req.body.reserve(max_length + 1))
-            return false;
+        if (!req.body.reserve(max_length + 1)) {
+            next = false;
+            return;
+        }
 
         req.body[0] = 0;
 
@@ -83,25 +85,21 @@ auto Express::parseJson(Request &req, Response &res) -> bool
         res.headers[ContentType] = ApplicationJson;
 
         LOG_I(F("< bodyparser parseJson"));
-
-        return true;
     }
     else
         LOG_V(F("Not an application/json body"));
-
-    return true;
 }
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto Express::parseRaw(Request &req, Response &res) -> bool
+auto Express::parseRaw(Request &req, Response &res, bool &next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
         LOG_I(F("Body already read"));
-        return true;
+        return;
     }
 
     if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
@@ -147,35 +145,31 @@ auto Express::parseRaw(Request &req, Response &res) -> bool
     }
     else
         LOG_V(F("Not an application/octet-stream body"));
-
-    return true;
 }
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto Express::parseText(Request &req, Response &res) -> bool
+auto Express::parseText(Request &req, Response &res, bool &next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
         LOG_I(F("Body already read"));
-        return true;
+        return;
     }
-
-    return true;
 }
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto Express::parseUrlencoded(Request &req, Response &res) -> bool
+auto Express::parseUrlencoded(Request &req, Response &res, bool &next) -> void
 {
     if (req.body != nullptr && req.body.length() > 0)
     {
         LOG_I(F("Body already read"));
-        return true;
+        return;
     }
 
     if (req.get(ContentType).equalsIgnoreCase(F("application/x-www-form-urlencoded")))
@@ -184,8 +178,6 @@ auto Express::parseUrlencoded(Request &req, Response &res) -> bool
     }
     else
         LOG_V(F("Not an application/x-www-form-urlencoded body"));
-
-    return true;
 }
 
 /// @brief
@@ -287,13 +279,16 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
             req.route = route;
 
             // Route middleware
-            for (const auto handler : route->middlewares)
-                if (!handler(req, res))
-                    break;
+            for (const auto middleware : route->middlewares) {
+                bool next = true;
+                middleware(req, res, next);
+            }
 
             // evaluate the actual function
-            if (route->fptrCallback)
-                route->fptrCallback(req, res);
+            if (route->fptrCallback) {
+                bool next = true;
+                route->fptrCallback(req, res, next);
+            }
 
             // go to the next middleware
             return true;
@@ -316,7 +311,7 @@ auto Express::evaluate(Request &req, Response &res) -> const bool
 /// @param handlers
 /// @param fptrCallback
 /// @return
-auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptrCallback) -> Route &
+auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback fptrCallback) -> Route &
 {
     if (path == F("/"))
         path = F("");
@@ -347,7 +342,7 @@ auto Express::METHOD(const Method method, String path, const std::vector<Middlew
 /// @param path
 /// @param fptr
 /// @return
-auto Express::METHOD(const Method method, String path, const requestCallback fptr) -> Route &
+auto Express::METHOD(const Method method, String path, const MiddlewareCallback fptr) -> Route &
 {
     LOG_I(F("METHOD:"), method, F("path:"), path);
     // F("mountpath:"), mountpath,
@@ -406,7 +401,7 @@ auto Express::use(const String &mount_path) -> void
 /// @param path
 /// @param fptr
 /// @return
-auto Express::head(const String &path, const requestCallback fptr) -> Route &
+auto Express::head(const String &path, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::HEAD, path, fptr);
 };
@@ -415,7 +410,7 @@ auto Express::head(const String &path, const requestCallback fptr) -> Route &
 /// @param path
 /// @param fptr
 /// @return
-auto Express::get(const String &path, const requestCallback fptr) -> Route &
+auto Express::get(const String &path, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::GET, path, fptr);
 };
@@ -424,7 +419,7 @@ auto Express::get(const String &path, const requestCallback fptr) -> Route &
 /// @param path
 /// @param fptr
 /// @return
-auto Express::post(const String &path, const requestCallback fptr) -> Route &
+auto Express::post(const String &path, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::POST, path, fptr);
 };
@@ -434,7 +429,7 @@ auto Express::post(const String &path, const requestCallback fptr) -> Route &
 /// @param middleware
 /// @param fptr
 /// @return
-auto Express::post(const String &path, const MiddlewareCallback middleware, const requestCallback fptr) -> Route &
+auto Express::post(const String &path, const MiddlewareCallback middleware, const MiddlewareCallback fptr) -> Route &
 {
     const std::vector<MiddlewareCallback> middlewares = {middleware};
     return METHOD(Method::POST, path, middlewares, fptr);
@@ -445,7 +440,7 @@ auto Express::post(const String &path, const MiddlewareCallback middleware, cons
 /// @param middleware
 /// @param fptr
 /// @return
-auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const requestCallback fptr) -> Route &
+auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::POST, path, middlewares, fptr);
 };
@@ -454,7 +449,7 @@ auto Express::post(const String &path, const std::vector<MiddlewareCallback> mid
 /// @param path
 /// @param fptr
 /// @return
-auto Express::put(const String &path, const requestCallback fptr) -> Route &
+auto Express::put(const String &path, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::PUT, path, fptr);
 };
@@ -463,7 +458,7 @@ auto Express::put(const String &path, const requestCallback fptr) -> Route &
 /// For more information, see the routing guide.
 /// @param path
 /// @param fptr
-auto Express::Delete(const String &path, const requestCallback fptr) -> Route &
+auto Express::Delete(const String &path, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::DELETE, path, fptr);
 }
@@ -471,7 +466,7 @@ auto Express::Delete(const String &path, const requestCallback fptr) -> Route &
 /// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
 /// @param path
 /// @param fptr
-auto Express::all(const String &path, const requestCallback fptr) -> Route &
+auto Express::all(const String &path, const MiddlewareCallback fptr) -> Route &
 {
     return METHOD(Method::ALL, path, fptr);
 }
@@ -552,11 +547,9 @@ void Express::run(EthernetClient &client)
                 auto next = true;
                 for (const auto middleware : middlewares)
                 {
-                    if (!middleware(req, res))
-                    {
-                        next = false;
+                    middleware(req, res, next);
+                    if (!next)
                         break;
-                    }
                 }
 
                 if (next)

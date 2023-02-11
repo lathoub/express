@@ -30,7 +30,7 @@ void setup() {
   app.set("view engine", "mustache");
   app.set("views", __dirname + "/views");
 
-  app.get(F("/"), [](request &req, response &res) {
+  app.get(F("/"), [](request &req, response &res, bool &next) {
     locals_t locals;
     locals[F("title")] = F("hello world!");
     File file{ index::filename, index::content };
