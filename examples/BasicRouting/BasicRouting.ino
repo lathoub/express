@@ -26,7 +26,7 @@ void setup() {
     res.send("Got a PUT request at /user");
   });
 
-  app.Delete("/user", [](request &req, response &res, const NextCallback next) {
+  app.del("/user", [](request &req, response &res, const NextCallback next) {
     res.send("Got a DELETE request at /user");
   });
 

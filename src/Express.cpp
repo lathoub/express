@@ -40,183 +40,6 @@ Express::Express()
 }
 
 /// @brief
-/// @param req
-/// @param res
-/// @return
-auto Express::parseJson(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        return;
-    }
-
-    if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
-    {
-        LOG_I(F("> bodyparser parseJson"));
-
-        auto max_length = req.get(ContentLength).toInt();
-
-        req.body.reserve(max_length);
-
-        if (!req.body.reserve(max_length + 1))
-        {
-            return;
-        }
-
-        req.body[0] = 0;
-
-        while (req.body.length() < max_length)
-        {
-            int tries = 1000;
-            size_t avail;
-
-            while (!((avail = req.client.available())) && tries--)
-                delay(1);
-
-            if (!avail)
-                break;
-
-            if (req.body.length() + avail > max_length)
-                avail = max_length - req.body.length();
-
-            while (avail--)
-                req.body += static_cast<char>(req.client.read());
-        }
-
-        res.headers[ContentType] = ApplicationJson;
-
-        LOG_I(F("< bodyparser parseJson"));
-    }
-    else
-        LOG_V(F("Not an application/json body"));
-}
-
-/// @brief
-/// @param req
-/// @param res
-/// @return
-auto Express::parseRaw(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        return;
-    }
-
-    if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
-    {
-        LOG_I(F("> bodyparser raw"));
-
-        auto sDataLen = req.get("content-length");
-        LOG_I(F("sDataLen"), sDataLen);
-
-        auto dataLen = sDataLen.toInt();
-
-        LOG_V(F("> contentLength"), dataLen);
-
-        while (dataLen > 0 && req.client.connected())
-        {
-            if (req.client.available())
-            {
-                Buffer buffer;
-                buffer.length = req.client.read(buffer.buffer, sizeof(buffer.buffer));
-                dataLen -= buffer.length;
-
-                LOG_V(F("remaining:"), buffer.length, dataLen);
-
-                if (dataLen > 0)
-                {
-                    if (req.route->dataCallback_)
-                        req.route->dataCallback_(buffer);
-                }
-                else
-                {
-                    if (buffer.length > 0)
-                    {
-                        if (req.route->dataCallback_)
-                            req.route->dataCallback_(buffer);
-                    }
-                    if (req.route->endCallback_)
-                        req.route->endCallback_();
-                }
-            }
-        }
-
-        LOG_V(F("< bodyparser raw"));
-    }
-    else
-        LOG_V(F("Not an application/octet-stream body"));
-}
-
-/// @brief
-/// @param req
-/// @param res
-/// @return
-auto Express::parseText(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        return;
-    }
-}
-
-/// @brief
-/// @param req
-/// @param res
-/// @return
-auto Express::parseUrlencoded(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        return;
-    }
-
-    if (req.get(ContentType).equalsIgnoreCase(F("application/x-www-form-urlencoded")))
-    {
-        LOG_I(F("> bodyparser x-www-form-urlencoded"));
-    }
-    else
-        LOG_V(F("Not an application/x-www-form-urlencoded body"));
-}
-
-/// @brief
-/// @return a MiddlewareCallback
-auto Express::raw() -> MiddlewareCallback
-{
-    return Express::parseRaw;
-}
-
-/// @brief This is a built-in middleware function in Express.
-/// It parses incoming requests with JSON payloads and is based on body-parser.
-/// @return Returns middleware that only parses JSON and only looks at requests
-/// where the Content-Type header matches the type option.
-auto Express::json() -> MiddlewareCallback
-{
-    return parseJson;
-}
-
-/// @brief
-/// @return a MiddlewareCallback
-auto Express::text() -> MiddlewareCallback
-{
-    return parseText;
-}
-
-/// @brief This is a built-in middleware function in Express. It parses incoming requests
-/// with urlencoded payloads and is based on body-parser.
-///
-/// @return Returns middleware that only parses urlencoded bodies and only looks at requests
-/// where the Content-Type header matches the type option. This parser accepts only
-/// UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
-auto Express::urlencoded() -> MiddlewareCallback
-{
-    return parseUrlencoded;
-}
-
-/// @brief
 /// @param path
 /// @param pathItems
 /// @param requestPath
@@ -263,7 +86,7 @@ auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
 /// @param res
 /// @param next
 /// @return
-auto Express::evaluate(Request &req, Response &res, const NextCallback next) -> void
+auto Express::evaluate(Request &req, Response &res) -> void
 {
     LOG_V(F("evaluate"), req.uri);
 
@@ -278,10 +101,9 @@ auto Express::evaluate(Request &req, Response &res, const NextCallback next) -> 
 
         if ((route->method == Method::ALL || req.method == route->method) && match(route->path, route->indices, req.uri, req_indices, req.params))
         {
-            res.status_ = HttpStatus::OK;
+            res.status_ = HttpStatus::OK;               
             req.route = route;
 
-            // Route middleware
             for (const auto middleware : route->middlewares)
             {
                 gotoNext = false;
@@ -289,79 +111,206 @@ auto Express::evaluate(Request &req, Response &res, const NextCallback next) -> 
                 if (!gotoNext)
                     break;
             }
-
-            // evaluate the actual function
-            if (route->middleware)
-            {
-                gotoNext = false;
-                route->middleware(req, res, [gotoNext]() { gotoNext = true; });
-                if (!gotoNext)
-                    break;
-            }
-
-            // go to the next middleware
-            next();
         }
     }
 
     // evaluate child mounting paths
-    for (auto [mountPath, express] : mountPaths) {
-        gotoNext = false;
-        express->evaluate(req, res, [gotoNext]() { gotoNext = true; });
-        if (!gotoNext)
-            break;
+    for (auto [mountPath, express] : mountPaths)
+        express->evaluate(req, res);
+}
+
+
+#pragma region express()
+
+/// @brief
+/// @param req
+/// @param res
+/// @return
+auto Express::parseJson(Request &req, Response &res, const NextCallback next) -> void
+{
+    if (req.body != nullptr && req.body.length() > 0)
+    {
+        LOG_I(F("Body already read"));
+        next();
+        return;
     }
+
+    if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
+    {
+        LOG_I(F("> bodyparser parseJson"));
+
+        auto max_length = req.get(ContentLength).toInt();
+
+        req.body.reserve(max_length);
+        if (!req.body.reserve(max_length + 1))
+        {
+            return; // error
+        }
+
+        req.body[0] = 0;
+
+        while (req.body.length() < max_length)
+        {
+            int tries = 1000;
+            size_t avail;
+
+            while (!((avail = req.client.available())) && tries--)
+                delay(1);
+
+            if (!avail)
+                break;
+
+            if (req.body.length() + avail > max_length)
+                avail = max_length - req.body.length();
+
+            while (avail--)
+                req.body += static_cast<char>(req.client.read());
+        }
+
+        res.headers[ContentType] = ApplicationJson;
+
+        LOG_I(F("< bodyparser parseJson"));
+    }
+    else
+        LOG_V(F("Not an application/json body"));
 
     next();
 }
 
 /// @brief
-/// @tparam ArrayType
-/// @tparam ArraySize
-/// @param method
-/// @param path
-/// @param middlewares
-/// @param middleware
+/// @param req
+/// @param res
 /// @return
-auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback middleware) -> Route &
+auto Express::parseRaw(Request &req, Response &res, const NextCallback next) -> void
 {
-    if (path == F("/"))
-        path = F("");
+    if (req.body != nullptr && req.body.length() > 0)
+    {
+        LOG_I(F("Body already read"));
+        next();
+        return;
+    }
 
-    path = mountpath + path;
+    if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
+    {
+        LOG_I(F("> bodyparser raw"));
 
-    LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"), middlewares.size());
-    // F("mountpath:"), mountpath,
+        auto sDataLen = req.get("content-length");
+        LOG_I(F("sDataLen"), sDataLen);
 
-    const auto route = new Route();
-    route->method = method;
-    route->path = path;
-    route->middleware = middleware;
+        auto dataLen = sDataLen.toInt();
 
-    for (auto handler : middlewares)
-        if (nullptr != handler)
-            route->middlewares.push_back(handler);
+        LOG_V(F("> contentLength"), dataLen);
 
-    route->splitToVector(route->path);
-    // Add to collection
-    routes.push_back(route);
+        while (dataLen > 0 && req.client.connected())
+        {
+            if (req.client.available())
+            {
+                Buffer buffer;
+                buffer.length = req.client.read(buffer.buffer, sizeof(buffer.buffer));
+                dataLen -= buffer.length;
 
-    return *route;
+                LOG_V(F("remaining:"), buffer.length, dataLen);
+
+                if (dataLen > 0)
+                {
+                    if (req.route->dataCallback_)
+                        req.route->dataCallback_(buffer);
+                }
+                else
+                {
+                    if (buffer.length > 0)
+                    {
+                        if (req.route->dataCallback_)
+                            req.route->dataCallback_(buffer);
+                    }
+                    if (req.route->endCallback_)
+                        req.route->endCallback_();
+                }
+            }
+        }
+
+        LOG_V(F("< bodyparser raw"));
+    }
+    else
+        LOG_V(F("Not an application/octet-stream body"));
+
+    next();
 }
 
 /// @brief
-/// @param method
-/// @param path
-/// @param fptr
+/// @param req
+/// @param res
 /// @return
-auto Express::METHOD(const Method method, String path, const MiddlewareCallback fptr) -> Route &
+auto Express::parseText(Request &req, Response &res, const NextCallback next) -> void
 {
-    LOG_I(F("METHOD:"), method, F("path:"), path);
-    // F("mountpath:"), mountpath,
-
-    const std::vector<MiddlewareCallback> middlewares = {};
-    return METHOD(method, path, middlewares, fptr);
+    if (req.body != nullptr && req.body.length() > 0)
+    {
+        LOG_I(F("Body already read"));
+        next();
+        return;
+    }
 }
+
+/// @brief
+/// @param req
+/// @param res
+/// @return
+auto Express::parseUrlencoded(Request &req, Response &res, const NextCallback next) -> void
+{
+    if (req.body != nullptr && req.body.length() > 0)
+    {
+        LOG_I(F("Body already read"));
+        next();
+        return;
+    }
+
+    if (req.get(ContentType).equalsIgnoreCase(F("application/x-www-form-urlencoded")))
+    {
+        LOG_I(F("> bodyparser x-www-form-urlencoded"));
+    }
+    else
+        LOG_V(F("Not an application/x-www-form-urlencoded body"));
+
+    next();
+}
+
+/// @brief
+/// @return a MiddlewareCallback
+auto Express::raw() -> MiddlewareCallback
+{
+    return Express::parseRaw;
+}
+
+/// @brief This is a built-in middleware function in Express.
+/// It parses incoming requests with JSON payloads and is based on body-parser.
+/// @return Returns middleware that only parses JSON and only looks at requests
+/// where the Content-Type header matches the type option.
+auto Express::json() -> MiddlewareCallback
+{
+    return parseJson;
+}
+
+/// @brief
+/// @return a MiddlewareCallback
+auto Express::text() -> MiddlewareCallback
+{
+    return parseText;
+}
+
+/// @brief This is a built-in middleware function in Express. It parses incoming requests
+/// with urlencoded payloads and is based on body-parser.
+///
+/// @return Returns middleware that only parses urlencoded bodies and only looks at requests
+/// where the Content-Type header matches the type option. This parser accepts only
+/// UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
+auto Express::urlencoded() -> MiddlewareCallback
+{
+    return parseUrlencoded;
+}
+
+#pragma endregion express
+
+#pragma region Middleware
 
 /// @brief
 /// @param middleware
@@ -374,7 +323,7 @@ auto Express::use(const MiddlewareCallback middleware) -> void
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const String &path, const MiddlewareCallback middleware) -> void
+auto Express::use(const String &path, const MiddlewareCallback middleware) -> void // TODO, args...
 {
     // TODO
 }
@@ -382,7 +331,7 @@ auto Express::use(const String &path, const MiddlewareCallback middleware) -> vo
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void
+auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void // TODO, args...
 {
     for (auto middleware : middlewares)
         this->middlewares.push_back(middleware);
@@ -401,7 +350,7 @@ auto Express::use(const String &mount_path, Express &other) -> void
     mountPaths[other.mountpath] = &other;
 }
 
-/// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+/// @brief The app.mountpath property 
 /// @param mount_path
 /// @return
 auto Express::use(const String &mount_path) -> void
@@ -409,79 +358,41 @@ auto Express::use(const String &mount_path) -> void
     mountpath = mount_path;
 }
 
-/// @brief
-/// @param path
-/// @param middleware
-/// @return
-auto Express::head(const String &path, const MiddlewareCallback middleware) -> Route &
-{
-    return METHOD(Method::HEAD, path, middleware);
-};
+#pragma endregion Middleware
+
+#pragma region HTTP_Methods
 
 /// @brief
-/// @param path
-/// @param middleware
-/// @return
-auto Express::get(const String &path, const MiddlewareCallback middleware) -> Route &
-{
-    return METHOD(Method::GET, path, middleware);
-};
-
-/// @brief
-/// @param path
-/// @param middleware
-/// @return
-auto Express::post(const String &path, const MiddlewareCallback middleware) -> Route &
-{
-    return METHOD(Method::POST, path, middleware);
-};
-
-/// @brief
-/// @param path
-/// @param middleware
-/// @param fptr
-/// @return
-auto Express::post(const String &path, const MiddlewareCallback middleware, const MiddlewareCallback fptr) -> Route &
-{
-    const std::vector<MiddlewareCallback> middlewares = {middleware};
-    return METHOD(Method::POST, path, middlewares, fptr);
-};
-
-/// @brief
+/// @tparam ArrayType
+/// @tparam ArraySize
+/// @param method
 /// @param path
 /// @param middlewares
 /// @param middleware
 /// @return
-auto Express::post(const String &path, const std::vector<MiddlewareCallback> middlewares, const MiddlewareCallback middleware) -> Route &
+auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares) -> Route &
 {
-    return METHOD(Method::POST, path, middlewares, middleware);
-};
+    if (path == F("/"))
+        path = F("");
 
-/// @brief
-/// @param path
-/// @param middleware
-/// @return
-auto Express::put(const String &path, const MiddlewareCallback middleware) -> Route &
-{
-    return METHOD(Method::PUT, path, middleware);
-};
+    path = mountpath + path;
 
-/// @brief Routes HTTP DELETE requests to the specified path with the specified callback functions.
-/// For more information, see the routing guide.
-/// @param path
-/// @param middleware
-auto Express::Delete(const String &path, const MiddlewareCallback middleware) -> Route &
-{
-    return METHOD(Method::DELETE, path, middleware);
+    LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"), middlewares.size());
+    // F("mountpath:"), mountpath,
+
+    const auto route = new Route();
+    route->method = method;
+    route->path = path;
+    route->middlewares = middlewares; // copy the vector
+
+    route->splitToVector(route->path);
+    // Add to collection
+    routes.push_back(route);
+
+    return *route;
 }
 
-/// @brief This method is like the standard app.METHOD() methods, except it matches all HTTP verbs.
-/// @param path
-/// @param middleware
-auto Express::all(const String &path, const MiddlewareCallback middleware) -> Route &
-{
-    return METHOD(Method::ALL, path, middleware);
-}
+#pragma endregion HTTP_Methods
 
 /// @brief Returns the canonical path of the app, a string.
 /// @return
@@ -498,12 +409,16 @@ auto Express::route(const String &path) -> void
     // TODO
 }
 
+#pragma region Events
+
 /// @brief
 /// @param name
 /// @param callback
 auto Express::on(const String &name, const MountCallback callback) -> void
 {
 }
+
+#pragma endregion Events
 
 /// @brief
 /// @param port
@@ -567,7 +482,7 @@ void Express::run(ClientType &client)
                 }
 
                 if (gotoNext)
-                    evaluate(req, res, [](){});
+                    evaluate(req, res);
 
                 res.send();
             }

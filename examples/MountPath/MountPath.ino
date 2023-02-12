@@ -7,8 +7,8 @@ using namespace EXPRESS_NAMESPACE;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 EXPRESS_CREATE_INSTANCE();
-EXPRESS_CREATE_NAMED_INSTANCE(v1);
 EXPRESS_CREATE_NAMED_INSTANCE(v2);
+EXPRESS_CREATE_NAMED_INSTANCE(v3);
 
 void setup() {
   LOG_SETUP();
@@ -16,21 +16,23 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.use("/v1", v1);
+  app.use("/v1");
   app.use("/v2", v2);
+  app.use("/v3", v3);
 
+  // /user will be mounted on /v1/user
   app.get("/user", [](request &req, response &res, const NextCallback next) { 
-    res.status(HttpStatus::OK).send("root path");
+    res.status(HttpStatus::OK).send("root path is /v1");
   });
 
   // Landing page here is /v1/user
-  v1.get("/user", [](request &req, response &res, const NextCallback next) { 
-    res.status(HttpStatus::OK).send("route v1");
+  v2.get("/user", [](request &req, response &res, const NextCallback next) { 
+    res.status(HttpStatus::OK).send("route v2");
   });
 
   // Landing page here is /v2/user
-  v2.get("/user", [](request &req, response &res, const NextCallback next) { 
-    res.status(HttpStatus::OK).send("route v2");
+  v3.get("/user", [](request &req, response &res, const NextCallback next) { 
+  res.status(HttpStatus::OK).send("route v3");
   });
 
   app.listen(80, []() {
