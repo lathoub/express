@@ -525,7 +525,7 @@ void Express::listen(uint16_t port, const StartedCallback startedCallback)
     // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
     //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
 
-    server = new EthernetServer(port);
+    server = new ServerType(port);
     server->begin();
 
     if (startedCallback)
@@ -542,7 +542,7 @@ auto Express::run() -> void
 
 /// @brief
 /// @param client
-void Express::run(EthernetClient &client)
+void Express::run(ClientType &client)
 {
     while (client.connected())
     {

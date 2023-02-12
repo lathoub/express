@@ -27,7 +27,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-Request::Request(Express &express, EthernetClient &ec)
+Request::Request(Express &express, ClientType &ec)
     : app(express), client(ec), method(Method::UNDEFINED)
 {
     parse(client);
@@ -59,7 +59,7 @@ auto Request::get(const String &field) -> String
 /// @brief
 /// @param client
 /// @return
-bool Request::parse(EthernetClient &client)
+bool Request::parse(ClientType &client)
 {
     LOG_V(F("Request::Parse"));
 

@@ -31,7 +31,7 @@ BEGIN_EXPRESS_NAMESPACE
 /// @param app
 /// @param client
 /// @return
-Response::Response(Express &express, EthernetClient &client)
+Response::Response(Express &express, ClientType &client)
     : app(express), client_(client)
 {
 }
@@ -39,7 +39,7 @@ Response::Response(Express &express, EthernetClient &client)
 /// @brief  // default renderer
 /// @param client
 /// @param f
-void Response::renderFile(EthernetClient &client, const char *f)
+void Response::renderFile(ClientType &client, const char *f)
 {
     size_t i = 0;
     size_t start = 0;
@@ -208,7 +208,7 @@ auto Response::status(const int status) -> Response &
 
 /// @brief
 /// @param client
-void Response::evaluateHeaders(EthernetClient &client)
+void Response::evaluateHeaders(ClientType &client)
 {
     if (body_ && body_ != F(""))
         headers[ContentLength] = body_.length();
@@ -221,7 +221,7 @@ void Response::evaluateHeaders(EthernetClient &client)
 
 /// @brief
 /// @param client
-void Response::sendBody(EthernetClient &client, locals_t &locals)
+void Response::sendBody(ClientType &client, locals_t &locals)
 {
     LOG_V(F("sendBody"));
 
@@ -253,7 +253,7 @@ void Response::sendBody(EthernetClient &client, locals_t &locals)
 /// @brief
 void Response::send()
 {
-    auto &client = const_cast<EthernetClient &>(client_);
+    auto &client = const_cast<ClientType &>(client_);
 
     client.print(F("HTTP/1.1 "));
     client.println(status_);

@@ -32,7 +32,14 @@
 typedef uint8_t byte;
 #endif
 
+// < Network section
 #include <Ethernet.h>
+
+// TODO: using templates
+#define ServerType EthernetServer
+#define ClientType EthernetClient
+
+// Network section >
 
 #define LOGGER Serial
 #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
