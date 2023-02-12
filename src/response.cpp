@@ -123,9 +123,11 @@ auto Response::json(const String &body) -> void
 /// @brief Sends the HTTP response.
 /// Optional parameters:
 /// @param view
-auto Response::send(const String &body) -> void
+auto Response::send(const String &body) -> Response &
 {
     body_ = body;
+
+    return *this;
 }
 
 /// @brief Renders a view and sends the rendered HTML string to the client.
@@ -168,7 +170,7 @@ auto Response::sendFile(File &file, Options *options) -> void
 ///  registered status message as the text response body. If an unknown
 // status code is specified, the response body will just be the code number.
 /// @param statusCode
-auto Response::sendStatus(const uint16_t statusCode) -> void
+auto Response::sendStatus(const HttpStatus statusCode) -> void
 {
     status_ = statusCode;
 }
@@ -195,11 +197,10 @@ auto Response::set(const String &field, const String &value) -> Response &
     return *this;
 }
 
-/// @brief Sends a JSON response. This method sends a response (with the correct content-type)
-/// that is the parameter converted to a JSON string using JSON.stringify().
+/// @brief 
 /// @param body
 /// @return
-auto Response::status(const int status) -> Response &
+auto Response::status(const HttpStatus status) -> Response &
 {
     status_ = status;
 

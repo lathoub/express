@@ -512,7 +512,7 @@ public:
   /// @brief
   const ClientType &client_;
 
-  uint16_t status_ = HttpStatus::NOT_FOUND;
+  HttpStatus status_ = HttpStatus::NOT_FOUND;
 
   std::map<String, String> headers;
 
@@ -578,7 +578,7 @@ public: /* Methods*/
   /// @brief Sends the HTTP response.
   /// Optional parameters:
   /// @param view
-  auto send(const String &body) -> void;
+  auto send(const String &body) -> Response &;;
 
   /// @brief Renders a view and sends the rendered HTML string to the client.
   /// Optional parameters:
@@ -599,7 +599,7 @@ public: /* Methods*/
   ///  registered status message as the text response body. If an unknown
   // status code is specified, the response body will just be the code number.
   /// @param statusCode
-  auto sendStatus(const uint16_t) -> void;
+  auto sendStatus(const HttpStatus) -> void;
 
   /// @brief Sets the response’s HTTP header field to value
   /// @param field
@@ -612,7 +612,7 @@ public: /* Methods*/
   /// using JSON.stringify().
   /// @param body
   /// @return
-  auto status(const int) -> Response &;
+  auto status(const HttpStatus) -> Response &;
 };
 
 /// @brief

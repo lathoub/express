@@ -15,7 +15,7 @@ void setup() {
   Ethernet.begin(mac);
 
   app.get(F("/"), [](request &req, response &res, const NextCallback next) {
-    res.send(F("Hello World!"));
+    res.status(HttpStatus::OK).send(F("Hello World!"));
   });
 
   app.listen(80, []() {
