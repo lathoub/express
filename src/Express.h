@@ -129,8 +129,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseUrlencoded(Request &, Response &, const NextCallback)
-      -> void;
+  static auto parseUrlencoded(Request &, Response &, const NextCallback) -> void;
 
   /// @brief This is a built-in middleware function in Express. It serves static
   /// files and is based on serve-static.
@@ -187,12 +186,12 @@ public:
   /// @brief
   /// @param middleware
   /// @return
-  auto use(const String &path, const MiddlewareCallback) -> void;
+  auto use(const std::vector<MiddlewareCallback>) -> void;
 
   /// @brief
   /// @param middleware
   /// @return
-  auto use(const std::vector<MiddlewareCallback>) -> void;
+  auto use(const String &path, const MiddlewareCallback) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.

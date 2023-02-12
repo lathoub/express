@@ -323,18 +323,18 @@ auto Express::use(const MiddlewareCallback middleware) -> void
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const String &path, const MiddlewareCallback middleware) -> void // TODO, args...
+auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void // TODO, args...
 {
-    // TODO
+    for (auto middleware : middlewares)
+        this->middlewares.push_back(middleware);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void // TODO, args...
+auto Express::use(const String &path, const MiddlewareCallback middleware) -> void // TODO, args...
 {
-    for (auto middleware : middlewares)
-        this->middlewares.push_back(middleware);
+    // TODO
 }
 
 /// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
