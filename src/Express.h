@@ -38,8 +38,10 @@ class Express;
 
 // Callback definitions
 using NextCallback = void (*)();
-using MiddlewareCallback = void (*)(Request &, Response &, const NextCallback next);
-using RenderEngineCallback = void (*)(ClientType &, locals_t &locals, const char *f);
+using MiddlewareCallback = void (*)(Request &, Response &,
+                                    const NextCallback next);
+using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
+                                      const char *f);
 using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
@@ -133,7 +135,8 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseUrlencoded(Request &, Response &, const NextCallback) -> void;
+  static auto parseUrlencoded(Request &, Response &, const NextCallback)
+      -> void;
 
   /// @brief This is a built-in middleware function in Express. It serves static
   /// files and is based on serve-static.
@@ -162,7 +165,7 @@ public:
   static auto urlencoded() -> MiddlewareCallback;
 
   ///
-  static auto MakeRouter() -> Router&;
+  static auto MakeRouter() -> Router &;
 
 #pragma endregion express
 
@@ -185,8 +188,7 @@ private:
   auto evaluate(Request &, Response &) -> void;
 
 public:
-
-  void param() { /* NOT IMPLEMENTED */};
+  void param(){/* NOT IMPLEMENTED */};
 
   /// @brief
   /// @param middleware
@@ -276,7 +278,6 @@ public:
 #pragma region HTTP_Methods
 
 private:
-
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
 
@@ -287,15 +288,16 @@ private:
       tmpMiddlewares.push_back(middleware);
   }
 
-  template <typename... Args> 
+  template <typename... Args>
   void addMiddleware(MiddlewareCallback middleware, Args... tail) {
     if (nullptr != middleware)
       tmpMiddlewares.push_back(middleware);
     addMiddleware(tail...);
   }
 
-  template <typename... Args> 
-  void addMiddleware(std::vector<MiddlewareCallback> middlewares, Args... tail) {
+  template <typename... Args>
+  void addMiddleware(std::vector<MiddlewareCallback> middlewares,
+                     Args... tail) {
     for (auto middleware : middlewares)
       if (nullptr != middleware)
         addMiddleware(middleware);
@@ -308,86 +310,78 @@ private:
   /// @param middlewares
   /// @param middleware
   /// @return
-  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>) -> Route &;
+  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>)
+      -> Route &;
 
 public:
-
   /// @brief
   /// @param path
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto head(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto head(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
-};
+  };
 
   /// @brief
   /// @param path
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto get(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto get(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::GET, path, tmpMiddlewares);
-};
+  };
 
   /// @brief
   /// @param path
   /// @param callbacks
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto post(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto post(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::POST, path, tmpMiddlewares);
-};
+  };
 
   /// @brief
   /// @param path
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto put(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto put(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::PUT, path, tmpMiddlewares);
-};
+  };
 
   /// @brief Routes HTTP DELETE requests to the specified path with the
   /// specified callback functions. For more information, see the routing guide.
   /// @param path
   /// @param callback
-  template <typename... Args> 
-  auto del(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto del(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::DELETE, path, tmpMiddlewares);
-}
+  }
 
   /// @brief This method is like the standard app.METHOD() methods, except it
   /// matches all HTTP verbs.
   /// @param path
   /// @param callback
-  template <typename... Args> 
-  auto all(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto all(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::ALL, path, tmpMiddlewares);
-}
+  }
 
-  template <typename... Args> 
-  Route & adder(const String &path, Args... args)
-  {
+  template <typename... Args> Route &adder(const String &path, Args... args) {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
@@ -402,7 +396,7 @@ public:
   /// @brief Returns an instance of a single route, which you can then use to
   /// handle HTTP verbs with optional middleware. Use app.route() to avoid
   /// duplicate route names (and thus typo errors).
-  auto route(const String &path) -> Route&;
+  auto route(const String &path) -> Route &;
 
   /// @brief
   void listen(uint16_t port, const StartedCallback startedCallback = nullptr);
@@ -568,7 +562,8 @@ public: /* Methods*/
   /// @param data
   /// @param encoding
   /// @return
-  auto end(Buffer *data = nullptr, const String &encoding = F("")) -> Response &;
+  auto end(Buffer *data = nullptr, const String &encoding = F(""))
+      -> Response &;
 
   /// @brief Ends the response process
   static void end();
@@ -588,7 +583,8 @@ public: /* Methods*/
   /// @brief Sends the HTTP response.
   /// Optional parameters:
   /// @param view
-  auto send(const String &body) -> Response &;;
+  auto send(const String &body) -> Response &;
+  ;
 
   /// @brief Renders a view and sends the rendered HTML string to the client.
   /// Optional parameters:
@@ -644,7 +640,7 @@ public:
 
   std::vector<MiddlewareCallback> middlewares;
 
- // MiddlewareCallback middleware = nullptr;
+  // MiddlewareCallback middleware = nullptr;
 
   // cache path splitting (avoid doing this for every request * number of paths)
   std::vector<PosLen> indices;
@@ -676,8 +672,8 @@ public:
 
 /// @brief
 class Router {
-  private:
-    /// @brief The app.mountpath property contains the path patterns
+private:
+  /// @brief The app.mountpath property contains the path patterns
   /// on which a sub-app was mounted.
   String mountpath{};
 
@@ -699,7 +695,6 @@ public:
 #pragma region HTTP_Methods
 
 private:
-
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
 
@@ -710,15 +705,16 @@ private:
       tmpMiddlewares.push_back(middleware);
   }
 
-  template <typename... Args> 
+  template <typename... Args>
   void addMiddleware(MiddlewareCallback middleware, Args... tail) {
     if (nullptr != middleware)
       tmpMiddlewares.push_back(middleware);
     addMiddleware(tail...);
   }
 
-  template <typename... Args> 
-  void addMiddleware(std::vector<MiddlewareCallback> middlewares, Args... tail) {
+  template <typename... Args>
+  void addMiddleware(std::vector<MiddlewareCallback> middlewares,
+                     Args... tail) {
     for (auto middleware : middlewares)
       if (nullptr != middleware)
         addMiddleware(middleware);
@@ -731,86 +727,78 @@ private:
   /// @param middlewares
   /// @param middleware
   /// @return
-  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>) -> Route &;
+  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>)
+      -> Route &;
 
 public:
-
   /// @brief
   /// @param path
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto head(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto head(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
-};
+  };
 
   /// @brief
   /// @param path
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto get(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto get(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::GET, path, tmpMiddlewares);
-};
+  };
 
   /// @brief
   /// @param path
   /// @param callbacks
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto post(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto post(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::POST, path, tmpMiddlewares);
-};
+  };
 
   /// @brief
   /// @param path
   /// @param callback
   /// @return
-  template <typename... Args> 
-  auto put(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto put(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::PUT, path, tmpMiddlewares);
-};
+  };
 
   /// @brief Routes HTTP DELETE requests to the specified path with the
   /// specified callback functions. For more information, see the routing guide.
   /// @param path
   /// @param callback
-  template <typename... Args> 
-  auto del(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto del(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::DELETE, path, tmpMiddlewares);
-}
+  }
 
   /// @brief This method is like the standard app.METHOD() methods, except it
   /// matches all HTTP verbs.
   /// @param path
   /// @param callback
-  template <typename... Args> 
-  auto all(const String &path, Args... args) -> Route &
-{
+  template <typename... Args>
+  auto all(const String &path, Args... args) -> Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::ALL, path, tmpMiddlewares);
-}
+  }
 
-  template <typename... Args> 
-  Route & adder(const String &path, Args... args)
-  {
+  template <typename... Args> Route &adder(const String &path, Args... args) {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
@@ -818,12 +806,12 @@ public:
 
 #pragma endregion HTTP_Methods
 
-  void param() { /* NOT IMPLEMENTED */};
+  void param(){/* NOT IMPLEMENTED */};
 
-  /// @brief Returns an instance of a single route, which you can then use to handle
-  /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
-  /// (and thus typo errors).
-Route& route(const String &path);
+  /// @brief Returns an instance of a single route, which you can then use to
+  /// handle HTTP verbs with optional middleware. Use app.route() to avoid
+  /// duplicate route names (and thus typo errors).
+  Route &route(const String &path);
 
   /// @brief
   /// @param middleware

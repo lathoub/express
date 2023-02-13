@@ -1,4 +1,4 @@
-    /*!
+/*!
  *  @file       route.cpp
  *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
@@ -27,25 +27,22 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-    /// @brief
-    Router::Router()
-    {
-    }
+/// @brief
+Router::Router() {}
 
-    /// @brief Returns an instance of a single route, which you can then use to handle
-    /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
-    /// (and thus typo errors).
-    Route& Router::route(const String &path)
-    {
-        const auto route = new Route();
-        route->path = path;
+/// @brief Returns an instance of a single route, which you can then use to
+/// handle HTTP verbs with optional middleware. Use app.route() to avoid
+/// duplicate route names (and thus typo errors).
+Route &Router::route(const String &path) {
+  const auto route = new Route();
+  route->path = path;
 
-        route->splitToVector(route->path);
-        // Add to collection
-        routes.push_back(route);
+  route->splitToVector(route->path);
+  // Add to collection
+  routes.push_back(route);
 
-        return *route;
-   }
+  return *route;
+}
 
 #pragma region Middleware
 
@@ -54,48 +51,46 @@ BEGIN_EXPRESS_NAMESPACE
 /// @return
 auto Router::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
-    middlewares.push_back(middleware);
+  middlewares.push_back(middleware);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Router::use(const std::vector<MiddlewareCallback> middlewares) -> void // TODO, args...
+auto Router::use(const std::vector<MiddlewareCallback> middlewares)
+    -> void // TODO, args...
 {
-    for (auto middleware : middlewares)
-        this->middlewares.push_back(middleware);
+  for (auto middleware : middlewares)
+    this->middlewares.push_back(middleware);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Router::use(const String &path, const MiddlewareCallback middleware) -> void // TODO, args...
+auto Router::use(const String &path, const MiddlewareCallback middleware)
+    -> void // TODO, args...
 {
-    // TODO
+  // TODO
 }
 
-/// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+/// @brief The app.mountpath property contains one or more path patterns on
+/// which a sub-app was mounted.
 /// @param mount_path
 /// @param other
 /// @return
-auto Router::use(const String &mount_path, Router &other) -> void
-{
-    LOG_I(F("use mountPath:"), mount_path);
+auto Router::use(const String &mount_path, Router &other) -> void {
+  LOG_I(F("use mountPath:"), mount_path);
 
-    other.mountpath = mount_path;
-    other.parent = this;
-    mountPaths[other.mountpath] = &other;
+  other.mountpath = mount_path;
+  other.parent = this;
+  mountPaths[other.mountpath] = &other;
 }
 
-/// @brief The app.mountpath property 
+/// @brief The app.mountpath property
 /// @param mount_path
 /// @return
-auto Router::use(const String &mount_path) -> void
-{
-    mountpath = mount_path;
-}
+auto Router::use(const String &mount_path) -> void { mountpath = mount_path; }
 
 #pragma endregion Middleware
-
 
 END_EXPRESS_NAMESPACE

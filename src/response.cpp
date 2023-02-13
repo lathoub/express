@@ -32,53 +32,46 @@ BEGIN_EXPRESS_NAMESPACE
 /// @param client
 /// @return
 Response::Response(Express &express, ClientType &client)
-    : app(express), client_(client)
-{
-}
+    : app(express), client_(client) {}
 
 /// @brief  // default renderer
 /// @param client
 /// @param f
-void Response::renderFile(ClientType &client, const char *f)
-{
-    size_t i = 0;
-    size_t start = 0;
-    while (f[start + i] != '\0')
-    {
-        while (f[start + i] != '\n' && f[start + i] != '\0')
-            i++;
+void Response::renderFile(ClientType &client, const char *f) {
+  size_t i = 0;
+  size_t start = 0;
+  while (f[start + i] != '\0') {
+    while (f[start + i] != '\n' && f[start + i] != '\0')
+      i++;
 
-        client.write(f + start, i);
-        client.write('\n');
+    client.write(f + start, i);
+    client.write('\n');
 
-        if (f[start + i] == '\0')
-            break;
+    if (f[start + i] == '\0')
+      break;
 
-        start += i + 1;
-        i = 0;
-    }
+    start += i + 1;
+    i = 0;
+  }
 }
 
 /// @brief
 /// @param field
 /// @param value
 /// @return
-auto Response::append(const String &field, const String &value) -> Response &
-{
-    for (auto [key, header] : headers)
-    {
-        if (field.equalsIgnoreCase(key))
-        {
-            // Appends the specified value to the HTTP response header
-            header += value;
-            return *this;
-        }
+auto Response::append(const String &field, const String &value) -> Response & {
+  for (auto [key, header] : headers) {
+    if (field.equalsIgnoreCase(key)) {
+      // Appends the specified value to the HTTP response header
+      header += value;
+      return *this;
     }
+  }
 
-    // not found, creates the header with the specified value
-    headers[field] = value;
+  // not found, creates the header with the specified value
+  headers[field] = value;
 
-    return *this;
+  return *this;
 }
 
 /// @brief Ends the response process. This method actually comes from Node core,
@@ -86,197 +79,178 @@ auto Response::append(const String &field, const String &value) -> Response &
 /// @param data
 /// @param encoding
 /// @return
-auto Response::end(Buffer *buffer, const String &encoding) -> Response &
-{
-    if (buffer)
-    {
-        body_ = buffer->toString();
+auto Response::end(Buffer *buffer, const String &encoding) -> Response & {
+  if (buffer) {
+    body_ = buffer->toString();
 
-        LOG_V(body_);
-    }
+    LOG_V(body_);
+  }
 
-    return *this;
+  return *this;
 }
 
-/// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
+/// @brief Returns the HTTP response header specified by field. The match is
+/// case-insensitive.
 /// @return
-auto Response::get(const String &field) -> String
-{
-    for (auto [key, header] : headers)
-    {
-        if (field.equalsIgnoreCase(key))
-            return header;
-    }
-    return "";
+auto Response::get(const String &field) -> String {
+  for (auto [key, header] : headers) {
+    if (field.equalsIgnoreCase(key))
+      return header;
+  }
+  return "";
 }
 
-/// @brief Sends a JSON response. This method sends a response (with the correct content-type)
-/// that is the parameter converted to a JSON string using JSON.stringify().
+/// @brief Sends a JSON response. This method sends a response (with the correct
+/// content-type) that is the parameter converted to a JSON string using
+/// JSON.stringify().
 /// @param body
 /// @return
-auto Response::json(const String &body) -> void
-{
-    body_ = body;
+auto Response::json(const String &body) -> void {
+  body_ = body;
 
-    set(ContentType, ApplicationJson);
-    // QUESTION: set content-length here?
+  set(ContentType, ApplicationJson);
+  // QUESTION: set content-length here?
 }
 
 /// @brief Sends the HTTP response.
 /// Optional parameters:
 /// @param view
-auto Response::send(const String &body) -> Response &
-{
-    body_ = body;
+auto Response::send(const String &body) -> Response & {
+  body_ = body;
 
-    return *this;
+  return *this;
 }
 
 /// @brief Renders a view and sends the rendered HTML string to the client.
 /// Optional parameters:
 ///    - locals, an object whose properties define local variables for the view.
 ///    - callback, a callback function. If provided, the method returns both the
-///      possible error and rendered string, but does not perform an automated response.
-///      When an error occurs, the method invokes next(err) internally.
+///      possible error and rendered string, but does not perform an automated
+///      response. When an error occurs, the method invokes next(err)
+///      internally.
 /// @param view
-auto Response::render(File &file, locals_t &locals) -> void
-{
-    // NOTE: don't render here just yet (status and headers need to be send first)
-    // so store a backpointer that can be called in the sendBody function.
-    // set this here already, so it gets send out as part of the headers
+auto Response::render(File &file, locals_t &locals) -> void {
+  // NOTE: don't render here just yet (status and headers need to be send first)
+  // so store a backpointer that can be called in the sendBody function.
+  // set this here already, so it gets send out as part of the headers
 
-    contentsCallback = file.contentsCallback;
-    renderLocals = locals; // TODO: check if this copies??
-    filename = file.filename;
+  contentsCallback = file.contentsCallback;
+  renderLocals = locals; // TODO: check if this copies??
+  filename = file.filename;
 
-    set(ContentType, F("text/html"));
+  set(ContentType, F("text/html"));
 }
 
 /// @brief .
-auto Response::sendFile(File &file, Options *options) -> void
-{
-    if (options)
-    {
-        for (auto [first, second] : options->headers)
-        {
-            LOG_V(first, second);
-            set(first, second);
-        }
+auto Response::sendFile(File &file, Options *options) -> void {
+  if (options) {
+    for (auto [first, second] : options->headers) {
+      LOG_V(first, second);
+      set(first, second);
     }
+  }
 
-    contentsCallback = file.contentsCallback;
-    filename = file.filename;
+  contentsCallback = file.contentsCallback;
+  filename = file.filename;
 }
 
 /// @brief Sets the response HTTP status code to statusCode and sends the
 ///  registered status message as the text response body. If an unknown
 // status code is specified, the response body will just be the code number.
 /// @param statusCode
-auto Response::sendStatus(const HttpStatus statusCode) -> void
-{
-    status_ = statusCode;
+auto Response::sendStatus(const HttpStatus statusCode) -> void {
+  status_ = statusCode;
 }
 
 /// @brief Sets the response’s HTTP header field to value
 /// @param field
 /// @param value
 /// @return
-auto Response::set(const String &field, const String &value) -> Response &
-{
-    for (auto [key, header] : headers)
-    {
-        if (field.equalsIgnoreCase(key))
-        {
-            // Appends the specified value to the HTTP response header
-            header = value;
-            return *this;
-        }
+auto Response::set(const String &field, const String &value) -> Response & {
+  for (auto [key, header] : headers) {
+    if (field.equalsIgnoreCase(key)) {
+      // Appends the specified value to the HTTP response header
+      header = value;
+      return *this;
     }
+  }
 
-    // not found, creates the header with the specified value
-    headers[field] = value;
+  // not found, creates the header with the specified value
+  headers[field] = value;
 
-    return *this;
+  return *this;
 }
 
-/// @brief 
+/// @brief
 /// @param body
 /// @return
-auto Response::status(const HttpStatus status) -> Response &
-{
-    status_ = status;
+auto Response::status(const HttpStatus status) -> Response & {
+  status_ = status;
 
-    return *this;
+  return *this;
 }
 
 /// @brief
 /// @param client
-void Response::evaluateHeaders(ClientType &client)
-{
-    if (body_ && body_ != F(""))
-        headers[ContentLength] = body_.length();
+void Response::evaluateHeaders(ClientType &client) {
+  if (body_ && body_ != F(""))
+    headers[ContentLength] = body_.length();
 
-    if (app.settings.count(XPoweredBy) > 0)
-        headers[XPoweredBy] = app.settings[XPoweredBy];
+  if (app.settings.count(XPoweredBy) > 0)
+    headers[XPoweredBy] = app.settings[XPoweredBy];
 
-    headers[F("connection")] = F("close");
+  headers[F("connection")] = F("close");
 }
 
 /// @brief
 /// @param client
-void Response::sendBody(ClientType &client, locals_t &locals)
-{
-    LOG_V(F("sendBody"));
+void Response::sendBody(ClientType &client, locals_t &locals) {
+  LOG_V(F("sendBody"));
 
-    // if we already have a body, send that over
-    if (body_ && body_ != F(""))
-        client.println(body_.c_str());
-    else if (contentsCallback)
-    {
-        // a request to generate the body was issued earlier,
-        // execute it here.
-        int lastDot = filename.lastIndexOf('.');
-        auto ext = filename.substring(lastDot + 1);
+  // if we already have a body, send that over
+  if (body_ && body_ != F(""))
+    client.println(body_.c_str());
+  else if (contentsCallback) {
+    // a request to generate the body was issued earlier,
+    // execute it here.
+    int lastDot = filename.lastIndexOf('.');
+    auto ext = filename.substring(lastDot + 1);
 
-        LOG_V(F("ext"), ext);
+    LOG_V(F("ext"), ext);
 
-        auto engineName = app.settings[F("view engine")];
-        LOG_V(F("engineName"), engineName);
-        if (engineName.equals(ext))
-        {
-            auto engine = app.engines[engineName];
-            if (engine)
-                engine(client, locals, contentsCallback());
-        }
-        else
-            renderFile(client, contentsCallback()); // default renderer
-    }
+    auto engineName = app.settings[F("view engine")];
+    LOG_V(F("engineName"), engineName);
+    if (engineName.equals(ext)) {
+      auto engine = app.engines[engineName];
+      if (engine)
+        engine(client, locals, contentsCallback());
+    } else
+      renderFile(client, contentsCallback()); // default renderer
+  }
 }
 
 /// @brief
-void Response::send()
-{
-    auto &client = const_cast<ClientType &>(client_);
+void Response::send() {
+  auto &client = const_cast<ClientType &>(client_);
 
-    client.print(F("HTTP/1.1 "));
-    client.println(status_);
+  client.print(F("HTTP/1.1 "));
+  client.println(status_);
 
-    // Add to headers
-    evaluateHeaders(client);
+  // Add to headers
+  evaluateHeaders(client);
 
-    LOG_V(F("Headers:"));
-    // Send headers
-    for (auto [first, second] : headers)
-    {
-        LOG_V(first, second);
+  LOG_V(F("Headers:"));
+  // Send headers
+  for (auto [first, second] : headers) {
+    LOG_V(first, second);
 
-        client.print(first);
-        client.print(": ");
-        client.println(second);
-    }
-    client.println();
+    client.print(first);
+    client.print(": ");
+    client.println(second);
+  }
+  client.println();
 
-    sendBody(client, renderLocals);
+  sendBody(client, renderLocals);
 }
 
 END_EXPRESS_NAMESPACE

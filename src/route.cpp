@@ -1,4 +1,4 @@
-    /*!
+/*!
  *  @file       route.cpp
  *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
@@ -27,51 +27,44 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-    /// @brief
-    Route::Route()
-    {
-    }
+/// @brief
+Route::Route() {}
 
-    auto Route::splitToVector(const String &path) -> void
-    {
-        splitToVector(path, indices);
-    }
+auto Route::splitToVector(const String &path) -> void {
+  splitToVector(path, indices);
+}
 
-    /// @brief
-    /// @param path
-    /// @return
-    auto Route::splitToVector(const String &path, std::vector<PosLen> &poslens) -> void
-    {
-        size_t p = 0, i = 1;
-        for (; i < path.length(); i++)
-        {
-            if (path.charAt(i) == delimiter)
-            {
-                poslens.push_back({p, i - p});
-                p = i;
-            }
-        }
-        poslens.push_back({p, i - p});
+/// @brief
+/// @param path
+/// @return
+auto Route::splitToVector(const String &path, std::vector<PosLen> &poslens)
+    -> void {
+  size_t p = 0, i = 1;
+  for (; i < path.length(); i++) {
+    if (path.charAt(i) == delimiter) {
+      poslens.push_back({p, i - p});
+      p = i;
     }
+  }
+  poslens.push_back({p, i - p});
+}
 
-    /// @brief
-    /// @param name
-    /// @param callback
-    auto Route::on(const String &name, const DataCallback callback) -> void
-    {
-        LOG_I(F("register data callback"), name);
-        dataCallback_ = callback;
-        // return *this;
-    }
+/// @brief
+/// @param name
+/// @param callback
+auto Route::on(const String &name, const DataCallback callback) -> void {
+  LOG_I(F("register data callback"), name);
+  dataCallback_ = callback;
+  // return *this;
+}
 
-    /// @brief
-    /// @param name
-    /// @param callback
-    auto Route::on(const String &name, const EndDataCallback callback) -> void
-    {
-        LOG_I(F("register end callback"), name);
-        endCallback_ = callback;
-        //  return *this;
-    }
+/// @brief
+/// @param name
+/// @param callback
+auto Route::on(const String &name, const EndDataCallback callback) -> void {
+  LOG_I(F("register end callback"), name);
+  endCallback_ = callback;
+  //  return *this;
+}
 
 END_EXPRESS_NAMESPACE

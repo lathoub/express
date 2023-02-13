@@ -33,12 +33,11 @@ bool Express::gotoNext{};
 
 /// @brief
 /// @return
-Express::Express()
-{
-    LOG_V(F("express() constructor"));
+Express::Express() {
+  LOG_V(F("express() constructor"));
 
-    settings[F("env")] = F("production");
-    //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
+  settings[F("env")] = F("production");
+  //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
 }
 
 /// @brief
@@ -49,38 +48,37 @@ Express::Express()
 /// @param params
 /// @return
 auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
-                    const String &requestPath, const std::vector<PosLen> &requestPathItems,
-                    params_t &params) -> bool
-{
-    if (requestPathItems.size() != pathItems.size())
+                    const String &requestPath,
+                    const std::vector<PosLen> &requestPathItems,
+                    params_t &params) -> bool {
+  if (requestPathItems.size() != pathItems.size()) {
+    LOG_V(F("Items not equal. requestPathItems.size():"),
+          requestPathItems.size(), F("pathItems.size():"), pathItems.size());
+    LOG_V(F("return false in function match"));
+    return false;
+  }
+
+  for (size_t i = 0; i < requestPathItems.size(); i++) {
+    const auto &ave = requestPathItems[i];
+    const auto &bve = pathItems[i];
+
+    if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
     {
-        LOG_V(F("Items not equal. requestPathItems.size():"), requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-        LOG_V(F("return false in function match"));
+      auto name = path.substring(bve.pos + 2,
+                                 bve.pos + bve.len); // Note: + 2 to offset /:
+      name.toLowerCase();
+      const auto value = requestPath.substring(
+          ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
+      params[name] = value;
+    } else {
+      if (requestPath.substring(ave.pos, ave.pos + ave.len) !=
+          path.substring(bve.pos, bve.pos + bve.len)) {
         return false;
+      }
     }
+  }
 
-    for (size_t i = 0; i < requestPathItems.size(); i++)
-    {
-        const auto &ave = requestPathItems[i];
-        const auto &bve = pathItems[i];
-
-        if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
-        {
-            auto name = path.substring(bve.pos + 2, bve.pos + bve.len); // Note: + 2 to offset /:
-            name.toLowerCase();
-            const auto value = requestPath.substring(ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
-            params[name] = value;
-        }
-        else
-        {
-            if (requestPath.substring(ave.pos, ave.pos + ave.len) != path.substring(bve.pos, bve.pos + bve.len))
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
+  return true;
 }
 
 /// @brief
@@ -88,39 +86,35 @@ auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
 /// @param res
 /// @param next
 /// @return
-auto Express::evaluate(Request &req, Response &res) -> void
-{
-    LOG_V(F("evaluate"), req.uri);
+auto Express::evaluate(Request &req, Response &res) -> void {
+  LOG_V(F("evaluate"), req.uri);
 
-    std::vector<PosLen> req_indices{};
+  std::vector<PosLen> req_indices{};
 
-    Route::splitToVector(req.uri, req_indices);
+  Route::splitToVector(req.uri, req_indices);
 
-    for (auto route : routes)
-    {
-        LOG_V(F("req.method:"), req.method, F("method:"), route->method);
-        LOG_V(F("req.uri:"), req.uri, F("path:"), route->path);
+  for (auto route : routes) {
+    LOG_V(F("req.method:"), req.method, F("method:"), route->method);
+    LOG_V(F("req.uri:"), req.uri, F("path:"), route->path);
 
-        if ((route->method == Method::ALL || req.method == route->method) && match(route->path, route->indices, req.uri, req_indices, req.params))
-        {
-            res.status_ = HttpStatus::OK;               
-            req.route = route;
+    if ((route->method == Method::ALL || req.method == route->method) &&
+        match(route->path, route->indices, req.uri, req_indices, req.params)) {
+      res.status_ = HttpStatus::OK;
+      req.route = route;
 
-            for (const auto middleware : route->middlewares)
-            {
-                gotoNext = false;
-                middleware(req, res, [gotoNext]() { gotoNext = true; });
-                if (!gotoNext)
-                    break;
-            }
-        }
+      for (const auto middleware : route->middlewares) {
+        gotoNext = false;
+        middleware(req, res, [gotoNext]() { gotoNext = true; });
+        if (!gotoNext)
+          break;
+      }
     }
+  }
 
-    // evaluate child mounting paths
-    for (auto [mountPath, express] : mountPaths)
-        express->evaluate(req, res);
+  // evaluate child mounting paths
+  for (auto [mountPath, express] : mountPaths)
+    express->evaluate(req, res);
 }
-
 
 #pragma region express()
 
@@ -128,196 +122,167 @@ auto Express::evaluate(Request &req, Response &res) -> void
 /// @param req
 /// @param res
 /// @return
-auto Express::parseJson(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        next();
-        return;
-    }
-
-    if (req.get(ContentType).equalsIgnoreCase(ApplicationJson))
-    {
-        LOG_I(F("> bodyparser parseJson"));
-
-        auto max_length = req.get(ContentLength).toInt();
-
-        req.body.reserve(max_length);
-        if (!req.body.reserve(max_length + 1))
-        {
-            return; // error
-        }
-
-        req.body[0] = 0;
-
-        while (req.body.length() < max_length)
-        {
-            int tries = 1000;
-            size_t avail;
-
-            while (!((avail = req.client.available())) && tries--)
-                delay(1);
-
-            if (!avail)
-                break;
-
-            if (req.body.length() + avail > max_length)
-                avail = max_length - req.body.length();
-
-            while (avail--)
-                req.body += static_cast<char>(req.client.read());
-        }
-
-        res.headers[ContentType] = ApplicationJson;
-
-        LOG_I(F("< bodyparser parseJson"));
-    }
-    else
-        LOG_V(F("Not an application/json body"));
-
+auto Express::parseJson(Request &req, Response &res, const NextCallback next)
+    -> void {
+  if (req.body != nullptr && req.body.length() > 0) {
+    LOG_I(F("Body already read"));
     next();
+    return;
+  }
+
+  if (req.get(ContentType).equalsIgnoreCase(ApplicationJson)) {
+    LOG_I(F("> bodyparser parseJson"));
+
+    auto max_length = req.get(ContentLength).toInt();
+
+    req.body.reserve(max_length);
+    if (!req.body.reserve(max_length + 1)) {
+      return; // error
+    }
+
+    req.body[0] = 0;
+
+    while (req.body.length() < max_length) {
+      int tries = 1000;
+      size_t avail;
+
+      while (!((avail = req.client.available())) && tries--)
+        delay(1);
+
+      if (!avail)
+        break;
+
+      if (req.body.length() + avail > max_length)
+        avail = max_length - req.body.length();
+
+      while (avail--)
+        req.body += static_cast<char>(req.client.read());
+    }
+
+    res.headers[ContentType] = ApplicationJson;
+
+    LOG_I(F("< bodyparser parseJson"));
+  } else
+    LOG_V(F("Not an application/json body"));
+
+  next();
 }
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto Express::parseRaw(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        next();
-        return;
-    }
+auto Express::parseRaw(Request &req, Response &res, const NextCallback next)
+    -> void {
+  if (req.body != nullptr && req.body.length() > 0) {
+    LOG_I(F("Body already read"));
+    next();
+    return;
+  }
 
-    if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream")))
-    {
-        LOG_I(F("> bodyparser raw"));
+  if (req.get(ContentType).equalsIgnoreCase(F("application/octet-stream"))) {
+    LOG_I(F("> bodyparser raw"));
 
-        auto sDataLen = req.get("content-length");
-        LOG_I(F("sDataLen"), sDataLen);
+    auto sDataLen = req.get("content-length");
+    LOG_I(F("sDataLen"), sDataLen);
 
-        auto dataLen = sDataLen.toInt();
+    auto dataLen = sDataLen.toInt();
 
-        LOG_V(F("> contentLength"), dataLen);
+    LOG_V(F("> contentLength"), dataLen);
 
-        while (dataLen > 0 && req.client.connected())
-        {
-            if (req.client.available())
-            {
-                Buffer buffer;
-                buffer.length = req.client.read(buffer.buffer, sizeof(buffer.buffer));
-                dataLen -= buffer.length;
+    while (dataLen > 0 && req.client.connected()) {
+      if (req.client.available()) {
+        Buffer buffer;
+        buffer.length = req.client.read(buffer.buffer, sizeof(buffer.buffer));
+        dataLen -= buffer.length;
 
-                LOG_V(F("remaining:"), buffer.length, dataLen);
+        LOG_V(F("remaining:"), buffer.length, dataLen);
 
-                if (dataLen > 0)
-                {
-                    if (req.route->dataCallback_)
-                        req.route->dataCallback_(buffer);
-                }
-                else
-                {
-                    if (buffer.length > 0)
-                    {
-                        if (req.route->dataCallback_)
-                            req.route->dataCallback_(buffer);
-                    }
-                    if (req.route->endCallback_)
-                        req.route->endCallback_();
-                }
-            }
+        if (dataLen > 0) {
+          if (req.route->dataCallback_)
+            req.route->dataCallback_(buffer);
+        } else {
+          if (buffer.length > 0) {
+            if (req.route->dataCallback_)
+              req.route->dataCallback_(buffer);
+          }
+          if (req.route->endCallback_)
+            req.route->endCallback_();
         }
-
-        LOG_V(F("< bodyparser raw"));
+      }
     }
-    else
-        LOG_V(F("Not an application/octet-stream body"));
 
-    next();
+    LOG_V(F("< bodyparser raw"));
+  } else
+    LOG_V(F("Not an application/octet-stream body"));
+
+  next();
 }
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto Express::parseText(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        next();
-        return;
-    }
+auto Express::parseText(Request &req, Response &res, const NextCallback next)
+    -> void {
+  if (req.body != nullptr && req.body.length() > 0) {
+    LOG_I(F("Body already read"));
+    next();
+    return;
+  }
 }
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto Express::parseUrlencoded(Request &req, Response &res, const NextCallback next) -> void
-{
-    if (req.body != nullptr && req.body.length() > 0)
-    {
-        LOG_I(F("Body already read"));
-        next();
-        return;
-    }
-
-    if (req.get(ContentType).equalsIgnoreCase(F("application/x-www-form-urlencoded")))
-    {
-        LOG_I(F("> bodyparser x-www-form-urlencoded"));
-    }
-    else
-        LOG_V(F("Not an application/x-www-form-urlencoded body"));
-
+auto Express::parseUrlencoded(Request &req, Response &res,
+                              const NextCallback next) -> void {
+  if (req.body != nullptr && req.body.length() > 0) {
+    LOG_I(F("Body already read"));
     next();
+    return;
+  }
+
+  if (req.get(ContentType)
+          .equalsIgnoreCase(F("application/x-www-form-urlencoded"))) {
+    LOG_I(F("> bodyparser x-www-form-urlencoded"));
+  } else
+    LOG_V(F("Not an application/x-www-form-urlencoded body"));
+
+  next();
 }
 
 /// @brief
 /// @return a MiddlewareCallback
-auto Express::raw() -> MiddlewareCallback
-{
-    return Express::parseRaw;
-}
+auto Express::raw() -> MiddlewareCallback { return Express::parseRaw; }
 
 /// @brief This is a built-in middleware function in Express.
 /// It parses incoming requests with JSON payloads and is based on body-parser.
 /// @return Returns middleware that only parses JSON and only looks at requests
 /// where the Content-Type header matches the type option.
-auto Express::json() -> MiddlewareCallback
-{
-    return parseJson;
-}
+auto Express::json() -> MiddlewareCallback { return parseJson; }
 
 /// @brief
 /// @return a MiddlewareCallback
-auto Express::text() -> MiddlewareCallback
-{
-    return parseText;
-}
+auto Express::text() -> MiddlewareCallback { return parseText; }
 
-/// @brief This is a built-in middleware function in Express. It parses incoming requests
-/// with urlencoded payloads and is based on body-parser.
+/// @brief This is a built-in middleware function in Express. It parses incoming
+/// requests with urlencoded payloads and is based on body-parser.
 ///
-/// @return Returns middleware that only parses urlencoded bodies and only looks at requests
-/// where the Content-Type header matches the type option. This parser accepts only
-/// UTF-8 encoding of the body and supports automatic inflation of gzip and deflate encodings.
-auto Express::urlencoded() -> MiddlewareCallback
-{
-    return parseUrlencoded;
-}
+/// @return Returns middleware that only parses urlencoded bodies and only looks
+/// at requests where the Content-Type header matches the type option. This
+/// parser accepts only UTF-8 encoding of the body and supports automatic
+/// inflation of gzip and deflate encodings.
+auto Express::urlencoded() -> MiddlewareCallback { return parseUrlencoded; }
 
 /// @brief Creates a new router object.
-auto Express::MakeRouter() -> Router&
-{
-    const auto router = new Router();
+auto Express::MakeRouter() -> Router & {
+  const auto router = new Router();
 
-    routers.push_back(router);
+  routers.push_back(router);
 
-    return *router;
+  return *router;
 }
 
 #pragma endregion express
@@ -329,46 +294,45 @@ auto Express::MakeRouter() -> Router&
 /// @return
 auto Express::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
-    middlewares.push_back(middleware);
+  middlewares.push_back(middleware);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const std::vector<MiddlewareCallback> middlewares) -> void // TODO, args...
+auto Express::use(const std::vector<MiddlewareCallback> middlewares)
+    -> void // TODO, args...
 {
-    for (auto middleware : middlewares)
-        this->middlewares.push_back(middleware);
+  for (auto middleware : middlewares)
+    this->middlewares.push_back(middleware);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const String &path, const MiddlewareCallback middleware) -> void // TODO, args...
+auto Express::use(const String &path, const MiddlewareCallback middleware)
+    -> void // TODO, args...
 {
-    // TODO
+  // TODO
 }
 
-/// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+/// @brief The app.mountpath property contains one or more path patterns on
+/// which a sub-app was mounted.
 /// @param mount_path
 /// @param other
 /// @return
-auto Express::use(const String &mount_path, Express &other) -> void
-{
-    LOG_I(F("use mountPath:"), mount_path);
+auto Express::use(const String &mount_path, Express &other) -> void {
+  LOG_I(F("use mountPath:"), mount_path);
 
-    other.mountpath = mount_path;
-    other.parent = this;
-    mountPaths[other.mountpath] = &other;
+  other.mountpath = mount_path;
+  other.parent = this;
+  mountPaths[other.mountpath] = &other;
 }
 
-/// @brief The app.mountpath property 
+/// @brief The app.mountpath property
 /// @param mount_path
 /// @return
-auto Express::use(const String &mount_path) -> void
-{
-    mountpath = mount_path;
-}
+auto Express::use(const String &mount_path) -> void { mountpath = mount_path; }
 
 #pragma endregion Middleware
 
@@ -382,50 +346,50 @@ auto Express::use(const String &mount_path) -> void
 /// @param middlewares
 /// @param middleware
 /// @return
-auto Express::METHOD(const Method method, String path, const std::vector<MiddlewareCallback> middlewares) -> Route &
-{
-    if (path == F("/"))
-        path = F("");
+auto Express::METHOD(const Method method, String path,
+                     const std::vector<MiddlewareCallback> middlewares)
+    -> Route & {
+  if (path == F("/"))
+    path = F("");
 
-    path = mountpath + path;
+  path = mountpath + path;
 
-    LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"), middlewares.size());
-    // F("mountpath:"), mountpath,
+  LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"),
+        middlewares.size());
+  // F("mountpath:"), mountpath,
 
-    const auto route = new Route();
-    route->method = method;
-    route->path = path;
-    route->middlewares = middlewares; // copy the vector
+  const auto route = new Route();
+  route->method = method;
+  route->path = path;
+  route->middlewares = middlewares; // copy the vector
 
-    route->splitToVector(route->path);
-    // Add to collection
-    routes.push_back(route);
+  route->splitToVector(route->path);
+  // Add to collection
+  routes.push_back(route);
 
-    return *route;
+  return *route;
 }
 
 #pragma endregion HTTP_Methods
 
 /// @brief Returns the canonical path of the app, a string.
 /// @return
-auto Express::path() -> String
-{
-    return (parent == nullptr) ? mountpath : parent->mountpath;
+auto Express::path() -> String {
+  return (parent == nullptr) ? mountpath : parent->mountpath;
 }
 
-/// @brief Returns an instance of a single route, which you can then use to handle
-/// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
-/// (and thus typo errors).
-auto Express::route(const String &path) -> Route&
-{
-    const auto route = new Route();
-    route->path = path;
+/// @brief Returns an instance of a single route, which you can then use to
+/// handle HTTP verbs with optional middleware. Use app.route() to avoid
+/// duplicate route names (and thus typo errors).
+auto Express::route(const String &path) -> Route & {
+  const auto route = new Route();
+  route->path = path;
 
-    route->splitToVector(route->path);
-    // Add to collection
-    routes.push_back(route);
+  route->splitToVector(route->path);
+  // Add to collection
+  routes.push_back(route);
 
-    return *route;
+  return *route;
 }
 
 #pragma region Events
@@ -433,9 +397,7 @@ auto Express::route(const String &path) -> Route&
 /// @brief
 /// @param name
 /// @param callback
-auto Express::on(const String &name, const MountCallback callback) -> void
-{
-}
+auto Express::on(const String &name, const MountCallback callback) -> void {}
 
 #pragma endregion Events
 
@@ -443,73 +405,69 @@ auto Express::on(const String &name, const MountCallback callback) -> void
 /// @param port
 /// @param startedCallback
 /// @return
-void Express::listen(uint16_t port, const StartedCallback startedCallback)
-{
-    if (nullptr != server)
-    {
-        LOG_E(F("The listen method can only be called once! This call is ignored and processing continous."));
-        return;
-    }
+void Express::listen(uint16_t port, const StartedCallback startedCallback) {
+  if (nullptr != server) {
+    LOG_E(F("The listen method can only be called once! This call is ignored "
+            "and processing continous."));
+    return;
+  }
 
-    this->port = port;
+  this->port = port;
 
-    // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
-    // change in ESP32 server.h
-    // MacOS:   /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.*/cores/esp32
-    // Windows: C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
-    //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin() =0;"
+  // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
+  // change in ESP32 server.h
+  // MacOS:
+  // /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.*/cores/esp32
+  // Windows:
+  // C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
+  //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin()
+  //      =0;"
 
-    server = new ServerType(port);
-    server->begin();
+  server = new ServerType(port);
+  server->begin();
 
-    if (startedCallback)
-        startedCallback();
+  if (startedCallback)
+    startedCallback();
 }
 
 /// @brief
 /// @return
-auto Express::run() -> void
-{
-    if (auto client = server->available())
-        run(client);
+auto Express::run() -> void {
+  if (auto client = server->available())
+    run(client);
 }
 
 /// @brief
 /// @param client
-void Express::run(ClientType &client)
-{
-    while (client.connected())
-    {
-        if (client.available())
-        {
-            // Construct request object and read/parse incoming bytes
-            Request req(*this, client);
+void Express::run(ClientType &client) {
+  while (client.connected()) {
+    if (client.available()) {
+      // Construct request object and read/parse incoming bytes
+      Request req(*this, client);
 
-            if (req.method != Method::ERROR)
-            {
-                Response res(*this, client);
+      if (req.method != Method::ERROR) {
+        Response res(*this, client);
 
-                /// @brief run the app wide middlewares (ao bodyparsers)
-                gotoNext = true;
-                for (const auto middleware : middlewares)
-                {
-                    gotoNext = false;
-                    middleware(req, res, [gotoNext]() { gotoNext = true; });
-                    if (!gotoNext)
-                        break;
-                }
-
-                if (gotoNext)
-                    evaluate(req, res);
-
-                res.send();
-            }
-
-            // Arduino Ethernet stop() is potentially slow, this makes it faster
-            client.setConnectionTimeout(5);
-            client.stop();
+        /// @brief run the app wide middlewares (ao bodyparsers)
+        gotoNext = true;
+        for (const auto middleware : middlewares) {
+          gotoNext = false;
+          middleware(req, res, [gotoNext]() { gotoNext = true; });
+          if (!gotoNext)
+            break;
         }
+
+        if (gotoNext)
+          evaluate(req, res);
+
+        res.send();
+      }
+
+      // Arduino Ethernet stop() is potentially slow, this makes it faster
+      client.setConnectionTimeout(5);
+      client.stop();
     }
+  }
 };
 
 END_EXPRESS_NAMESPACE
