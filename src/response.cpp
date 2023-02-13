@@ -76,6 +76,30 @@ auto Response::append(const String &field, const String &value) -> Response & {
   return *this;
 }
 
+/// @brief
+/// @return
+auto Response::format() -> void{
+    // TODO
+};
+
+/// @brief
+/// @return
+auto Response::download() -> void{
+    // TODO
+};
+
+/// @brief
+/// @return
+auto Response::cookie() -> void{
+    // TODO
+};
+
+/// @brief
+/// @return
+auto Response::clearCookie() -> void{
+    // TODO
+};
+
 /// @brief Ends the response process. This method actually comes from Node core,
 /// specifically the response.end() method of http.ServerResponse.
 /// @param data

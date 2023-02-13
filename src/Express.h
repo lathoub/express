@@ -476,6 +476,14 @@ public: /* Methods*/
   /// @return
   auto append(const String &field, const String &value) -> Response &;
 
+  auto format() -> void;
+
+  auto download() -> void;
+
+  auto cookie() -> void;
+
+  auto clearCookie() -> void;
+
   /// @brief Ends the response process. This method actually comes from Node
   /// core, specifically the response.end() method of http.ServerResponse.
   /// @param data
