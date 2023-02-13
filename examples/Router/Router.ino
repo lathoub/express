@@ -3,7 +3,6 @@
 
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
-#include <basicAuth.h>
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
@@ -15,11 +14,11 @@ void setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  const std::map<String, String> users = { { F("admin"), F("supersecret123") } };
-  app.use(basicAuth(users));
+  auto router = express::MakeRouter();
 
-  app.get(F("/"), [](request &req, response &res, const NextCallback next) {
-    res.send(F("Hello World!"));
+
+  app.get("/", [](request &req, response &res, const NextCallback next) {
+    res.send("Got a GET request");
   });
 
   app.listen(80, []() {

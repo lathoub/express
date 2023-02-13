@@ -27,6 +27,8 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
+std::vector<Router *> Express::routers;
+
 bool Express::gotoNext{};
 
 /// @brief
@@ -308,6 +310,16 @@ auto Express::urlencoded() -> MiddlewareCallback
     return parseUrlencoded;
 }
 
+/// @brief Creates a new router object.
+auto Express::MakeRouter() -> Router&
+{
+    const auto router = new Router();
+
+    routers.push_back(router);
+
+    return *router;
+}
+
 #pragma endregion express
 
 #pragma region Middleware
@@ -315,7 +327,7 @@ auto Express::urlencoded() -> MiddlewareCallback
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const MiddlewareCallback middleware) -> void
+auto Express::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
     middlewares.push_back(middleware);
 }
@@ -404,9 +416,16 @@ auto Express::path() -> String
 /// @brief Returns an instance of a single route, which you can then use to handle
 /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
 /// (and thus typo errors).
-auto Express::route(const String &path) -> void
+auto Express::route(const String &path) -> Route&
 {
-    // TODO
+    const auto route = new Route();
+    route->path = path;
+
+    route->splitToVector(route->path);
+    // Add to collection
+    routes.push_back(route);
+
+    return *route;
 }
 
 #pragma region Events
@@ -470,9 +489,8 @@ void Express::run(ClientType &client)
             {
                 Response res(*this, client);
 
-                gotoNext = true;
-
                 /// @brief run the app wide middlewares (ao bodyparsers)
+                gotoNext = true;
                 for (const auto middleware : middlewares)
                 {
                     gotoNext = false;

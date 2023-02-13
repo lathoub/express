@@ -64,8 +64,6 @@ typedef std::map<String, String> params_t;
 
 BEGIN_EXPRESS_NAMESPACE
 
-constexpr size_t rawBufferSize = 512;
-
 #define EXPRESS_LIBRARY_VERSION 0x000100
 #define EXPRESS_LIBRARY_VERSION_MAJOR 0
 #define EXPRESS_LIBRARY_VERSION_MINOR 1
@@ -90,19 +88,13 @@ struct File
     ContentCallback contentsCallback;
 };
 
+#include "Buffer.hpp"
+
 /// @brief When std::vector's are not available, an
 /// alternative implementation uses fixed length containers.
 /// The max len is set here - override if needed
 struct DefaultSettings
 {
-};
-
-class Buffer
-{
-public:
-    byte buffer[rawBufferSize]{};
-    size_t byteOffset = 0;
-    size_t length = 0;
 };
 
 class Options

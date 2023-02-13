@@ -33,6 +33,7 @@ BEGIN_EXPRESS_NAMESPACE
 class Request;
 class Response;
 class Route;
+class Router;
 class Express;
 
 // Callback definitions
@@ -52,6 +53,9 @@ private:
 
   /// @brief routes
   std::vector<Route *> routes;
+
+  /// @brief Array of Routers
+  static std::vector<Router *> routers;
 
   /// @brief Application wide middlewares
   std::vector<MiddlewareCallback> middlewares;
@@ -157,6 +161,9 @@ public:
   /// inflation of gzip and deflate encodings.
   static auto urlencoded() -> MiddlewareCallback;
 
+  ///
+  static auto MakeRouter() -> Router&;
+
 #pragma endregion express
 
 private:
@@ -178,6 +185,9 @@ private:
   auto evaluate(Request &, Response &) -> void;
 
 public:
+
+  void param() { /* NOT IMPLEMENTED */};
+
   /// @brief
   /// @param middleware
   /// @return
@@ -292,7 +302,6 @@ private:
     addMiddleware(tail...);
   }
 
-public:
   /// @brief
   /// @param method
   /// @param path
@@ -300,6 +309,8 @@ public:
   /// @param middleware
   /// @return
   auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>) -> Route &;
+
+public:
 
   /// @brief
   /// @param path
@@ -391,7 +402,7 @@ public:
   /// @brief Returns an instance of a single route, which you can then use to
   /// handle HTTP verbs with optional middleware. Use app.route() to avoid
   /// duplicate route names (and thus typo errors).
-  auto route(const String &path) -> void;
+  auto route(const String &path) -> Route&;
 
   /// @brief
   void listen(uint16_t port, const StartedCallback startedCallback = nullptr);
@@ -557,7 +568,7 @@ public: /* Methods*/
   /// @param data
   /// @param encoding
   /// @return
-  auto end(const String &data, const String &encoding) -> Response &;
+  auto end(Buffer *data = nullptr, const String &encoding = F("")) -> Response &;
 
   /// @brief Ends the response process
   static void end();
@@ -665,14 +676,182 @@ public:
 
 /// @brief
 class Router {
+  private:
+    /// @brief The app.mountpath property contains the path patterns
+  /// on which a sub-app was mounted.
+  String mountpath{};
+
+  /// @brief Application wide middlewares
+  std::vector<MiddlewareCallback> middlewares;
+
+  /// @brief
+  Router *parent = nullptr;
+
+  /// @brief
+  std::map<String, Router *> mountPaths;
+
+  /// @brief routes
+  std::vector<Route *> routes;
+
 public:
   Router();
 
-  void all();
-  void METHOD();
-  void param();
-  void route();
-  void use();
+#pragma region HTTP_Methods
+
+private:
+
+  /// https://expressjs.com/en/guide/writing-middleware.html
+  /// https://expressjs.com/en/guide/using-middleware.html
+
+  std::vector<MiddlewareCallback> tmpMiddlewares;
+
+  void addMiddleware(MiddlewareCallback middleware) {
+    if (nullptr != middleware)
+      tmpMiddlewares.push_back(middleware);
+  }
+
+  template <typename... Args> 
+  void addMiddleware(MiddlewareCallback middleware, Args... tail) {
+    if (nullptr != middleware)
+      tmpMiddlewares.push_back(middleware);
+    addMiddleware(tail...);
+  }
+
+  template <typename... Args> 
+  void addMiddleware(std::vector<MiddlewareCallback> middlewares, Args... tail) {
+    for (auto middleware : middlewares)
+      if (nullptr != middleware)
+        addMiddleware(middleware);
+    addMiddleware(tail...);
+  }
+
+  /// @brief
+  /// @param method
+  /// @param path
+  /// @param middlewares
+  /// @param middleware
+  /// @return
+  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>) -> Route &;
+
+public:
+
+  /// @brief
+  /// @param path
+  /// @param callback
+  /// @return
+  template <typename... Args> 
+  auto head(const String &path, Args... args) -> Route &
+{
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::HEAD, path, tmpMiddlewares);
+};
+
+  /// @brief
+  /// @param path
+  /// @param callback
+  /// @return
+  template <typename... Args> 
+  auto get(const String &path, Args... args) -> Route &
+{
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::GET, path, tmpMiddlewares);
+};
+
+  /// @brief
+  /// @param path
+  /// @param callbacks
+  /// @param callback
+  /// @return
+  template <typename... Args> 
+  auto post(const String &path, Args... args) -> Route &
+{
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::POST, path, tmpMiddlewares);
+};
+
+  /// @brief
+  /// @param path
+  /// @param callback
+  /// @return
+  template <typename... Args> 
+  auto put(const String &path, Args... args) -> Route &
+{
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::PUT, path, tmpMiddlewares);
+};
+
+  /// @brief Routes HTTP DELETE requests to the specified path with the
+  /// specified callback functions. For more information, see the routing guide.
+  /// @param path
+  /// @param callback
+  template <typename... Args> 
+  auto del(const String &path, Args... args) -> Route &
+{
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::DELETE, path, tmpMiddlewares);
+}
+
+  /// @brief This method is like the standard app.METHOD() methods, except it
+  /// matches all HTTP verbs.
+  /// @param path
+  /// @param callback
+  template <typename... Args> 
+  auto all(const String &path, Args... args) -> Route &
+{
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::ALL, path, tmpMiddlewares);
+}
+
+  template <typename... Args> 
+  Route & adder(const String &path, Args... args)
+  {
+    tmpMiddlewares.clear();
+    addMiddleware(args...);
+    return METHOD(Method::HEAD, path, tmpMiddlewares);
+  };
+
+#pragma endregion HTTP_Methods
+
+  void param() { /* NOT IMPLEMENTED */};
+
+  /// @brief Returns an instance of a single route, which you can then use to handle
+  /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
+  /// (and thus typo errors).
+Route& route(const String &path);
+
+  /// @brief
+  /// @param middleware
+  /// @return
+  auto use(const MiddlewareCallback) -> void;
+
+  /// @brief
+  /// @param middleware
+  /// @return
+  auto use(const std::vector<MiddlewareCallback>) -> void;
+
+  /// @brief
+  /// @param middleware
+  /// @return
+  auto use(const String &path, const MiddlewareCallback) -> void;
+
+  /// @brief The app.mountpath property contains one or more path patterns on
+  /// which a sub-app was mounted.
+  /// @param mount_path
+  /// @param other
+  /// @return
+  auto use(const String &mount_path, Router &) -> void;
+
+  /// @brief The app.mountpath property contains one or more path patterns on
+  /// which a sub-app was mounted.
+  /// @param mount_path
+  /// @return
+  auto use(const String &mount_path) -> void;
 };
 
 END_EXPRESS_NAMESPACE

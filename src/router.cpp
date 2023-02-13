@@ -32,24 +32,70 @@ BEGIN_EXPRESS_NAMESPACE
     {
     }
 
-    void Router::all()
+    /// @brief Returns an instance of a single route, which you can then use to handle
+    /// HTTP verbs with optional middleware. Use app.route() to avoid duplicate route names
+    /// (and thus typo errors).
+    Route& Router::route(const String &path)
     {
-    }
+        const auto route = new Route();
+        route->path = path;
 
-    void Router::METHOD()
-    {
-    }
+        route->splitToVector(route->path);
+        // Add to collection
+        routes.push_back(route);
 
-    void Router::param()
-    {
-    }
+        return *route;
+   }
 
-    void Router::route()
-    {
-    }
+#pragma region Middleware
 
-    void Router::use()
-    {
-    }
+/// @brief
+/// @param middleware
+/// @return
+auto Router::use(const MiddlewareCallback middleware) -> void // TODO, args...
+{
+    middlewares.push_back(middleware);
+}
+
+/// @brief
+/// @param middleware
+/// @return
+auto Router::use(const std::vector<MiddlewareCallback> middlewares) -> void // TODO, args...
+{
+    for (auto middleware : middlewares)
+        this->middlewares.push_back(middleware);
+}
+
+/// @brief
+/// @param middleware
+/// @return
+auto Router::use(const String &path, const MiddlewareCallback middleware) -> void // TODO, args...
+{
+    // TODO
+}
+
+/// @brief The app.mountpath property contains one or more path patterns on which a sub-app was mounted.
+/// @param mount_path
+/// @param other
+/// @return
+auto Router::use(const String &mount_path, Router &other) -> void
+{
+    LOG_I(F("use mountPath:"), mount_path);
+
+    other.mountpath = mount_path;
+    other.parent = this;
+    mountPaths[other.mountpath] = &other;
+}
+
+/// @brief The app.mountpath property 
+/// @param mount_path
+/// @return
+auto Router::use(const String &mount_path) -> void
+{
+    mountpath = mount_path;
+}
+
+#pragma endregion Middleware
+
 
 END_EXPRESS_NAMESPACE

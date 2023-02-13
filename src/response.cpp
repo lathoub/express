@@ -86,14 +86,16 @@ auto Response::append(const String &field, const String &value) -> Response &
 /// @param data
 /// @param encoding
 /// @return
-auto Response::end(const String &data, const String &encoding) -> Response &
+auto Response::end(Buffer *buffer, const String &encoding) -> Response &
 {
-    return *this;
-}
+    if (buffer)
+    {
+        body_ = buffer->toString();
 
-/// @brief Ends the response process
-void Response::end()
-{
+        LOG_V(body_);
+    }
+
+    return *this;
 }
 
 /// @brief Returns the HTTP response header specified by field. The match is case-insensitive.
@@ -247,7 +249,7 @@ void Response::sendBody(ClientType &client, locals_t &locals)
                 engine(client, locals, contentsCallback());
         }
         else
-            renderFile(client, contentsCallback());
+            renderFile(client, contentsCallback()); // default renderer
     }
 }
 
