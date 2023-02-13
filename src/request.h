@@ -1,6 +1,6 @@
 /*!
  *  @file       request.h
- *  Project     Arduino Express Library
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,7 +23,7 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Express.h"
+#include "express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 

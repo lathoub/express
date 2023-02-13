@@ -1,4 +1,4 @@
-# Express for Arduino
+# express for Arduino
 Fast, unopinionated, (subset of a) minimalist web framework for Arduino
 
 **Not** for Arduino Uno
@@ -7,10 +7,10 @@ Fast, unopinionated, (subset of a) minimalist web framework for Arduino
 
 ### Hello world example
 
-Embedded below is essentially the simplest Arduino Express app you can create. 
+Embedded below is essentially the simplest Arduino express app you can create. 
 
 ```cpp
-#include <Express.h>
+#include <express.h>
 using namespace EXPRESS_NAMESPACE;
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };

@@ -1,6 +1,6 @@
 /*!
  *  @file       route.cpp
- *  Project     Arduino Express Library
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,12 +23,12 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Express.h"
+#include "express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief
-Route::Route() {}
+Route::Route() { LOG_T(F("Route constructor")); }
 
 auto Route::splitToVector(const String &path) -> void {
   splitToVector(path, indices);

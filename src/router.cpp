@@ -1,6 +1,6 @@
 /*!
  *  @file       route.cpp
- *  Project     Arduino Express Library
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,17 +23,23 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Express.h"
+#include "express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-/// @brief
-Router::Router() {}
+// static declarations
+bool router::gotoNext{};
+
+/// @brief Constructor
+router::router() { LOG_T(F("router contructor")); }
 
 /// @brief Returns an instance of a single route, which you can then use to
 /// handle HTTP verbs with optional middleware. Use app.route() to avoid
 /// duplicate route names (and thus typo errors).
-Route &Router::route(const String &path) {
+Route &router::route(const String &path) {
+
+  LOG_T(F("New Route"), path);
+
   const auto route = new Route();
   route->path = path;
 
@@ -44,12 +50,141 @@ Route &Router::route(const String &path) {
   return *route;
 }
 
+/// @brief
+/// @param path
+/// @param pathItems
+/// @param requestPath
+/// @param requestPathItems
+/// @param params
+/// @return
+auto router::match(const String &path, const std::vector<PosLen> &pathItems,
+                   const String &requestPath,
+                   const std::vector<PosLen> &requestPathItems,
+                   params_t &params) -> bool {
+  if (requestPathItems.size() != pathItems.size()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < requestPathItems.size(); i++) {
+    const auto &ave = requestPathItems[i];
+    const auto &bve = pathItems[i];
+
+    if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
+    {
+      auto name = path.substring(bve.pos + 2,
+                                 bve.pos + bve.len); // Note: + 2 to offset /:
+      name.toLowerCase();
+      const auto value = requestPath.substring(
+          ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
+      params[name] = value;
+    } else {
+      if (requestPath.substring(ave.pos, ave.pos + ave.len) !=
+          path.substring(bve.pos, bve.pos + bve.len)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+/// @brief
+/// @param req
+/// @param res
+/// @param next
+/// @return
+auto router::evaluate(Request &req, Response &res) -> bool {
+  LOG_V(F("router::evaluate, req.uri:"), req.uri, F("routes:"), routes.size());
+
+  std::vector<PosLen> req_indices{};
+  Route::splitToVector(req.uri, req_indices);
+
+  for (auto route : routes) {
+    if ((route->method == Method::ALL || req.method == route->method) &&
+        match(route->path, route->indices, req.uri, req_indices, req.params)) {
+      res.status_ = HttpStatus::OK;
+      req.route = route;
+
+      // run the route wide middlewares
+      for (const auto middleware : route->middlewares) {
+        gotoNext = false;
+        middleware(req, res, [gotoNext]() { gotoNext = true; });
+        if (!gotoNext)
+          break;
+      }
+
+      return true;
+    }
+  }
+
+  LOG_V(F("evaluate child routers"), routers_.size());
+  for (auto [mountpath, router] : routers_) {
+    if (router->evaluate(req, res))
+      return true;
+  }
+
+  return false;
+}
+
+/// @brief
+auto router::dispatch(Request &req, Response &res) -> void {
+  /// @brief run the router wide middlewares
+  gotoNext = true;
+  for (const auto middleware : middlewares) {
+    gotoNext = false;
+    middleware(req, res, [gotoNext]() { gotoNext = true; });
+    if (!gotoNext)
+      break;
+  }
+
+  if (gotoNext)
+    evaluate(req, res);
+}
+
 #pragma region Middleware
+
+/// @brief
+/// @tparam ArrayType
+/// @tparam ArraySize
+/// @param method
+/// @param path
+/// @param middlewares
+/// @param middleware
+/// @return
+auto router::METHOD(const Method method, const String &path,
+                    const std::vector<MiddlewareCallback> middlewares)
+    -> Route & {
+
+  auto _path = path;
+  auto _mountpath = mountpath;
+
+  if (_path == F("/"))
+    _path = F("");
+  if (_mountpath == F("/"))
+    _mountpath = F("");
+
+  _path = _mountpath + _path;
+  _path.trim();
+
+  LOG_I(F("METHOD:"), method, F("path:"), _path, F("#middlewares:"),
+        middlewares.size());
+
+  const auto route = new Route();
+  route->method = method;
+  route->path = _path;
+  route->middlewares = middlewares; // copy the vector
+
+  route->splitToVector(route->path);
+  // Add to collection
+  routes.push_back(route);
+
+  return *route;
+}
 
 /// @brief
 /// @param middleware
 /// @return
-auto Router::use(const MiddlewareCallback middleware) -> void // TODO, args...
+auto router::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
   middlewares.push_back(middleware);
 }
@@ -57,7 +192,7 @@ auto Router::use(const MiddlewareCallback middleware) -> void // TODO, args...
 /// @brief
 /// @param middleware
 /// @return
-auto Router::use(const std::vector<MiddlewareCallback> middlewares)
+auto router::use(const std::vector<MiddlewareCallback> middlewares)
     -> void // TODO, args...
 {
   for (auto middleware : middlewares)
@@ -67,7 +202,7 @@ auto Router::use(const std::vector<MiddlewareCallback> middlewares)
 /// @brief
 /// @param middleware
 /// @return
-auto Router::use(const String &path, const MiddlewareCallback middleware)
+auto router::use(const String &path, const MiddlewareCallback middleware)
     -> void // TODO, args...
 {
   // TODO
@@ -75,21 +210,23 @@ auto Router::use(const String &path, const MiddlewareCallback middleware)
 
 /// @brief The app.mountpath property contains one or more path patterns on
 /// which a sub-app was mounted.
-/// @param mount_path
+/// @param mountpath
 /// @param other
 /// @return
-auto Router::use(const String &mount_path, Router &other) -> void {
-  LOG_I(F("use mountPath:"), mount_path);
+auto router::use(const String &mountpath, router &otherRouter) -> void {
+  LOG_I(F("otherRouter:"), mountpath, otherRouter.routes.size());
 
-  other.mountpath = mount_path;
-  other.parent = this;
-  mountPaths[other.mountpath] = &other;
+  otherRouter.mountpath = mountpath;
+  otherRouter.parent = this;
+  routers_[otherRouter.mountpath] = &otherRouter;
 }
 
 /// @brief The app.mountpath property
-/// @param mount_path
+/// @param mountpath
 /// @return
-auto Router::use(const String &mount_path) -> void { mountpath = mount_path; }
+auto router::use(const String &mountpath) -> void {
+  this->mountpath = mountpath;
+}
 
 #pragma endregion Middleware
 

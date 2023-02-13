@@ -1,6 +1,6 @@
 /*!
- *  @file       Express.h
- *  Project     Arduino Express Library
+ *  @file       express.h
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -33,8 +33,8 @@ BEGIN_EXPRESS_NAMESPACE
 class Request;
 class Response;
 class Route;
-class Router;
-class Express;
+class router;
+class express;
 
 // Callback definitions
 using NextCallback = void (*)();
@@ -45,35 +45,20 @@ using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
 using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
-using MountCallback = void (*)(Express *);
+using MountCallback = void (*)(express *);
 
 /// @brief
-class Express {
+class express {
 private:
   /// @brief
   ServerType *server{};
 
-  /// @brief routes
-  std::vector<Route *> routes;
-
-  /// @brief Array of Routers
-  static std::vector<Router *> routers;
-
-  /// @brief Application wide middlewares
-  std::vector<MiddlewareCallback> middlewares;
-
   /// @brief
-  std::map<String, Express *> mountPaths;
-
-  /// @brief
-  Express *parent = nullptr;
-
-  /// @brief
-  static bool gotoNext;
+  router *router_;
 
 public:
   /// @brief Constructor
-  Express();
+  express();
 
   /// @brief
   uint16_t port{};
@@ -138,7 +123,7 @@ private:
   static auto parseUrlencoded(Request &, Response &, const NextCallback)
       -> void;
 
-  /// @brief This is a built-in middleware function in Express. It serves static
+  /// @brief This is a built-in middleware function in express. It serves static
   /// files and is based on serve-static.
   // static void Static() {}
 
@@ -155,7 +140,7 @@ public:
   /// @return
   static auto text() -> MiddlewareCallback;
 
-  /// @brief This is a built-in middleware function in Express. It parses
+  /// @brief This is a built-in middleware function in express. It parses
   /// incoming requests with urlencoded payloads and is based on body-parser.
   ///
   /// @return Returns middleware that only parses urlencoded bodies and only
@@ -165,27 +150,11 @@ public:
   static auto urlencoded() -> MiddlewareCallback;
 
   ///
-  static auto MakeRouter() -> Router &;
+  static auto Router() -> router &;
 
 #pragma endregion express
 
 private:
-  /// @brief
-  /// @param path
-  /// @param pathItems
-  /// @param requestPath
-  /// @param requestPathItems
-  /// @param params
-  /// @return
-  static auto match(const String &path, const std::vector<PosLen> &pathItems,
-                    const String &requestPath,
-                    const std::vector<PosLen> &requestPathItems,
-                    params_t &params) -> bool;
-
-  /// @brief
-  /// @param req
-  /// @param res
-  auto evaluate(Request &, Response &) -> void;
 
 public:
   void param(){/* NOT IMPLEMENTED */};
@@ -193,7 +162,7 @@ public:
   /// @brief
   /// @param middleware
   /// @return
-  auto use(const MiddlewareCallback) -> void;
+  auto use(const MiddlewareCallback middlewareCallback) -> void;
 
   /// @brief
   /// @param middleware
@@ -210,7 +179,7 @@ public:
   /// @param mount_path
   /// @param other
   /// @return
-  auto use(const String &mount_path, Express &other) -> void;
+  auto use(const String &mount_path, router &other) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.
@@ -281,38 +250,6 @@ private:
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
 
-  std::vector<MiddlewareCallback> tmpMiddlewares;
-
-  void addMiddleware(MiddlewareCallback middleware) {
-    if (nullptr != middleware)
-      tmpMiddlewares.push_back(middleware);
-  }
-
-  template <typename... Args>
-  void addMiddleware(MiddlewareCallback middleware, Args... tail) {
-    if (nullptr != middleware)
-      tmpMiddlewares.push_back(middleware);
-    addMiddleware(tail...);
-  }
-
-  template <typename... Args>
-  void addMiddleware(std::vector<MiddlewareCallback> middlewares,
-                     Args... tail) {
-    for (auto middleware : middlewares)
-      if (nullptr != middleware)
-        addMiddleware(middleware);
-    addMiddleware(tail...);
-  }
-
-  /// @brief
-  /// @param method
-  /// @param path
-  /// @param middlewares
-  /// @param middleware
-  /// @return
-  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>)
-      -> Route &;
-
 public:
   /// @brief
   /// @param path
@@ -320,9 +257,7 @@ public:
   /// @return
   template <typename... Args>
   auto head(const String &path, Args... args) -> Route & {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::HEAD, path, tmpMiddlewares);
+    return router_->head(path, args...);
   };
 
   /// @brief
@@ -331,9 +266,7 @@ public:
   /// @return
   template <typename... Args>
   auto get(const String &path, Args... args) -> Route & {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::GET, path, tmpMiddlewares);
+    return router_->get(path, args...);
   };
 
   /// @brief
@@ -343,9 +276,7 @@ public:
   /// @return
   template <typename... Args>
   auto post(const String &path, Args... args) -> Route & {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::POST, path, tmpMiddlewares);
+    return router_->post(path, args...);
   };
 
   /// @brief
@@ -354,9 +285,7 @@ public:
   /// @return
   template <typename... Args>
   auto put(const String &path, Args... args) -> Route & {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::PUT, path, tmpMiddlewares);
+    return router_->put(path, args...);
   };
 
   /// @brief Routes HTTP DELETE requests to the specified path with the
@@ -365,9 +294,7 @@ public:
   /// @param callback
   template <typename... Args>
   auto del(const String &path, Args... args) -> Route & {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::DELETE, path, tmpMiddlewares);
+    return router_->del(path, args...);
   }
 
   /// @brief This method is like the standard app.METHOD() methods, except it
@@ -376,16 +303,8 @@ public:
   /// @param callback
   template <typename... Args>
   auto all(const String &path, Args... args) -> Route & {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::ALL, path, tmpMiddlewares);
+    return router_->all(path, args...);
   }
-
-  template <typename... Args> Route &adder(const String &path, Args... args) {
-    tmpMiddlewares.clear();
-    addMiddleware(args...);
-    return METHOD(Method::HEAD, path, tmpMiddlewares);
-  };
 
 #pragma endregion HTTP_Methods
 
@@ -418,10 +337,10 @@ public:
   /// @brief
   ClientType &client;
 
-  /// @brief This property holds a reference to the instance of the Express
+  /// @brief This property holds a reference to the instance of the express
   /// application that is using the middleware.
   /// @return
-  Express &app;
+  express &app;
 
   String uri{};
 
@@ -475,7 +394,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Request(Express &, ClientType &);
+  Request(express &, ClientType &);
 
   /// @brief Checks if the specified content types are acceptable, based on the
   /// request’s Accept HTTP header field. The method returns the best match, or
@@ -520,10 +439,10 @@ public:
 
   std::map<String, String> headers;
 
-  /// @brief This property holds a reference to the instance of the Express
+  /// @brief This property holds a reference to the instance of the express
   /// application that is using the middleware.
   /// @return
-  Express &app;
+  express &app;
 
   /// @brief derefered rendering
   ContentCallback contentsCallback{};
@@ -546,7 +465,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Response(Express &, ClientType &);
+  Response(express &, ClientType &);
 
   /// @brief Appends the specified value to the HTTP response header field. If
   /// the header is not already set, it creates the header with the specified
@@ -640,8 +559,6 @@ public:
 
   std::vector<MiddlewareCallback> middlewares;
 
-  // MiddlewareCallback middleware = nullptr;
-
   // cache path splitting (avoid doing this for every request * number of paths)
   std::vector<PosLen> indices;
 
@@ -671,30 +588,51 @@ public:
 };
 
 /// @brief
-class Router {
+class router {
 private:
   /// @brief The app.mountpath property contains the path patterns
   /// on which a sub-app was mounted.
   String mountpath{};
 
   /// @brief Application wide middlewares
-  std::vector<MiddlewareCallback> middlewares;
+  std::vector<MiddlewareCallback> middlewares{};
 
   /// @brief
-  Router *parent = nullptr;
+  router *parent = nullptr;
 
   /// @brief
-  std::map<String, Router *> mountPaths;
+  std::map<String, router *> routers_{};
 
   /// @brief routes
-  std::vector<Route *> routes;
+  std::vector<Route *> routes{};
+
+  /// @brief
+  static bool gotoNext;
 
 public:
-  Router();
+  router();
 
 #pragma region HTTP_Methods
 
 private:
+
+  /// @brief
+  /// @param path
+  /// @param pathItems
+  /// @param requestPath
+  /// @param requestPathItems
+  /// @param params
+  /// @return
+  static auto match(const String &path, const std::vector<PosLen> &pathItems,
+                    const String &requestPath,
+                    const std::vector<PosLen> &requestPathItems,
+                    params_t &params) -> bool;
+
+  /// @brief
+  /// @param req
+  /// @param res
+  auto evaluate(Request &, Response &) -> bool;
+
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
 
@@ -727,7 +665,7 @@ private:
   /// @param middlewares
   /// @param middleware
   /// @return
-  auto METHOD(const Method, String path, const std::vector<MiddlewareCallback>)
+  auto METHOD(const Method, const String &path, const std::vector<MiddlewareCallback>)
       -> Route &;
 
 public:
@@ -814,6 +752,11 @@ public:
   Route &route(const String &path);
 
   /// @brief
+  auto dispatch(Request &, Response &) -> void;
+
+#pragma region Middleware
+
+  /// @brief
   /// @param middleware
   /// @return
   auto use(const MiddlewareCallback) -> void;
@@ -833,19 +776,22 @@ public:
   /// @param mount_path
   /// @param other
   /// @return
-  auto use(const String &mount_path, Router &) -> void;
+  auto use(const String &mount_path, router &) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.
   /// @param mount_path
   /// @return
   auto use(const String &mount_path) -> void;
+
+#pragma endregion Middleware
+
 };
 
 END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name)                                    \
-  typedef Express express;                                                     \
+  typedef express express;                                                     \
   typedef Route route;                                                         \
   typedef Request request;                                                     \
   typedef Response response;                                                   \

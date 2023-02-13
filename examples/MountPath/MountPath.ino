@@ -1,45 +1,54 @@
 #define LOGGER Serial
 #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
-#include <Express.h>
+#include <express.h>
 using namespace EXPRESS_NAMESPACE;
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 
 EXPRESS_CREATE_INSTANCE();
-EXPRESS_CREATE_NAMED_INSTANCE(v2);
-EXPRESS_CREATE_NAMED_INSTANCE(v3);
 
+auto apiv2 = express::Router();
+auto apiv3 = express::Router();
+  
 void setup() {
   LOG_SETUP();
 
   Ethernet.init(5);
   Ethernet.begin(mac);
 
-  app.use("/v1");
-  app.use("/v2", v2);
-  app.use("/v3", v3);
+  // inspired by
+  // https://github.com/expressjs/express/blob/master/examples/multi-router/index.js
+
+  app.use("/");
+  app.use("/api/v2", apiv2);
+  app.use("/api/v3", apiv3);
 
   // /user will be mounted on /v1/user
-  app.get("/user", [](request &req, response &res, const NextCallback next) { 
-    res.status(HttpStatus::OK).send("root path is /v1");
+  app.get("/", [](request &req, response &res, const NextCallback next) {
+    res.status(HttpStatus::OK).send("Hello from root route");
   });
 
-  // Landing page here is /v1/user
-  v2.get("/user", [](request &req, response &res, const NextCallback next) { 
-    res.status(HttpStatus::OK).send("route v2");
+  apiv2.get("/", [](request &req, response &res, const NextCallback next) {
+    res.status(HttpStatus::OK).send("Hello from APIv2 root route.");
   });
 
-  // Landing page here is /v2/user
-  v3.get("/user", [](request &req, response &res, const NextCallback next) { 
-  res.status(HttpStatus::OK).send("route v3");
+  apiv2.get("/users", [](request &req, response &res, const NextCallback next) {
+    res.status(HttpStatus::OK).send("List of APIv2 users.");
+  });
+
+  apiv3.get("/", [](request &req, response &res, const NextCallback next) {
+    res.status(HttpStatus::OK).send("Hello from APIv3 root route.");
+  });
+
+  apiv3.get("/users", [](request &req, response &res, const NextCallback next) {
+    res.status(HttpStatus::OK).send("List of APIv3 users");
   });
 
   app.listen(80, []() {
-    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
+    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"),
+          app.port);
   });
 }
 
-void loop() {
-  app.run();
-}
+void loop() { app.run(); }

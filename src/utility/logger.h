@@ -27,7 +27,7 @@ namespace
   {
     LOGGER.begin(baud);
     while (!LOGGER && !LOGGER.available()) {} 
-    LOGGER.println(F("booting"));
+    LOGGER.println(F("\nStarting logging"));
   }
 #else
 #define LOG_SETUP(...)

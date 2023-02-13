@@ -1,6 +1,6 @@
 /*!
- *  @file       Express.cpp
- *  Project     Arduino Express Library
+ *  @file       express.cpp
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,97 +23,23 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Express.h"
+#include "express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-std::vector<Router *> Express::routers;
-
-bool Express::gotoNext{};
-
 /// @brief
 /// @return
-Express::Express() {
-  LOG_V(F("express() constructor"));
+express::express() {
+  LOG_T(F("express constructor"));
 
   settings[F("env")] = F("production");
-  //  settings[XPoweredBy] = F("X-Powered-By: Express for Arduino");
-}
+  //  settings[XPoweredBy] = F("X-Powered-By: express for Arduino");
 
-/// @brief
-/// @param path
-/// @param pathItems
-/// @param requestPath
-/// @param requestPathItems
-/// @param params
-/// @return
-auto Express::match(const String &path, const std::vector<PosLen> &pathItems,
-                    const String &requestPath,
-                    const std::vector<PosLen> &requestPathItems,
-                    params_t &params) -> bool {
-  if (requestPathItems.size() != pathItems.size()) {
-    LOG_V(F("Items not equal. requestPathItems.size():"),
-          requestPathItems.size(), F("pathItems.size():"), pathItems.size());
-    LOG_V(F("return false in function match"));
-    return false;
-  }
+  LOG_I(F("booting in"), settings[F("env")], F("mode"));
 
-  for (size_t i = 0; i < requestPathItems.size(); i++) {
-    const auto &ave = requestPathItems[i];
-    const auto &bve = pathItems[i];
+  router_ = new router();
 
-    if (path.charAt(bve.pos + 1) == ':') // Note: : comes right after /
-    {
-      auto name = path.substring(bve.pos + 2,
-                                 bve.pos + bve.len); // Note: + 2 to offset /:
-      name.toLowerCase();
-      const auto value = requestPath.substring(
-          ave.pos + 1, ave.pos + ave.len); // Note + 1 to offset /
-      params[name] = value;
-    } else {
-      if (requestPath.substring(ave.pos, ave.pos + ave.len) !=
-          path.substring(bve.pos, bve.pos + bve.len)) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-/// @brief
-/// @param req
-/// @param res
-/// @param next
-/// @return
-auto Express::evaluate(Request &req, Response &res) -> void {
-  LOG_V(F("evaluate"), req.uri);
-
-  std::vector<PosLen> req_indices{};
-
-  Route::splitToVector(req.uri, req_indices);
-
-  for (auto route : routes) {
-    LOG_V(F("req.method:"), req.method, F("method:"), route->method);
-    LOG_V(F("req.uri:"), req.uri, F("path:"), route->path);
-
-    if ((route->method == Method::ALL || req.method == route->method) &&
-        match(route->path, route->indices, req.uri, req_indices, req.params)) {
-      res.status_ = HttpStatus::OK;
-      req.route = route;
-
-      for (const auto middleware : route->middlewares) {
-        gotoNext = false;
-        middleware(req, res, [gotoNext]() { gotoNext = true; });
-        if (!gotoNext)
-          break;
-      }
-    }
-  }
-
-  // evaluate child mounting paths
-  for (auto [mountPath, express] : mountPaths)
-    express->evaluate(req, res);
+  mountpath = F(""); // TODO: check: could also be /
 }
 
 #pragma region express()
@@ -122,7 +48,7 @@ auto Express::evaluate(Request &req, Response &res) -> void {
 /// @param req
 /// @param res
 /// @return
-auto Express::parseJson(Request &req, Response &res, const NextCallback next)
+auto express::parseJson(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -172,7 +98,7 @@ auto Express::parseJson(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto Express::parseRaw(Request &req, Response &res, const NextCallback next)
+auto express::parseRaw(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -223,7 +149,7 @@ auto Express::parseRaw(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto Express::parseText(Request &req, Response &res, const NextCallback next)
+auto express::parseText(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -236,7 +162,7 @@ auto Express::parseText(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto Express::parseUrlencoded(Request &req, Response &res,
+auto express::parseUrlencoded(Request &req, Response &res,
                               const NextCallback next) -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -255,34 +181,31 @@ auto Express::parseUrlencoded(Request &req, Response &res,
 
 /// @brief
 /// @return a MiddlewareCallback
-auto Express::raw() -> MiddlewareCallback { return Express::parseRaw; }
+auto express::raw() -> MiddlewareCallback { return express::parseRaw; }
 
-/// @brief This is a built-in middleware function in Express.
+/// @brief This is a built-in middleware function in express.
 /// It parses incoming requests with JSON payloads and is based on body-parser.
 /// @return Returns middleware that only parses JSON and only looks at requests
 /// where the Content-Type header matches the type option.
-auto Express::json() -> MiddlewareCallback { return parseJson; }
+auto express::json() -> MiddlewareCallback { return parseJson; }
 
 /// @brief
 /// @return a MiddlewareCallback
-auto Express::text() -> MiddlewareCallback { return parseText; }
+auto express::text() -> MiddlewareCallback { return parseText; }
 
-/// @brief This is a built-in middleware function in Express. It parses incoming
+/// @brief This is a built-in middleware function in express. It parses incoming
 /// requests with urlencoded payloads and is based on body-parser.
 ///
 /// @return Returns middleware that only parses urlencoded bodies and only looks
 /// at requests where the Content-Type header matches the type option. This
 /// parser accepts only UTF-8 encoding of the body and supports automatic
 /// inflation of gzip and deflate encodings.
-auto Express::urlencoded() -> MiddlewareCallback { return parseUrlencoded; }
+auto express::urlencoded() -> MiddlewareCallback { return parseUrlencoded; }
 
 /// @brief Creates a new router object.
-auto Express::MakeRouter() -> Router & {
-  const auto router = new Router();
-
-  routers.push_back(router);
-
-  return *router;
+auto express::Router() -> router & {
+  const auto _router = new router();
+  return *_router;
 }
 
 #pragma endregion express
@@ -292,104 +215,54 @@ auto Express::MakeRouter() -> Router & {
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const MiddlewareCallback middleware) -> void // TODO, args...
+auto express::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
-  middlewares.push_back(middleware);
+  router_->use(middleware);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const std::vector<MiddlewareCallback> middlewares)
+auto express::use(const std::vector<MiddlewareCallback> middlewares)
     -> void // TODO, args...
 {
-  for (auto middleware : middlewares)
-    this->middlewares.push_back(middleware);
+  router_->use(middlewares);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto Express::use(const String &path, const MiddlewareCallback middleware)
+auto express::use(const String &path, const MiddlewareCallback middleware)
     -> void // TODO, args...
 {
-  // TODO
+  router_->use(path, middleware);
 }
 
 /// @brief The app.mountpath property contains one or more path patterns on
 /// which a sub-app was mounted.
-/// @param mount_path
-/// @param other
+/// @param mountpath
+/// @param otherRouter
 /// @return
-auto Express::use(const String &mount_path, Express &other) -> void {
-  LOG_I(F("use mountPath:"), mount_path);
-
-  other.mountpath = mount_path;
-  other.parent = this;
-  mountPaths[other.mountpath] = &other;
+auto express::use(const String &mountpath, router &otherRouter) -> void {
+  router_->use(mountpath, otherRouter);
 }
 
 /// @brief The app.mountpath property
-/// @param mount_path
+/// @param mountpath
 /// @return
-auto Express::use(const String &mount_path) -> void { mountpath = mount_path; }
+auto express::use(const String &mountpath) -> void { router_->use(mountpath); }
 
 #pragma endregion Middleware
 
-#pragma region HTTP_Methods
-
-/// @brief
-/// @tparam ArrayType
-/// @tparam ArraySize
-/// @param method
-/// @param path
-/// @param middlewares
-/// @param middleware
-/// @return
-auto Express::METHOD(const Method method, String path,
-                     const std::vector<MiddlewareCallback> middlewares)
-    -> Route & {
-  if (path == F("/"))
-    path = F("");
-
-  path = mountpath + path;
-
-  LOG_I(F("METHOD:"), method, F("path:"), path, F("#middlewares:"),
-        middlewares.size());
-  // F("mountpath:"), mountpath,
-
-  const auto route = new Route();
-  route->method = method;
-  route->path = path;
-  route->middlewares = middlewares; // copy the vector
-
-  route->splitToVector(route->path);
-  // Add to collection
-  routes.push_back(route);
-
-  return *route;
-}
-
-#pragma endregion HTTP_Methods
-
 /// @brief Returns the canonical path of the app, a string.
 /// @return
-auto Express::path() -> String {
-  return (parent == nullptr) ? mountpath : parent->mountpath;
-}
+auto express::path() -> String { return mountpath; }
 
 /// @brief Returns an instance of a single route, which you can then use to
 /// handle HTTP verbs with optional middleware. Use app.route() to avoid
 /// duplicate route names (and thus typo errors).
-auto Express::route(const String &path) -> Route & {
-  const auto route = new Route();
-  route->path = path;
-
-  route->splitToVector(route->path);
-  // Add to collection
-  routes.push_back(route);
-
-  return *route;
+auto express::route(const String &path) -> Route & {
+  return router_->route(path);
 }
 
 #pragma region Events
@@ -397,7 +270,7 @@ auto Express::route(const String &path) -> Route & {
 /// @brief
 /// @param name
 /// @param callback
-auto Express::on(const String &name, const MountCallback callback) -> void {}
+auto express::on(const String &name, const MountCallback callback) -> void {}
 
 #pragma endregion Events
 
@@ -405,7 +278,7 @@ auto Express::on(const String &name, const MountCallback callback) -> void {}
 /// @param port
 /// @param startedCallback
 /// @return
-void Express::listen(uint16_t port, const StartedCallback startedCallback) {
+void express::listen(uint16_t port, const StartedCallback startedCallback) {
   if (nullptr != server) {
     LOG_E(F("The listen method can only be called once! This call is ignored "
             "and processing continous."));
@@ -432,14 +305,14 @@ void Express::listen(uint16_t port, const StartedCallback startedCallback) {
 
 /// @brief
 /// @return
-auto Express::run() -> void {
+auto express::run() -> void {
   if (auto client = server->available())
     run(client);
 }
 
 /// @brief
 /// @param client
-void Express::run(ClientType &client) {
+void express::run(ClientType &client) {
   while (client.connected()) {
     if (client.available()) {
       // Construct request object and read/parse incoming bytes
@@ -448,24 +321,16 @@ void Express::run(ClientType &client) {
       if (req.method != Method::ERROR) {
         Response res(*this, client);
 
-        /// @brief run the app wide middlewares (ao bodyparsers)
-        gotoNext = true;
-        for (const auto middleware : middlewares) {
-          gotoNext = false;
-          middleware(req, res, [gotoNext]() { gotoNext = true; });
-          if (!gotoNext)
-            break;
-        }
-
-        if (gotoNext)
-          evaluate(req, res);
+        router_->dispatch(req, res);
 
         res.send();
       }
 
       // Arduino Ethernet stop() is potentially slow, this makes it faster
-      client.setConnectionTimeout(5);
-      client.stop();
+      if (true) {
+        client.setConnectionTimeout(5);
+        client.stop();
+      }
     }
   }
 };

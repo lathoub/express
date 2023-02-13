@@ -1,6 +1,6 @@
 /*!
  *  @file       namespace.h
- *  Project     Arduino Express Library
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23

@@ -1,6 +1,6 @@
 /*!
  *  @file       response.cpp
- *  Project     Arduino Express Library
+ *  Project     Arduino express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,7 +23,7 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "Express.h"
+#include "express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -31,8 +31,10 @@ BEGIN_EXPRESS_NAMESPACE
 /// @param app
 /// @param client
 /// @return
-Response::Response(Express &express, ClientType &client)
-    : app(express), client_(client) {}
+Response::Response(express &express, ClientType &client)
+    : app(express), client_(client) {
+  LOG_T(F("Response constructor"));
+}
 
 /// @brief  // default renderer
 /// @param client
