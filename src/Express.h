@@ -33,11 +33,14 @@ BEGIN_EXPRESS_NAMESPACE
 class Request;
 class Response;
 class Route;
+class Error;
 class router;
 class express;
 
 // Callback definitions
 using NextCallback = void (*)();
+using ErrorCallback = void (*)(const Error *, Request &, Response &,
+                               const NextCallback next);
 using MiddlewareCallback = void (*)(Request &, Response &,
                                     const NextCallback next);
 using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
@@ -46,6 +49,12 @@ using StartedCallback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
 using MountCallback = void (*)(express *);
+
+/// @brief
+class Error {
+public:
+  Error();
+};
 
 /// @brief
 class express {
@@ -155,7 +164,6 @@ public:
 #pragma endregion express
 
 private:
-
 public:
   void param(){/* NOT IMPLEMENTED */};
 
@@ -439,6 +447,10 @@ public:
 
   std::map<String, String> headers;
 
+  /// Boolean property that indicates if the app sent HTTP headers for the
+  /// response.
+  bool headersSent{};
+
   /// @brief This property holds a reference to the instance of the express
   /// application that is using the middleware.
   /// @return
@@ -623,7 +635,6 @@ public:
 #pragma region HTTP_Methods
 
 private:
-
   /// @brief
   /// @param path
   /// @param pathItems
@@ -673,8 +684,8 @@ private:
   /// @param middlewares
   /// @param middleware
   /// @return
-  auto METHOD(const Method, const String &path, const std::vector<MiddlewareCallback>)
-      -> Route &;
+  auto METHOD(const Method, const String &path,
+              const std::vector<MiddlewareCallback>) -> Route &;
 
 public:
   /// @brief
@@ -793,7 +804,6 @@ public:
   auto use(const String &mount_path) -> void;
 
 #pragma endregion Middleware
-
 };
 
 END_EXPRESS_NAMESPACE

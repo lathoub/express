@@ -33,6 +33,7 @@ BEGIN_EXPRESS_NAMESPACE
 /// @return
 Response::Response(express &express, ClientType &client)
     : app(express), client_(client) {
+  headersSent = false;
   LOG_T(F("Response constructor"));
 }
 
@@ -262,19 +263,22 @@ void Response::send() {
   client.print(F("HTTP/1.1 "));
   client.println(status_);
 
-  // Add to headers
+  // Construct headers
   evaluateHeaders(client);
 
   LOG_V(F("Headers:"));
-  // Send headers
-  for (auto [first, second] : headers) {
+  for (auto [first, second] : headers)
     LOG_V(first, second);
 
+  // Send headers
+  for (auto [first, second] : headers) {
     client.print(first);
     client.print(": ");
     client.println(second);
   }
   client.println();
+
+  headersSent = true;
 
   sendBody(client, renderLocals);
 }
