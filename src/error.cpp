@@ -28,6 +28,6 @@
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief Constructor
-Error::Error() { LOG_T(F("Error contructor")); }
+Error::Error(const String &msg) { LOG_T(F("Error contructor")); }
 
 END_EXPRESS_NAMESPACE

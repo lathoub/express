@@ -53,7 +53,7 @@ using MountCallback = void (*)(express *);
 /// @brief
 class Error {
 public:
-  Error();
+  Error(const String &);
 };
 
 /// @brief
