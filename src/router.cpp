@@ -108,7 +108,7 @@ auto router::evaluate(Request &req, Response &res) -> bool {
       // run the route wide middlewares
       for (const auto middleware : route->middlewares) {
         gotoNext = false;
-        middleware(req, res, [gotoNext]() { gotoNext = true; });
+        middleware(req, res, [gotoNext](const Error* error) { gotoNext = true; });
         if (!gotoNext)
           break;
       }
@@ -132,7 +132,7 @@ auto router::dispatch(Request &req, Response &res) -> void {
   gotoNext = true;
   for (const auto middleware : middlewares) {
     gotoNext = false;
-    middleware(req, res, [gotoNext]() { gotoNext = true; });
+    middleware(req, res, [gotoNext](const Error* error) { gotoNext = true; });
     if (!gotoNext)
       break;
   }

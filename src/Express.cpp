@@ -52,7 +52,7 @@ auto express::parseJson(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
-    next();
+    next(nullptr);
     return;
   }
 
@@ -91,7 +91,7 @@ auto express::parseJson(Request &req, Response &res, const NextCallback next)
   } else
     LOG_V(F("Not an application/json body"));
 
-  next();
+  next(nullptr);
 }
 
 /// @brief
@@ -102,7 +102,7 @@ auto express::parseRaw(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
-    next();
+    next(nullptr);
     return;
   }
 
@@ -142,7 +142,7 @@ auto express::parseRaw(Request &req, Response &res, const NextCallback next)
   } else
     LOG_V(F("Not an application/octet-stream body"));
 
-  next();
+  next(nullptr);
 }
 
 /// @brief
@@ -153,7 +153,7 @@ auto express::parseText(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
-    next();
+    next(nullptr);
     return;
   }
 }
@@ -166,7 +166,7 @@ auto express::parseUrlencoded(Request &req, Response &res,
                               const NextCallback next) -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
-    next();
+    next(nullptr);
     return;
   }
 
@@ -176,7 +176,7 @@ auto express::parseUrlencoded(Request &req, Response &res,
   } else
     LOG_V(F("Not an application/x-www-form-urlencoded body"));
 
-  next();
+  next(nullptr);
 }
 
 /// @brief
@@ -211,6 +211,14 @@ auto express::Router() -> router & {
 #pragma endregion express
 
 #pragma region Middleware
+
+/// @brief
+/// @param middleware
+/// @return
+auto express::use(const ErrorCallback middleware) -> void 
+{
+  // TODO
+}
 
 /// @brief
 /// @param middleware
