@@ -518,7 +518,7 @@ public: /* Methods*/
 
   auto cookie() -> void;
 
-  auto clearCookie() -> void;
+  auto clearCookie(const String&) -> void;
 
   /// @brief Ends the response process. This method actually comes from Node
   /// core, specifically the response.end() method of http.ServerResponse.

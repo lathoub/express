@@ -99,7 +99,7 @@ auto Response::cookie() -> void{
 
 /// @brief
 /// @return
-auto Response::clearCookie() -> void{
+auto Response::clearCookie(const String& name) -> void{
     // TODO
 };
 
