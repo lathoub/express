@@ -1,5 +1,5 @@
-//#define LOGGER Serial
-//#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+// #define LOGGER Serial
+// #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
 // #define PLATFORM ESP32
 #define PLATFORM ESP32_W5500
@@ -20,11 +20,7 @@ void setup() {
     res.status(HttpStatus::OK).send(F("Hello World!"));
   });
 
-  app.listen(80, []() {
-    LOG_I(F("Example app listening on port"), app.port);
-  });
+  app.listen(80, []() { LOG_I(F("Example app listening on port"), app.port); });
 }
 
-void loop() {
-  app.run();
-}
+void loop() { app.run(); }

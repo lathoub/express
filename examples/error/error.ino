@@ -1,5 +1,5 @@
-//#define LOGGER Serial
-//#define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
+// #define LOGGER Serial
+// #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
 // #define PLATFORM ESP32
 #define PLATFORM ESP32_W5500
@@ -16,13 +16,15 @@ EXPRESS_CREATE_INSTANCE();
 // otherwise they behave exactly like regular
 // middleware, you may have several of them,
 // in different orders etc.
-void errorLogger(Error& error, request & req, response & res, const NextCallback next) {
+void errorLogger(Error &error, request &req, response &res,
+                 const NextCallback next) {
   // log it
   LOG_E(F("o-ho, an error occured"));
   next(&error);
 }
 
-void errorResponder(Error& err, request & req, response & res, const NextCallback next) {
+void errorResponder(Error &err, request &req, response &res,
+                    const NextCallback next) {
   // respond with 500 "Internal Server Error".
   res.status(HttpStatus::SERVER_ERROR);
   res.send(err.message);
@@ -34,14 +36,13 @@ void setup() {
   LOG_SETUP();
 
   ethernet_setup();
-  
 
-  app.get(F("/"), [](request & req, response & res, const NextCallback next) {
+  app.get(F("/"), [](request &req, response &res, const NextCallback next) {
     // Caught and passed down to the errorHandler middleware
     throw new Error("something broke!");
   });
 
-  app.get(F("/next"), [](request & req, response & res, const NextCallback next) {
+  app.get(F("/next"), [](request &req, response &res, const NextCallback next) {
     // We can also pass exceptions to next()
     // The reason for process.nextTick() is to show that
     // next() can be called inside an async operation,
@@ -56,11 +57,7 @@ void setup() {
   // function defined above (which sends back the response)
   app.use(errorResponder);
 
-  app.listen(80, []() {
-    LOG_I(F("Example app listening on port"), app.port);
-  });
+  app.listen(80, []() { LOG_I(F("Example app listening on port"), app.port); });
 }
 
-void loop() {
-  app.run();
-}
+void loop() { app.run(); }

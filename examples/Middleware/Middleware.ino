@@ -30,32 +30,28 @@ void setup() {
   LOG_SETUP();
 
   ethernet_setup();
-  
 
   // add a single middleware
   // app.use(middleware1);
 
   // or add an array of middlewares
-  const std::vector<MiddlewareCallback> middlewares = { middleware2, middleware3 };
+  const std::vector<MiddlewareCallback> middlewares = {middleware2,
+                                                       middleware3};
   // app.use(middlewares);
 
   // the middleware will construct the message in the params
   app.get(
-    "/", middleware1, nullptr, middlewares, 
-    [](request &req, response &res, const NextCallback next) {
-      LOG_I(F("hallo!"));
-      next(nullptr);
-    },
-    [](request &req, response &res, const NextCallback next) {
-      LOG_I(F("world!"));
-      res.status(HttpStatus::OK).send(req.params[F("msg")]);
-    });
+      "/", middleware1, nullptr, middlewares,
+      [](request &req, response &res, const NextCallback next) {
+        LOG_I(F("hallo!"));
+        next(nullptr);
+      },
+      [](request &req, response &res, const NextCallback next) {
+        LOG_I(F("world!"));
+        res.status(HttpStatus::OK).send(req.params[F("msg")]);
+      });
 
-  app.listen(80, []() {
-    LOG_I(F("Example app listening on port"), app.port);
-  });
+  app.listen(80, []() { LOG_I(F("Example app listening on port"), app.port); });
 }
 
-void loop() {
-  app.run();
-}
+void loop() { app.run(); }

@@ -13,12 +13,11 @@ EXPRESS_CREATE_INSTANCE();
 
 auto apiv2 = express::Router();
 auto apiv3 = express::Router();
-  
+
 void setup() {
   LOG_SETUP();
 
   ethernet_setup();
-  
 
   // inspired by
   // https://github.com/expressjs/express/blob/master/examples/multi-router/index.js
