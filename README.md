@@ -8,18 +8,13 @@ Fast, unopinionated, (subset of a) minimalist web framework for Arduino
 Below is essentially the simplest Arduino express app you can create. 
 
 ```cpp
-// #define PLATFORM ESP32
-#define PLATFORM ESP32_W5500
-
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
-
-#include "ethernet_setup.h"
 
 EXPRESS_CREATE_INSTANCE();
 
 void setup() {
-  ethernet_setup();
+  ...
 
   app.get(F("/"), [](request &req, response &res) {
     res.send(F("Hello World!"));
