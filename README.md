@@ -39,7 +39,7 @@ void loop() {
 None.
 
 ## Use of Containers
-This lib uses 2 types of containers: vector and map. When std containers are available (eg ESP32) then they are used. When not availale an alternative implementation is offered within the lib, having in mind that the containers have a fixed preset size. The presets are set in a settings class that can be overwritten. 
+This lib uses 2 types of containers: vector and map.
 
 ## ESP32 with W5500 
 When you combine an ESP32 with the W5500 chip, you need to patch Server.h as reported [here](https://github.com/PaulStoffregen/Ethernet/issues/42).
