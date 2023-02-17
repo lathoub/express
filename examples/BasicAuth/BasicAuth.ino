@@ -6,7 +6,7 @@
 
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
-#include <basicAuth.h>
+#include <middlewares/basicAuth.h>
 
 #include "ethernet_setup.h"
 

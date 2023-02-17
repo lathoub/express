@@ -6,9 +6,9 @@
 
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
-#include <Mustache.h>
+#include <middlewares/Mustache.h>
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+#include "ethernet_setup.h"
 
 EXPRESS_CREATE_INSTANCE();
 
@@ -26,7 +26,6 @@ void setup() {
 
   ethernet_setup();
   
-
   // Register '.mustache' extension with The Mustache MUSTACHE
   app.engine(F("mustache"), mustacheEXPRESS());
 
