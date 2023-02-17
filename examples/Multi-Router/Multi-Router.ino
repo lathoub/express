@@ -1,10 +1,13 @@
 #define LOGGER Serial
 #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
+// #define PLATFORM ESP32
+#define PLATFORM ESP32_W5500
+
 #include <express.h>
 using namespace EXPRESS_NAMESPACE;
 
-byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+#include "ethernet_setup.h"
 
 EXPRESS_CREATE_INSTANCE();
 
@@ -14,8 +17,8 @@ auto apiv3 = express::Router();
 void setup() {
   LOG_SETUP();
 
-  Ethernet.init(5);
-  Ethernet.begin(mac);
+  ethernet_setup();
+  
 
   // inspired by
   // https://github.com/expressjs/express/blob/master/examples/multi-router/index.js

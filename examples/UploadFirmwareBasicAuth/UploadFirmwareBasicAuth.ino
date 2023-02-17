@@ -1,6 +1,9 @@
 #define LOGGER Serial
 #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
+// #define PLATFORM ESP32
+#define PLATFORM ESP32_W5500
+
 #include <express.h>
 using namespace EXPRESS_NAMESPACE;
 #include <basicAuth.h>
@@ -20,8 +23,8 @@ auto getContentLength(request &req, response &res, const NextCallback next) -> v
 void setup() {
   LOG_SETUP();
 
-  Ethernet.init(5);
-  Ethernet.begin(mac);
+  ethernet_setup();
+  
 
   const std::map<String, String> users = { { F("admin"), F("admin") } };
 
@@ -45,7 +48,7 @@ void setup() {
   });
 
   app.listen(80, []() {
-    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
+    LOG_I(F("Example app listening on port"), app.port);
   });
 }
 

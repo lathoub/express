@@ -10,6 +10,9 @@ Currently only for ESP32 connected to a W5500 over SPI.
 Embedded below is essentially the simplest Arduino express app you can create. 
 
 ```cpp
+// #define PLATFORM ESP32
+#define PLATFORM ESP32_W5500
+
 #include <express.h>
 using namespace EXPRESS_NAMESPACE;
 
@@ -18,14 +21,14 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 EXPRESS_CREATE_INSTANCE();
 
 void setup() {
-  Ethernet.begin(mac); // no check for brevity
+   // no check for brevity
 
   app.get(F("/"), [](request &req, response &res) {
     res.send(F("Hello World!"));
   });
 
   app.listen(3000, []() { // creates and runs server
-    LOG_I(F("Example app listening on port"), Ethernet.localIP(), F("on port"), app.port);
+    LOG_I(F("Example app listening on port"), app.port);
   });
 }
 

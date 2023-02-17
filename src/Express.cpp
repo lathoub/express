@@ -215,16 +215,14 @@ auto express::Router() -> router & {
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const ErrorCallback errorCallback) -> void 
-{
+auto express::use(const ErrorCallback errorCallback) -> void {
   router_->use(errorCallback);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const std::vector<ErrorCallback> errorCallbacks) -> void 
-{
+auto express::use(const std::vector<ErrorCallback> errorCallbacks) -> void {
   router_->use(errorCallbacks);
 }
 
@@ -312,8 +310,15 @@ void express::listen(uint16_t port, const Callback startedCallback) {
   //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin()
   //      =0;"
 
+#if PLATFORM == ESP32
   server = new ServerType(port);
   server->begin();
+#endif
+
+#if PLATFORM == ESP32_W5500
+  server = new ServerType(port);
+  server->begin();
+#endif
 
   if (startedCallback)
     startedCallback();
@@ -343,10 +348,10 @@ void express::run(ClientType &client) {
       }
 
       // Arduino Ethernet stop() is potentially slow, this makes it faster
-      if (true) {
-        client.setConnectionTimeout(5);
-        client.stop();
-      }
+#if PLATFORM == ESP32_W5500
+      client.setConnectionTimeout(5);
+#endif
+      client.stop();
     }
   }
 };

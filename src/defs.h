@@ -32,14 +32,26 @@
 typedef uint8_t byte;
 #endif
 
-// < Network section
+#if PLATFORM == ESP32_W5500
 #include <Ethernet.h>
-
-// TODO: using templates
+// Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
+// change in ESP32 server.h
+// MacOS:
+// /Users/<user>/Library/Arduino15/packages/esp32/hardware/esp32/2.0.*/cores/esp32
+// Windows:
+// C:\Users\<user>\AppData\Local\Arduino15\packages\esp32\hardware\esp32\2.0.*\cores\esp32\Server.h
+//      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin()
+//      =0;"
 #define ServerType EthernetServer
 #define ClientType EthernetClient
+#endif
 
-// Network section >
+// TODO: using templates
+#if PLATFORM == ESP32
+#include <WiFi.h>
+#define ServerType WiFiServer
+#define ClientType WiFiClient
+#endif
 
 #define LOGGER Serial
 #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
