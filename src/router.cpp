@@ -108,7 +108,22 @@ auto router::evaluate(Request &req, Response &res) -> bool {
       // run the route wide middlewares
       for (const auto middleware : route->middlewares) {
         gotoNext = false;
-        middleware(req, res, [gotoNext](const Error* error) { gotoNext = true; });
+        try {
+          middleware(req, res, [gotoNext](const Error *error) {
+            if (error) // reconstruct error message in new object
+              throw new Error(error->message);
+            gotoNext = true;
+          });
+        } catch (Error *error) {
+          res.status(HttpStatus::SERVER_ERROR);
+          for (const auto errorHandler : errorHandlers) {
+            errorHandler(*error, req, res,
+                         [gotoNext](const Error *error) { gotoNext = true; });
+            if (!gotoNext)
+              break;
+          }
+          return false;
+        }
         if (!gotoNext)
           break;
       }
@@ -132,7 +147,7 @@ auto router::dispatch(Request &req, Response &res) -> void {
   gotoNext = true;
   for (const auto middleware : middlewares) {
     gotoNext = false;
-    middleware(req, res, [gotoNext](const Error* error) { gotoNext = true; });
+    middleware(req, res, [gotoNext](const Error *error) { gotoNext = true; });
     if (!gotoNext)
       break;
   }
@@ -179,6 +194,24 @@ auto router::METHOD(const Method method, const String &path,
   routes.push_back(route);
 
   return *route;
+}
+
+/// @brief
+/// @param middleware
+/// @return
+auto router::use(const ErrorCallback errorHandler) -> void // TODO, args...
+{
+  this->errorHandlers.push_back(errorHandler);
+}
+
+/// @brief
+/// @param middleware
+/// @return
+auto router::use(const std::vector<ErrorCallback> errorHandlers)
+    -> void // TODO, args...
+{
+  for (auto errorHandler : errorHandlers)
+    this->errorHandlers.push_back(errorHandler);
 }
 
 /// @brief

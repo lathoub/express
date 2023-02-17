@@ -10,17 +10,17 @@ EXPRESS_CREATE_INSTANCE();
 
 void middleware1(request &req, response &res, const NextCallback next) {
   req.params[F("msg")] = req.params[F("msg")] + ", first here";
-  next();
+  next(nullptr);
 }
 
 void middleware2(request &req, response &res, const NextCallback next) {
   req.params[F("msg")] = req.params[F("msg")] + ", then here";
-  next();
+  next(nullptr);
 }
 
 void middleware3(request &req, response &res, const NextCallback next) {
   req.params[F("msg")] = req.params[F("msg")] + ", and finally here.";
-  next();
+  next(nullptr);
 }
 
 void setup() {
@@ -41,7 +41,7 @@ void setup() {
     "/", middleware1, nullptr, middlewares, 
     [](request &req, response &res, const NextCallback next) {
       LOG_I(F("hallo!"));
-      next();
+      next(nullptr);
     },
     [](request &req, response &res, const NextCallback next) {
       LOG_I(F("world!"));

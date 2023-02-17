@@ -39,7 +39,7 @@ public:
       return;
     }
 
-    next();
+    next(nullptr);
   }
 };
 

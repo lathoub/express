@@ -13,7 +13,7 @@ int contentLength = 0;
 auto getContentLength(request &req, response &res, const NextCallback next) -> void {
   contentLength = req.headers[ContentLength].toInt();
   LOG_V(F("1st middleware: contentLength"), contentLength);
-  next();
+  next(nullptr);
 }
 
 void setup() {

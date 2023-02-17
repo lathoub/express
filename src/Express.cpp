@@ -215,9 +215,17 @@ auto express::Router() -> router & {
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const ErrorCallback middleware) -> void 
+auto express::use(const ErrorCallback errorCallback) -> void 
 {
-  // TODO
+  router_->use(errorCallback);
+}
+
+/// @brief
+/// @param middleware
+/// @return
+auto express::use(const std::vector<ErrorCallback> errorCallbacks) -> void 
+{
+  router_->use(errorCallbacks);
 }
 
 /// @brief

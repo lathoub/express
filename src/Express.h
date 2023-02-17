@@ -38,8 +38,8 @@ class router;
 class express;
 
 // Callback definitions
-using NextCallback = void (*)(const Error* error);
-using ErrorCallback = void (*)(const Error *, Request &, Response &,
+using NextCallback = void (*)(const Error *error);
+using ErrorCallback = void (*)(Error &, Request &, Response &,
                                const NextCallback next);
 using MiddlewareCallback = void (*)(Request &, Response &,
                                     const NextCallback next);
@@ -53,6 +53,7 @@ using MountCallback = void (*)(express *);
 /// @brief
 class Error {
 public:
+  String message;
   Error(const String &);
 };
 
@@ -102,7 +103,8 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseJson(Request &, Response &, const NextCallback callback = nullptr) -> void;
+  static auto parseJson(Request &, Response &,
+                        const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
   // inflate, limit, type, verify
@@ -111,7 +113,8 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseRaw(Request &, Response &, const NextCallback callback = nullptr) -> void;
+  static auto parseRaw(Request &, Response &,
+                       const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
   // defaultCharset, inflate, limit, type, verify
@@ -120,7 +123,8 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseText(Request &, Response &, const NextCallback callback = nullptr) -> void;
+  static auto parseText(Request &, Response &,
+                        const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
   // extended, inflate, limit, parameterLimit, type, verify
@@ -129,8 +133,8 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseUrlencoded(Request &, Response &, const NextCallback callback = nullptr)
-      -> void;
+  static auto parseUrlencoded(Request &, Response &,
+                              const NextCallback callback = nullptr) -> void;
 
   /// @brief This is a built-in middleware function in express. It serves static
   /// files and is based on serve-static.
@@ -171,6 +175,11 @@ public:
   /// @param middleware
   /// @return
   auto use(const ErrorCallback errorCallback) -> void;
+
+  /// @brief
+  /// @param middleware
+  /// @return
+  auto use(const std::vector<ErrorCallback>) -> void;
 
   /// @brief
   /// @param middleware
@@ -622,6 +631,9 @@ private:
   /// @brief Application wide middlewares
   std::vector<MiddlewareCallback> middlewares{};
 
+  /// @brief Application wide middlewares
+  std::vector<ErrorCallback> errorHandlers{};
+
   /// @brief
   router *parent = nullptr;
 
@@ -779,6 +791,16 @@ public:
   auto dispatch(Request &, Response &) -> void;
 
 #pragma region Middleware
+
+  /// @brief
+  /// @param errorCallback
+  /// @return
+  auto use(const ErrorCallback) -> void;
+
+  /// @brief
+  /// @param errorCallback
+  /// @return
+  auto use(const std::vector<ErrorCallback>) -> void;
 
   /// @brief
   /// @param middleware
