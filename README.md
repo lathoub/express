@@ -1,4 +1,4 @@
-# express for ESP32 with W5500 using Arduino IDE
+# express for ESP32 using Arduino IDE
 Fast, unopinionated, (subset of a) minimalist web framework for Arduino
 
 Currently only for ESP32 connected to a W5500 over SPI.
