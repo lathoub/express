@@ -19,7 +19,7 @@ using namespace EXPRESS_NAMESPACE;
 EXPRESS_CREATE_INSTANCE();
 
 void setup() {
-   // no check for brevity
+  ethernet_setup();
 
   app.get(F("/"), [](request &req, response &res) {
     res.send(F("Hello World!"));
