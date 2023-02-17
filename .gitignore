@@ -7,6 +7,9 @@
 # Visual Studio cache/options directory
 .vs/
 
+# Don't reveal secrets
+arduino_secrets.h
+
 # Arduino IDE 2 files
 debug.cfg
 debug_custom.json
