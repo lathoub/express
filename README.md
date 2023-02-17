@@ -5,7 +5,7 @@ Fast, unopinionated, (subset of a) minimalist web framework for Arduino
 
 ### Hello world example
 
-Embedded below is essentially the simplest Arduino express app you can create. 
+Below is essentially the simplest Arduino express app you can create. 
 
 ```cpp
 // #define PLATFORM ESP32
