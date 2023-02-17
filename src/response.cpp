@@ -85,8 +85,10 @@ auto Response::format() -> void{
 
 /// @brief
 /// @return
-auto Response::download() -> void{
-    // TODO
+auto Response::download(File &file) -> void {
+  contentsCallback = file.contentsCallback;
+  filename = file.filename;
+  headers[F("Content-Disposition")] = F("attachment; filename=cool.html");
 };
 
 /// @brief

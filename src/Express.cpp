@@ -294,7 +294,7 @@ auto express::on(const String &name, const MountCallback callback) -> void {}
 /// @param port
 /// @param startedCallback
 /// @return
-void express::listen(uint16_t port, const StartedCallback startedCallback) {
+void express::listen(uint16_t port, const Callback startedCallback) {
   if (nullptr != server) {
     LOG_E(F("The listen method can only be called once! This call is ignored "
             "and processing continous."));

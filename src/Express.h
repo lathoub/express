@@ -45,7 +45,7 @@ using MiddlewareCallback = void (*)(Request &, Response &,
                                     const NextCallback next);
 using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
                                       const char *f);
-using StartedCallback = void (*)();
+using Callback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
 using MountCallback = void (*)(express *);
@@ -340,7 +340,7 @@ public:
   auto route(const String &path) -> Route &;
 
   /// @brief
-  void listen(uint16_t port, const StartedCallback startedCallback = nullptr);
+  void listen(uint16_t port, const Callback startedCallback = nullptr);
 
   /// @brief
   auto run() -> void;
@@ -502,9 +502,19 @@ public: /* Methods*/
   /// @return
   auto append(const String &field, const String &value) -> Response &;
 
+  /// @brief Performs content-negotiation on the Accept HTTP header on the
+  /// request object, when present. It uses req.accepts() to select a handler
+  /// for the request, based on the acceptable types ordered by their quality
+  /// values. If the header is not specified, the first callback is invoked.
+  /// When no match is found, the server responds with 406 “Not Acceptable”, or
+  /// invokes the default callback.
+  ///
+  /// The Content-Type response header is set when a callback is selected.
+  /// However, you may alter this within the callback using methods such as
+  /// res.set() or res.type().
   auto format() -> void;
 
-  auto download() -> void;
+  auto download(File &) -> void;
 
   auto cookie() -> void;
 
