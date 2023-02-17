@@ -7,7 +7,7 @@
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+#include "ethernet_setup.h"
 
 EXPRESS_CREATE_INSTANCE();
 
