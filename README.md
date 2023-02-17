@@ -36,7 +36,7 @@ void loop() {
 ```
 
 ## Dependencies
-Ethernet library (for ESP32 with W5500)
+Ethernet library (for ESP32 with W5500).
 
 ## Use of Containers
 This lib uses 2 types of containers: vector and map.
