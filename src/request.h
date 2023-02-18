@@ -1,6 +1,6 @@
 /*!
  *  @file       request.h
- *  Project     Arduino _Express Library
+ *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
