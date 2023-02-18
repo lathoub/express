@@ -4,14 +4,14 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-/// @brief inspired by https://github.com/LionC/express-basic-auth
+/// @brief inspired by https://github.com/LionC/_Express-basic-auth
 class BasicAuth {
 public:
   static std::map<String, String> users;
   static bool challenge;
 
 public:
-  static auto auth(Request &req, Response &res, const NextCallback next)
+  static auto auth(_Request &req, _Response &res, const NextCallback next)
       -> void {
     auto basicAuth = req.headers["authorization"]; // basic encodeUserPasswd
 

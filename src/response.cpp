@@ -1,6 +1,6 @@
 /*!
  *  @file       response.cpp
- *  Project     Arduino express Library
+ *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,7 +23,7 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "express.h"
+#include "Express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -31,16 +31,16 @@ BEGIN_EXPRESS_NAMESPACE
 /// @param app
 /// @param client
 /// @return
-Response::Response(express &express, ClientType &client)
-    : app(express), client_(client) {
+_Response::_Response(_Express &_Express, ClientType &client)
+    : app(_Express), client_(client) {
   headersSent = false;
-  LOG_T(F("Response constructor"));
+  LOG_T(F("_Response constructor"));
 }
 
 /// @brief  // default renderer
 /// @param client
 /// @param f
-void Response::renderFile(ClientType &client, const char *f) {
+void _Response::renderFile(ClientType &client, const char *f) {
   size_t i = 0;
   size_t start = 0;
   while (f[start + i] != '\0') {
@@ -62,7 +62,7 @@ void Response::renderFile(ClientType &client, const char *f) {
 /// @param field
 /// @param value
 /// @return
-auto Response::append(const String &field, const String &value) -> Response & {
+auto _Response::append(const String &field, const String &value) -> _Response & {
   for (auto [key, header] : headers) {
     if (field.equalsIgnoreCase(key)) {
       // Appends the specified value to the HTTP response header
@@ -79,13 +79,13 @@ auto Response::append(const String &field, const String &value) -> Response & {
 
 /// @brief
 /// @return
-auto Response::format() -> void{
+auto _Response::format() -> void{
     // TODO
 };
 
 /// @brief
 /// @return
-auto Response::download(File &file) -> void {
+auto _Response::download(File &file) -> void {
   contentsCallback = file.contentsCallback;
   filename = file.filename;
   headers[F("Content-Disposition")] = F("attachment; filename=cool.html");
@@ -93,13 +93,13 @@ auto Response::download(File &file) -> void {
 
 /// @brief
 /// @return
-auto Response::cookie() -> void{
+auto _Response::cookie() -> void{
     // TODO
 };
 
 /// @brief
 /// @return
-auto Response::clearCookie(const String& name) -> void{
+auto _Response::clearCookie(const String& name) -> void{
     // TODO
 };
 
@@ -108,7 +108,7 @@ auto Response::clearCookie(const String& name) -> void{
 /// @param data
 /// @param encoding
 /// @return
-auto Response::end(Buffer *buffer, const String &encoding) -> Response & {
+auto _Response::end(Buffer *buffer, const String &encoding) -> _Response & {
   if (buffer) {
     body_ = buffer->toString();
 
@@ -121,7 +121,7 @@ auto Response::end(Buffer *buffer, const String &encoding) -> Response & {
 /// @brief Returns the HTTP response header specified by field. The match is
 /// case-insensitive.
 /// @return
-auto Response::get(const String &field) -> String {
+auto _Response::get(const String &field) -> String {
   for (auto [key, header] : headers) {
     if (field.equalsIgnoreCase(key))
       return header;
@@ -134,7 +134,7 @@ auto Response::get(const String &field) -> String {
 /// JSON.stringify().
 /// @param body
 /// @return
-auto Response::json(const String &body) -> void {
+auto _Response::json(const String &body) -> void {
   body_ = body;
 
   set(ContentType, ApplicationJson);
@@ -144,7 +144,7 @@ auto Response::json(const String &body) -> void {
 /// @brief Sends the HTTP response.
 /// Optional parameters:
 /// @param view
-auto Response::send(const String &body) -> Response & {
+auto _Response::send(const String &body) -> _Response & {
   body_ = body;
 
   return *this;
@@ -158,7 +158,7 @@ auto Response::send(const String &body) -> Response & {
 ///      response. When an error occurs, the method invokes next(err)
 ///      internally.
 /// @param view
-auto Response::render(File &file, locals_t &locals) -> void {
+auto _Response::render(File &file, locals_t &locals) -> void {
   // NOTE: don't render here just yet (status and headers need to be send first)
   // so store a backpointer that can be called in the sendBody function.
   // set this here already, so it gets send out as part of the headers
@@ -171,7 +171,7 @@ auto Response::render(File &file, locals_t &locals) -> void {
 }
 
 /// @brief .
-auto Response::sendFile(File &file, Options *options) -> void {
+auto _Response::sendFile(File &file, Options *options) -> void {
   if (options) {
     for (auto [first, second] : options->headers) {
       LOG_V(first, second);
@@ -187,7 +187,7 @@ auto Response::sendFile(File &file, Options *options) -> void {
 ///  registered status message as the text response body. If an unknown
 // status code is specified, the response body will just be the code number.
 /// @param statusCode
-auto Response::sendStatus(const HttpStatus statusCode) -> void {
+auto _Response::sendStatus(const HttpStatus statusCode) -> void {
   status_ = statusCode;
 }
 
@@ -195,7 +195,7 @@ auto Response::sendStatus(const HttpStatus statusCode) -> void {
 /// @param field
 /// @param value
 /// @return
-auto Response::set(const String &field, const String &value) -> Response & {
+auto _Response::set(const String &field, const String &value) -> _Response & {
   for (auto [key, header] : headers) {
     if (field.equalsIgnoreCase(key)) {
       // Appends the specified value to the HTTP response header
@@ -213,7 +213,7 @@ auto Response::set(const String &field, const String &value) -> Response & {
 /// @brief
 /// @param body
 /// @return
-auto Response::status(const HttpStatus status) -> Response & {
+auto _Response::status(const HttpStatus status) -> _Response & {
   status_ = status;
 
   return *this;
@@ -221,7 +221,7 @@ auto Response::status(const HttpStatus status) -> Response & {
 
 /// @brief
 /// @param client
-void Response::evaluateHeaders(ClientType &client) {
+void _Response::evaluateHeaders(ClientType &client) {
   if (body_ && body_ != F(""))
     headers[ContentLength] = body_.length();
 
@@ -233,7 +233,7 @@ void Response::evaluateHeaders(ClientType &client) {
 
 /// @brief
 /// @param client
-void Response::sendBody(ClientType &client, locals_t &locals) {
+void _Response::sendBody(ClientType &client, locals_t &locals) {
   LOG_V(F("sendBody"));
 
   // if we already have a body, send that over
@@ -259,7 +259,7 @@ void Response::sendBody(ClientType &client, locals_t &locals) {
 }
 
 /// @brief
-void Response::send() {
+void _Response::send() {
   auto &client = const_cast<ClientType &>(client_);
 
   client.print(F("HTTP/1.1 "));

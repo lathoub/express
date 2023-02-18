@@ -1,6 +1,6 @@
 /*!
- *  @file       express.h
- *  Project     Arduino express Library
+ *  @file       _Express.h
+ *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -30,45 +30,45 @@
 BEGIN_EXPRESS_NAMESPACE
 
 // Forward declaration
-class Request;
-class Response;
-class Route;
-class Error;
-class router;
-class express;
+class _Request;
+class _Response;
+class _Route;
+class _Error;
+class _Router;
+class _Express;
 
 // Callback definitions
-using NextCallback = void (*)(const Error *error);
-using ErrorCallback = void (*)(Error &, Request &, Response &,
+using NextCallback = void (*)(const _Error *error);
+using ErrorCallback = void (*)(_Error &, _Request &, _Response &,
                                const NextCallback next);
-using MiddlewareCallback = void (*)(Request &, Response &,
+using MiddlewareCallback = void (*)(_Request &, _Response &,
                                     const NextCallback next);
 using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
                                       const char *f);
 using Callback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
-using MountCallback = void (*)(express *);
+using MountCallback = void (*)(_Express *);
 
 /// @brief
-class Error {
+class _Error {
 public:
   String message;
-  Error(const String &);
+  _Error(const String &);
 };
 
 /// @brief
-class express {
+class _Express {
 private:
   /// @brief
   ServerType *server{};
 
   /// @brief
-  router *router_;
+  _Router *router_;
 
 public:
   /// @brief Constructor
-  express();
+  _Express();
 
   /// @brief
   uint16_t port{};
@@ -91,7 +91,7 @@ public:
   /// are valid only for the lifetime of the request.
   locals_t locals;
 
-#pragma region express()
+#pragma region _Express()
 
 private:
   // bodyparser
@@ -103,7 +103,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseJson(Request &, Response &,
+  static auto parseJson(_Request &, _Response &,
                         const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
@@ -113,7 +113,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseRaw(Request &, Response &,
+  static auto parseRaw(_Request &, _Response &,
                        const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
@@ -123,7 +123,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseText(Request &, Response &,
+  static auto parseText(_Request &, _Response &,
                         const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
@@ -133,11 +133,11 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseUrlencoded(Request &, Response &,
+  static auto parseUrlencoded(_Request &, _Response &,
                               const NextCallback callback = nullptr) -> void;
 
-  /// @brief This is a built-in middleware function in express. It serves static
-  /// files and is based on serve-static.
+  /// @brief This is a built-in middleware function in _Express. It serves
+  /// static files and is based on serve-static.
   // static void Static() {}
 
 public:
@@ -153,7 +153,7 @@ public:
   /// @return
   static auto text() -> MiddlewareCallback;
 
-  /// @brief This is a built-in middleware function in express. It parses
+  /// @brief This is a built-in middleware function in _Express. It parses
   /// incoming requests with urlencoded payloads and is based on body-parser.
   ///
   /// @return Returns middleware that only parses urlencoded bodies and only
@@ -163,9 +163,9 @@ public:
   static auto urlencoded() -> MiddlewareCallback;
 
   ///
-  static auto Router() -> router &;
+  static auto Router() -> _Router &;
 
-#pragma endregion express
+#pragma endregion _Express
 
 private:
 public:
@@ -201,7 +201,7 @@ public:
   /// @param mount_path
   /// @param other
   /// @return
-  auto use(const String &mount_path, router &other) -> void;
+  auto use(const String &mount_path, _Router &other) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.
@@ -278,7 +278,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto head(const String &path, Args... args) -> Route & {
+  auto head(const String &path, Args... args) -> _Route & {
     return router_->head(path, args...);
   };
 
@@ -287,7 +287,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto get(const String &path, Args... args) -> Route & {
+  auto get(const String &path, Args... args) -> _Route & {
     return router_->get(path, args...);
   };
 
@@ -297,7 +297,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto post(const String &path, Args... args) -> Route & {
+  auto post(const String &path, Args... args) -> _Route & {
     return router_->post(path, args...);
   };
 
@@ -306,7 +306,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto put(const String &path, Args... args) -> Route & {
+  auto put(const String &path, Args... args) -> _Route & {
     return router_->put(path, args...);
   };
 
@@ -315,7 +315,7 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto del(const String &path, Args... args) -> Route & {
+  auto del(const String &path, Args... args) -> _Route & {
     return router_->del(path, args...);
   }
 
@@ -324,7 +324,7 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto all(const String &path, Args... args) -> Route & {
+  auto all(const String &path, Args... args) -> _Route & {
     return router_->all(path, args...);
   }
 
@@ -337,7 +337,7 @@ public:
   /// @brief Returns an instance of a single route, which you can then use to
   /// handle HTTP verbs with optional middleware. Use app.route() to avoid
   /// duplicate route names (and thus typo errors).
-  auto route(const String &path) -> Route &;
+  auto route(const String &path) -> _Route &;
 
   /// @brief
   void listen(uint16_t port, const Callback startedCallback = nullptr);
@@ -354,15 +354,15 @@ public:
 };
 
 /// @brief
-class Request {
+class _Request {
 public:
   /// @brief
   ClientType &client;
 
-  /// @brief This property holds a reference to the instance of the express
+  /// @brief This property holds a reference to the instance of the _Express
   /// application that is using the middleware.
   /// @return
-  express &app;
+  _Express &app;
 
   String uri{};
 
@@ -382,7 +382,7 @@ public:
   IPAddress ip{};
 
   /// @brief intermediate pointer buffer for data callback
-  Route *route = nullptr;
+  _Route *route = nullptr;
 
   /// @brief Contains a string corresponding to the HTTP method of the request:
   /// GET, POST, PUT, and so on.
@@ -416,7 +416,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Request(express &, ClientType &);
+  _Request(_Express &, ClientType &);
 
   /// @brief Checks if the specified content types are acceptable, based on the
   /// request’s Accept HTTP header field. The method returns the best match, or
@@ -447,7 +447,7 @@ private:
 };
 
 /// @brief
-class Response {
+class _Response {
 private:
   static void renderFile(ClientType &, const char *f);
 
@@ -465,10 +465,10 @@ public:
   /// response.
   bool headersSent{};
 
-  /// @brief This property holds a reference to the instance of the express
+  /// @brief This property holds a reference to the instance of the _Express
   /// application that is using the middleware.
   /// @return
-  express &app;
+  _Express &app;
 
   /// @brief derefered rendering
   ContentCallback contentsCallback{};
@@ -491,7 +491,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Response(express &, ClientType &);
+  _Response(_Express &, ClientType &);
 
   /// @brief Appends the specified value to the HTTP response header field. If
   /// the header is not already set, it creates the header with the specified
@@ -500,7 +500,7 @@ public: /* Methods*/
   /// @param field
   /// @param value
   /// @return
-  auto append(const String &field, const String &value) -> Response &;
+  auto append(const String &field, const String &value) -> _Response &;
 
   /// @brief Performs content-negotiation on the Accept HTTP header on the
   /// request object, when present. It uses req.accepts() to select a handler
@@ -518,7 +518,7 @@ public: /* Methods*/
 
   auto cookie() -> void;
 
-  auto clearCookie(const String&) -> void;
+  auto clearCookie(const String &) -> void;
 
   /// @brief Ends the response process. This method actually comes from Node
   /// core, specifically the response.end() method of http.ServerResponse.
@@ -526,7 +526,7 @@ public: /* Methods*/
   /// @param encoding
   /// @return
   auto end(Buffer *data = nullptr, const String &encoding = F(""))
-      -> Response &;
+      -> _Response &;
 
   /// @brief Ends the response process
   static void end();
@@ -546,7 +546,7 @@ public: /* Methods*/
   /// @brief Sends the HTTP response.
   /// Optional parameters:
   /// @param view
-  auto send(const String &body) -> Response &;
+  auto send(const String &body) -> _Response &;
   ;
 
   /// @brief Renders a view and sends the rendered HTML string to the client.
@@ -574,18 +574,18 @@ public: /* Methods*/
   /// @param field
   /// @param value
   /// @return
-  auto set(const String &field, const String &value) -> Response &;
+  auto set(const String &field, const String &value) -> _Response &;
 
   /// @brief Sends a JSON response. This method sends a response (with the
   /// correct content-type) that is the parameter converted to a JSON string
   /// using JSON.stringify().
   /// @param body
   /// @return
-  auto status(const HttpStatus) -> Response &;
+  auto status(const HttpStatus) -> _Response &;
 };
 
 /// @brief
-class Route {
+class _Route {
 public:
 private:
   static const char delimiter = '/';
@@ -608,7 +608,7 @@ public:
 
 public:
   /// @brief
-  Route();
+  _Route();
 
   /// @brief
   /// @param path
@@ -632,7 +632,7 @@ public:
 };
 
 /// @brief
-class router {
+class _Router {
 private:
   /// @brief The app.mountpath property contains the path patterns
   /// on which a sub-app was mounted.
@@ -645,19 +645,19 @@ private:
   std::vector<ErrorCallback> errorHandlers{};
 
   /// @brief
-  router *parent = nullptr;
+  _Router *parent = nullptr;
 
   /// @brief
-  std::map<String, router *> routers_{};
+  std::map<String, _Router *> routers_{};
 
   /// @brief routes
-  std::vector<Route *> routes{};
+  std::vector<_Route *> routes{};
 
   /// @brief
   static bool gotoNext;
 
 public:
-  router();
+  _Router();
 
 #pragma region HTTP_Methods
 
@@ -677,7 +677,7 @@ private:
   /// @brief
   /// @param req
   /// @param res
-  auto evaluate(Request &, Response &) -> bool;
+  auto evaluate(_Request &, _Response &) -> bool;
 
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
@@ -712,7 +712,7 @@ private:
   /// @param middleware
   /// @return
   auto METHOD(const Method, const String &path,
-              const std::vector<MiddlewareCallback>) -> Route &;
+              const std::vector<MiddlewareCallback>) -> _Route &;
 
 public:
   /// @brief
@@ -720,7 +720,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto head(const String &path, Args... args) -> Route & {
+  auto head(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
@@ -731,7 +731,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto get(const String &path, Args... args) -> Route & {
+  auto get(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::GET, path, tmpMiddlewares);
@@ -743,7 +743,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto post(const String &path, Args... args) -> Route & {
+  auto post(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::POST, path, tmpMiddlewares);
@@ -754,7 +754,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto put(const String &path, Args... args) -> Route & {
+  auto put(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::PUT, path, tmpMiddlewares);
@@ -765,7 +765,7 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto del(const String &path, Args... args) -> Route & {
+  auto del(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::DELETE, path, tmpMiddlewares);
@@ -776,13 +776,13 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto all(const String &path, Args... args) -> Route & {
+  auto all(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::ALL, path, tmpMiddlewares);
   }
 
-  template <typename... Args> Route &adder(const String &path, Args... args) {
+  template <typename... Args> _Route &adder(const String &path, Args... args) {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
@@ -795,10 +795,10 @@ public:
   /// @brief Returns an instance of a single route, which you can then use to
   /// handle HTTP verbs with optional middleware. Use app.route() to avoid
   /// duplicate route names (and thus typo errors).
-  Route &route(const String &path);
+  _Route &route(const String &path);
 
   /// @brief
-  auto dispatch(Request &, Response &) -> void;
+  auto dispatch(_Request &, _Response &) -> void;
 
 #pragma region Middleware
 
@@ -832,7 +832,7 @@ public:
   /// @param mount_path
   /// @param other
   /// @return
-  auto use(const String &mount_path, router &) -> void;
+  auto use(const String &mount_path, _Router &) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.
@@ -846,10 +846,11 @@ public:
 END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name)                                    \
-  typedef express express;                                                     \
-  typedef Route route;                                                         \
-  typedef Request request;                                                     \
-  typedef Response response;                                                   \
+  typedef _Express express;                                                    \
+  typedef _Route route;                                                        \
+  typedef _Request request;                                                    \
+  typedef _Response response;                                                  \
+  typedef _Error Error;                                                        \
   express Name;
 
 #define EXPRESS_CREATE_INSTANCE() EXPRESS_CREATE_NAMED_INSTANCE(app);

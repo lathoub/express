@@ -1,6 +1,6 @@
 /*!
  *  @file       request.cpp
- *  Project     Arduino express Library
+ *  Project     Arduino Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,13 +23,13 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "express.h"
+#include "Express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-Request::Request(express &express, ClientType &ec)
-    : app(express), client(ec), method(Method::UNDEFINED) {
-  LOG_T(F("Request constructor"));
+_Request::_Request(_Express &_Express, ClientType &ec)
+    : app(_Express), client(ec), method(Method::UNDEFINED) {
+  LOG_T(F("_Request constructor"));
   parse(client);
 }
 
@@ -37,13 +37,13 @@ Request::Request(express &express, ClientType &ec)
 /// request’s Accept HTTP header field. The method returns the best match, or if
 /// none of the specified content types is acceptable, returns false (in which
 /// case, the application should respond with 406 "Not Acceptable").
-auto Request::accepts(const String &types) -> bool { return false; }
+auto _Request::accepts(const String &types) -> bool { return false; }
 
 /// @brief Returns the specified HTTP request header field (case-insensitive
 /// match).
 /// @param field
 /// @return
-auto Request::get(const String &field) -> String {
+auto _Request::get(const String &field) -> String {
   for (auto [key, header] : headers) {
     if (field.equalsIgnoreCase(key))
       return header;
@@ -56,8 +56,8 @@ auto Request::get(const String &field) -> String {
 /// @brief
 /// @param client
 /// @return
-bool Request::parse(ClientType &client) {
-  LOG_V(F("Request::Parse"));
+bool _Request::parse(ClientType &client) {
+  LOG_V(F("_Request::Parse"));
 
   // Read the first line of HTTP request
   String reqStr = client.readStringUntil('\r');
@@ -154,7 +154,7 @@ bool Request::parse(ClientType &client) {
 
 /// @brief
 /// @param data
-auto Request::parseArguments(const String &data) -> void {
+auto _Request::parseArguments(const String &data) -> void {
   if (data.length() == 0)
     return;
 
@@ -207,7 +207,7 @@ auto Request::parseArguments(const String &data) -> void {
 /// @brief
 /// @param text
 /// @return
-auto Request::urlDecode(const String &text) -> String {
+auto _Request::urlDecode(const String &text) -> String {
   String decoded = "";
   char temp[] = "0x00";
   unsigned int len = text.length();
