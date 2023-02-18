@@ -33,13 +33,13 @@ BEGIN_EXPRESS_NAMESPACE
 class Request;
 class Response;
 class Route;
-class Error;
+class _Error;
 class router;
 class express;
 
 // Callback definitions
-using NextCallback = void (*)(const Error *error);
-using ErrorCallback = void (*)(Error &, Request &, Response &,
+using NextCallback = void (*)(const _Error *error);
+using ErrorCallback = void (*)(_Error &, Request &, Response &,
                                const NextCallback next);
 using MiddlewareCallback = void (*)(Request &, Response &,
                                     const NextCallback next);
@@ -51,10 +51,10 @@ using EndDataCallback = void (*)();
 using MountCallback = void (*)(express *);
 
 /// @brief
-class Error {
+class _Error {
 public:
   String message;
-  Error(const String &);
+  _Error(const String &);
 };
 
 /// @brief
@@ -518,7 +518,7 @@ public: /* Methods*/
 
   auto cookie() -> void;
 
-  auto clearCookie(const String&) -> void;
+  auto clearCookie(const String &) -> void;
 
   /// @brief Ends the response process. This method actually comes from Node
   /// core, specifically the response.end() method of http.ServerResponse.
@@ -850,6 +850,7 @@ END_EXPRESS_NAMESPACE
   typedef Route route;                                                         \
   typedef Request request;                                                     \
   typedef Response response;                                                   \
+  typedef _Error Error;                                                        \
   express Name;
 
 #define EXPRESS_CREATE_INSTANCE() EXPRESS_CREATE_NAMED_INSTANCE(app);

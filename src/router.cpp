@@ -109,16 +109,16 @@ auto router::evaluate(Request &req, Response &res) -> bool {
       for (const auto middleware : route->middlewares) {
         gotoNext = false;
         try {
-          middleware(req, res, [gotoNext](const Error *error) {
+          middleware(req, res, [gotoNext](const _Error *error) {
             if (error) // reconstruct error message in new object
-              throw new Error(error->message);
+              throw new _Error(error->message);
             gotoNext = true;
           });
-        } catch (Error *error) {
+        } catch (_Error *error) {
           res.status(HttpStatus::SERVER_ERROR);
           for (const auto errorHandler : errorHandlers) {
             errorHandler(*error, req, res,
-                         [gotoNext](const Error *error) { gotoNext = true; });
+                         [gotoNext](const _Error *error) { gotoNext = true; });
             if (!gotoNext)
               break;
           }
@@ -147,7 +147,7 @@ auto router::dispatch(Request &req, Response &res) -> void {
   gotoNext = true;
   for (const auto middleware : middlewares) {
     gotoNext = false;
-    middleware(req, res, [gotoNext](const Error *error) { gotoNext = true; });
+    middleware(req, res, [gotoNext](const _Error *error) { gotoNext = true; });
     if (!gotoNext)
       break;
   }
