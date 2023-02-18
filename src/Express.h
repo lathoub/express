@@ -34,6 +34,7 @@ class _Request;
 class _Response;
 class _Route;
 class _Error;
+class _Range;
 class _Router;
 class _Express;
 
@@ -55,6 +56,16 @@ class _Error {
 public:
   String message;
   _Error(const String &);
+};
+
+/// @brief
+class _Range {
+public:
+  String type; // must be 'bytes'
+  size_t start;
+  size_t end;
+  _Range();
+  void parse(const String &);
 };
 
 /// @brief
@@ -355,6 +366,9 @@ public:
 
 /// @brief
 class _Request {
+  friend class _Router;
+  friend class _Express;
+
 public:
   /// @brief
   ClientType &client;
@@ -381,12 +395,18 @@ public:
   /// @brief Contains the remote IP address of the request.
   IPAddress ip{};
 
+  /// @brief Contains the remote IP address of the request.
+  std::vector<IPAddress> ips{};
+
+  /// @brief Contains the remote IP address of the request.
+  std::vector<String> subdomains{};
+
   /// @brief intermediate pointer buffer for data callback
   _Route *route = nullptr;
 
   /// @brief Contains a string corresponding to the HTTP method of the request:
   /// GET, POST, PUT, and so on.
-  Method method;
+  String method{};
 
   /// @brief A Boolean property that is true if a TLS connection is established.
   ///  Equivalent to: (protocol === 'https')
@@ -424,6 +444,17 @@ public: /* Methods*/
   /// which case, the application should respond with 406 "Not Acceptable").
   auto accepts(const String &) -> bool;
 
+  /// @brief Returns the matching content type if the incoming request’s
+  /// “Content-Type” HTTP header field matches the MIME type specified by the
+  /// type parameter. If the request has no body, returns null. Returns false
+  /// otherwise.
+  auto is(const String &) -> String;
+
+  /// @brief Range header parser.
+  /// The size parameter is the maximum size of the resource.
+  /// The options parameter is an object that can have the following properties.
+  auto range(const size_t & = 0) -> const _Range &;
+
   /// @brief Returns the specified HTTP request header field (case-insensitive
   /// match).
   /// @param field
@@ -435,6 +466,12 @@ private:
   /// @param client
   /// @return
   bool parse(ClientType &);
+
+  /// @brief
+  _Range range_;
+
+  /// @brief
+  Method method_{};
 
   /// @brief
   /// @param data

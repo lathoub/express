@@ -341,7 +341,7 @@ void _Express::run(ClientType &client) {
       // Construct request object and read/parse incoming bytes
       _Request req(*this, client);
 
-      if (req.method != Method::ERROR) {
+      if (req.method_ != Method::ERROR) {
         _Response res(*this, client);
 
         router_->dispatch(req, res);
