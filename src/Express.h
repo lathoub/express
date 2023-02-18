@@ -848,9 +848,9 @@ END_EXPRESS_NAMESPACE
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name)                                    \
   typedef _Express express;                                                    \
   typedef _Route route;                                                        \
-  typedef _Request request;                                                     \
-  typedef _Response response;                                                   \
+  typedef _Request request;                                                    \
+  typedef _Response response;                                                  \
   typedef _Error Error;                                                        \
-  _Express Name;
+  express Name;
 
 #define EXPRESS_CREATE_INSTANCE() EXPRESS_CREATE_NAMED_INSTANCE(app);
