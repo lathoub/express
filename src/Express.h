@@ -1,6 +1,6 @@
 /*!
- *  @file       express.h
- *  Project     Arduino express Library
+ *  @file       _Express.h
+ *  Project     Arduino _Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -35,7 +35,7 @@ class Response;
 class _Route;
 class _Error;
 class _Router;
-class express;
+class _Express;
 
 // Callback definitions
 using NextCallback = void (*)(const _Error *error);
@@ -48,7 +48,7 @@ using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
 using Callback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
-using MountCallback = void (*)(express *);
+using MountCallback = void (*)(_Express *);
 
 /// @brief
 class _Error {
@@ -58,7 +58,7 @@ public:
 };
 
 /// @brief
-class express {
+class _Express {
 private:
   /// @brief
   ServerType *server{};
@@ -68,7 +68,7 @@ private:
 
 public:
   /// @brief Constructor
-  express();
+  _Express();
 
   /// @brief
   uint16_t port{};
@@ -91,7 +91,7 @@ public:
   /// are valid only for the lifetime of the request.
   locals_t locals;
 
-#pragma region express()
+#pragma region _Express()
 
 private:
   // bodyparser
@@ -136,8 +136,8 @@ private:
   static auto parseUrlencoded(Request &, Response &,
                               const NextCallback callback = nullptr) -> void;
 
-  /// @brief This is a built-in middleware function in express. It serves static
-  /// files and is based on serve-static.
+  /// @brief This is a built-in middleware function in _Express. It serves
+  /// static files and is based on serve-static.
   // static void Static() {}
 
 public:
@@ -153,7 +153,7 @@ public:
   /// @return
   static auto text() -> MiddlewareCallback;
 
-  /// @brief This is a built-in middleware function in express. It parses
+  /// @brief This is a built-in middleware function in _Express. It parses
   /// incoming requests with urlencoded payloads and is based on body-parser.
   ///
   /// @return Returns middleware that only parses urlencoded bodies and only
@@ -165,7 +165,7 @@ public:
   ///
   static auto Router() -> _Router &;
 
-#pragma endregion express
+#pragma endregion _Express
 
 private:
 public:
@@ -359,10 +359,10 @@ public:
   /// @brief
   ClientType &client;
 
-  /// @brief This property holds a reference to the instance of the express
+  /// @brief This property holds a reference to the instance of the _Express
   /// application that is using the middleware.
   /// @return
-  express &app;
+  _Express &app;
 
   String uri{};
 
@@ -416,7 +416,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Request(express &, ClientType &);
+  Request(_Express &, ClientType &);
 
   /// @brief Checks if the specified content types are acceptable, based on the
   /// request’s Accept HTTP header field. The method returns the best match, or
@@ -465,10 +465,10 @@ public:
   /// response.
   bool headersSent{};
 
-  /// @brief This property holds a reference to the instance of the express
+  /// @brief This property holds a reference to the instance of the _Express
   /// application that is using the middleware.
   /// @return
-  express &app;
+  _Express &app;
 
   /// @brief derefered rendering
   ContentCallback contentsCallback{};
@@ -491,7 +491,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Response(express &, ClientType &);
+  Response(_Express &, ClientType &);
 
   /// @brief Appends the specified value to the HTTP response header field. If
   /// the header is not already set, it creates the header with the specified
@@ -846,11 +846,11 @@ public:
 END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name)                                    \
-  typedef express express;                                                     \
+  typedef _Express express;                                                    \
   typedef _Route route;                                                        \
   typedef Request request;                                                     \
   typedef Response response;                                                   \
   typedef _Error Error;                                                        \
-  express Name;
+  _Express Name;
 
 #define EXPRESS_CREATE_INSTANCE() EXPRESS_CREATE_NAMED_INSTANCE(app);

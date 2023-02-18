@@ -1,6 +1,6 @@
 /*!
  *  @file       request.cpp
- *  Project     Arduino express Library
+ *  Project     Arduino _Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,12 +23,12 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "express.h"
+#include "Express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
-Request::Request(express &express, ClientType &ec)
-    : app(express), client(ec), method(Method::UNDEFINED) {
+Request::Request(_Express &_Express, ClientType &ec)
+    : app(_Express), client(ec), method(Method::UNDEFINED) {
   LOG_T(F("Request constructor"));
   parse(client);
 }

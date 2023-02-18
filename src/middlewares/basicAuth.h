@@ -4,7 +4,7 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-/// @brief inspired by https://github.com/LionC/express-basic-auth
+/// @brief inspired by https://github.com/LionC/_Express-basic-auth
 class BasicAuth {
 public:
   static std::map<String, String> users;

@@ -1,6 +1,6 @@
 /*!
- *  @file       express.cpp
- *  Project     Arduino express Library
+ *  @file       _Express.cpp
+ *  Project     Arduino _Express Library
  *  @brief      Fast, unopinionated, (very) minimalist web framework for Arduino
  *  @author     lathoub
  *  @date       20/01/23
@@ -23,17 +23,17 @@
  *   along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "express.h"
+#include "Express.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief
 /// @return
-express::express() {
-  LOG_T(F("express constructor"));
+_Express::_Express() {
+  LOG_T(F("Express constructor"));
 
   settings[F("env")] = F("production");
-  //  settings[XPoweredBy] = F("X-Powered-By: express for Arduino");
+  //  settings[XPoweredBy] = F("X-Powered-By: _Express for Arduino");
 
   LOG_I(F("booting in"), settings[F("env")], F("mode"));
 
@@ -42,13 +42,13 @@ express::express() {
   mountpath = F(""); // TODO: check: could also be /
 }
 
-#pragma region express()
+#pragma region _Express()
 
 /// @brief
 /// @param req
 /// @param res
 /// @return
-auto express::parseJson(Request &req, Response &res, const NextCallback next)
+auto _Express::parseJson(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -98,7 +98,7 @@ auto express::parseJson(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto express::parseRaw(Request &req, Response &res, const NextCallback next)
+auto _Express::parseRaw(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -149,7 +149,7 @@ auto express::parseRaw(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto express::parseText(Request &req, Response &res, const NextCallback next)
+auto _Express::parseText(Request &req, Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -162,7 +162,7 @@ auto express::parseText(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto express::parseUrlencoded(Request &req, Response &res,
+auto _Express::parseUrlencoded(Request &req, Response &res,
                               const NextCallback next) -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -181,55 +181,55 @@ auto express::parseUrlencoded(Request &req, Response &res,
 
 /// @brief
 /// @return a MiddlewareCallback
-auto express::raw() -> MiddlewareCallback { return express::parseRaw; }
+auto _Express::raw() -> MiddlewareCallback { return _Express::parseRaw; }
 
-/// @brief This is a built-in middleware function in express.
+/// @brief This is a built-in middleware function in _Express.
 /// It parses incoming requests with JSON payloads and is based on body-parser.
 /// @return Returns middleware that only parses JSON and only looks at requests
 /// where the Content-Type header matches the type option.
-auto express::json() -> MiddlewareCallback { return parseJson; }
+auto _Express::json() -> MiddlewareCallback { return parseJson; }
 
 /// @brief
 /// @return a MiddlewareCallback
-auto express::text() -> MiddlewareCallback { return parseText; }
+auto _Express::text() -> MiddlewareCallback { return parseText; }
 
-/// @brief This is a built-in middleware function in express. It parses incoming
+/// @brief This is a built-in middleware function in _Express. It parses incoming
 /// requests with urlencoded payloads and is based on body-parser.
 ///
 /// @return Returns middleware that only parses urlencoded bodies and only looks
 /// at requests where the Content-Type header matches the type option. This
 /// parser accepts only UTF-8 encoding of the body and supports automatic
 /// inflation of gzip and deflate encodings.
-auto express::urlencoded() -> MiddlewareCallback { return parseUrlencoded; }
+auto _Express::urlencoded() -> MiddlewareCallback { return parseUrlencoded; }
 
 /// @brief Creates a new _Router object.
-auto express::Router() -> _Router & {
+auto _Express::Router() -> _Router & {
   const auto _router = new _Router();
   return *_router;
 }
 
-#pragma endregion express
+#pragma endregion _Express
 
 #pragma region Middleware
 
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const ErrorCallback errorCallback) -> void {
+auto _Express::use(const ErrorCallback errorCallback) -> void {
   router_->use(errorCallback);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const std::vector<ErrorCallback> errorCallbacks) -> void {
+auto _Express::use(const std::vector<ErrorCallback> errorCallbacks) -> void {
   router_->use(errorCallbacks);
 }
 
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const MiddlewareCallback middleware) -> void // TODO, args...
+auto _Express::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
   router_->use(middleware);
 }
@@ -237,7 +237,7 @@ auto express::use(const MiddlewareCallback middleware) -> void // TODO, args...
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const std::vector<MiddlewareCallback> middlewares)
+auto _Express::use(const std::vector<MiddlewareCallback> middlewares)
     -> void // TODO, args...
 {
   router_->use(middlewares);
@@ -246,7 +246,7 @@ auto express::use(const std::vector<MiddlewareCallback> middlewares)
 /// @brief
 /// @param middleware
 /// @return
-auto express::use(const String &path, const MiddlewareCallback middleware)
+auto _Express::use(const String &path, const MiddlewareCallback middleware)
     -> void // TODO, args...
 {
   router_->use(path, middleware);
@@ -257,25 +257,25 @@ auto express::use(const String &path, const MiddlewareCallback middleware)
 /// @param mountpath
 /// @param otherRouter
 /// @return
-auto express::use(const String &mountpath, _Router &otherRouter) -> void {
+auto _Express::use(const String &mountpath, _Router &otherRouter) -> void {
   router_->use(mountpath, otherRouter);
 }
 
 /// @brief The app.mountpath property
 /// @param mountpath
 /// @return
-auto express::use(const String &mountpath) -> void { router_->use(mountpath); }
+auto _Express::use(const String &mountpath) -> void { router_->use(mountpath); }
 
 #pragma endregion Middleware
 
 /// @brief Returns the canonical path of the app, a string.
 /// @return
-auto express::path() -> String { return mountpath; }
+auto _Express::path() -> String { return mountpath; }
 
 /// @brief Returns an instance of a single route, which you can then use to
 /// handle HTTP verbs with optional middleware. Use app.route() to avoid
 /// duplicate route names (and thus typo errors).
-auto express::route(const String &path) -> _Route & {
+auto _Express::route(const String &path) -> _Route & {
   return router_->route(path);
 }
 
@@ -284,7 +284,7 @@ auto express::route(const String &path) -> _Route & {
 /// @brief
 /// @param name
 /// @param callback
-auto express::on(const String &name, const MountCallback callback) -> void {}
+auto _Express::on(const String &name, const MountCallback callback) -> void {}
 
 #pragma endregion Events
 
@@ -292,7 +292,7 @@ auto express::on(const String &name, const MountCallback callback) -> void {}
 /// @param port
 /// @param startedCallback
 /// @return
-void express::listen(uint16_t port, const Callback startedCallback) {
+void _Express::listen(uint16_t port, const Callback startedCallback) {
   if (nullptr != server) {
     LOG_E(F("The listen method can only be called once! This call is ignored "
             "and processing continous."));
@@ -326,14 +326,14 @@ void express::listen(uint16_t port, const Callback startedCallback) {
 
 /// @brief
 /// @return
-auto express::run() -> void {
+auto _Express::run() -> void {
   if (auto client = server->available())
     run(client);
 }
 
 /// @brief
 /// @param client
-void express::run(ClientType &client) {
+void _Express::run(ClientType &client) {
   while (client.connected()) {
     if (client.available()) {
       // Construct request object and read/parse incoming bytes
