@@ -27,8 +27,8 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-_Request::_Request(_Express &_Express, ClientType &ec)
-    : app(_Express), client(ec), method(Method::UNDEFINED) {
+_Request::_Request(_Express &express, ClientType &ec)
+    : app(express), client(ec), method(Method::UNDEFINED) {
   LOG_T(F("_Request constructor"));
   parse(client);
 }
@@ -135,11 +135,17 @@ bool _Request::parse(ClientType &client) {
     header_name.toLowerCase();
     auto header_value = reqStr.substring(header_div + 2);
     headers[header_name] = header_value; // TODO keep all headers or just a few?
-
-    if (header_name.equalsIgnoreCase(F("Host")))
-      hostname = header_value;
   }
 
+  if (app.disabled(F("trust proxy"))) {
+    hostname = headers[F("host")];
+    // ip?
+  } else {
+    hostname = headers[F("x-forwarded-for")]; // TODO: left part
+    // ip ?
+  }
+
+  LOG_V(F("Hostname:"), hostname);
   LOG_V(F("Method:"), method_str);
   LOG_V(F("Uri:"), uri);
 
