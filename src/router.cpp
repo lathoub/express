@@ -28,19 +28,19 @@
 BEGIN_EXPRESS_NAMESPACE
 
 // static declarations
-bool router::gotoNext{};
+bool _Router::gotoNext{};
 
 /// @brief Constructor
-router::router() { LOG_T(F("router contructor")); }
+_Router::_Router() { LOG_T(F("_Router contructor")); }
 
 /// @brief Returns an instance of a single route, which you can then use to
 /// handle HTTP verbs with optional middleware. Use app.route() to avoid
 /// duplicate route names (and thus typo errors).
-Route &router::route(const String &path) {
+_Route &_Router::route(const String &path) {
 
-  LOG_T(F("New Route"), path);
+  LOG_T(F("New _Route"), path);
 
-  const auto route = new Route();
+  const auto route = new _Route();
   route->path = path;
 
   route->splitToVector(route->path);
@@ -57,7 +57,7 @@ Route &router::route(const String &path) {
 /// @param requestPathItems
 /// @param params
 /// @return
-auto router::match(const String &path, const std::vector<PosLen> &pathItems,
+auto _Router::match(const String &path, const std::vector<PosLen> &pathItems,
                    const String &requestPath,
                    const std::vector<PosLen> &requestPathItems,
                    params_t &params) -> bool {
@@ -93,11 +93,11 @@ auto router::match(const String &path, const std::vector<PosLen> &pathItems,
 /// @param res
 /// @param next
 /// @return
-auto router::evaluate(Request &req, Response &res) -> bool {
-  LOG_V(F("router::evaluate, req.uri:"), req.uri, F("routes:"), routes.size());
+auto _Router::evaluate(Request &req, Response &res) -> bool {
+  LOG_V(F("_Router::evaluate, req.uri:"), req.uri, F("routes:"), routes.size());
 
   std::vector<PosLen> req_indices{};
-  Route::splitToVector(req.uri, req_indices);
+  _Route::splitToVector(req.uri, req_indices);
 
   for (auto route : routes) {
     if ((route->method == Method::ALL || req.method == route->method) &&
@@ -133,8 +133,8 @@ auto router::evaluate(Request &req, Response &res) -> bool {
   }
 
   LOG_V(F("evaluate child routers"), routers_.size());
-  for (auto [mountpath, router] : routers_) {
-    if (router->evaluate(req, res))
+  for (auto [mountpath, _Router] : routers_) {
+    if (_Router->evaluate(req, res))
       return true;
   }
 
@@ -142,8 +142,8 @@ auto router::evaluate(Request &req, Response &res) -> bool {
 }
 
 /// @brief
-auto router::dispatch(Request &req, Response &res) -> void {
-  /// @brief run the router wide middlewares
+auto _Router::dispatch(Request &req, Response &res) -> void {
+  /// @brief run the _Router wide middlewares
   gotoNext = true;
   for (const auto middleware : middlewares) {
     gotoNext = false;
@@ -166,9 +166,9 @@ auto router::dispatch(Request &req, Response &res) -> void {
 /// @param middlewares
 /// @param middleware
 /// @return
-auto router::METHOD(const Method method, const String &path,
+auto _Router::METHOD(const Method method, const String &path,
                     const std::vector<MiddlewareCallback> middlewares)
-    -> Route & {
+    -> _Route & {
 
   auto _path = path;
   auto _mountpath = mountpath;
@@ -184,7 +184,7 @@ auto router::METHOD(const Method method, const String &path,
   LOG_I(F("METHOD:"), method, F("path:"), _path, F("#middlewares:"),
         middlewares.size());
 
-  const auto route = new Route();
+  const auto route = new _Route();
   route->method = method;
   route->path = _path;
   route->middlewares = middlewares; // copy the vector
@@ -199,7 +199,7 @@ auto router::METHOD(const Method method, const String &path,
 /// @brief
 /// @param middleware
 /// @return
-auto router::use(const ErrorCallback errorHandler) -> void // TODO, args...
+auto _Router::use(const ErrorCallback errorHandler) -> void // TODO, args...
 {
   this->errorHandlers.push_back(errorHandler);
 }
@@ -207,7 +207,7 @@ auto router::use(const ErrorCallback errorHandler) -> void // TODO, args...
 /// @brief
 /// @param middleware
 /// @return
-auto router::use(const std::vector<ErrorCallback> errorHandlers)
+auto _Router::use(const std::vector<ErrorCallback> errorHandlers)
     -> void // TODO, args...
 {
   for (auto errorHandler : errorHandlers)
@@ -217,7 +217,7 @@ auto router::use(const std::vector<ErrorCallback> errorHandlers)
 /// @brief
 /// @param middleware
 /// @return
-auto router::use(const MiddlewareCallback middleware) -> void // TODO, args...
+auto _Router::use(const MiddlewareCallback middleware) -> void // TODO, args...
 {
   middlewares.push_back(middleware);
 }
@@ -225,7 +225,7 @@ auto router::use(const MiddlewareCallback middleware) -> void // TODO, args...
 /// @brief
 /// @param middleware
 /// @return
-auto router::use(const std::vector<MiddlewareCallback> middlewares)
+auto _Router::use(const std::vector<MiddlewareCallback> middlewares)
     -> void // TODO, args...
 {
   for (auto middleware : middlewares)
@@ -235,7 +235,7 @@ auto router::use(const std::vector<MiddlewareCallback> middlewares)
 /// @brief
 /// @param middleware
 /// @return
-auto router::use(const String &path, const MiddlewareCallback middleware)
+auto _Router::use(const String &path, const MiddlewareCallback middleware)
     -> void // TODO, args...
 {
   // TODO
@@ -246,7 +246,7 @@ auto router::use(const String &path, const MiddlewareCallback middleware)
 /// @param mountpath
 /// @param other
 /// @return
-auto router::use(const String &mountpath, router &otherRouter) -> void {
+auto _Router::use(const String &mountpath, _Router &otherRouter) -> void {
   LOG_I(F("otherRouter:"), mountpath, otherRouter.routes.size());
 
   otherRouter.mountpath = mountpath;
@@ -257,7 +257,7 @@ auto router::use(const String &mountpath, router &otherRouter) -> void {
 /// @brief The app.mountpath property
 /// @param mountpath
 /// @return
-auto router::use(const String &mountpath) -> void {
+auto _Router::use(const String &mountpath) -> void {
   this->mountpath = mountpath;
 }
 

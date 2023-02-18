@@ -37,7 +37,7 @@ express::express() {
 
   LOG_I(F("booting in"), settings[F("env")], F("mode"));
 
-  router_ = new router();
+  router_ = new _Router();
 
   mountpath = F(""); // TODO: check: could also be /
 }
@@ -202,9 +202,9 @@ auto express::text() -> MiddlewareCallback { return parseText; }
 /// inflation of gzip and deflate encodings.
 auto express::urlencoded() -> MiddlewareCallback { return parseUrlencoded; }
 
-/// @brief Creates a new router object.
-auto express::Router() -> router & {
-  const auto _router = new router();
+/// @brief Creates a new _Router object.
+auto express::Router() -> _Router & {
+  const auto _router = new _Router();
   return *_router;
 }
 
@@ -257,7 +257,7 @@ auto express::use(const String &path, const MiddlewareCallback middleware)
 /// @param mountpath
 /// @param otherRouter
 /// @return
-auto express::use(const String &mountpath, router &otherRouter) -> void {
+auto express::use(const String &mountpath, _Router &otherRouter) -> void {
   router_->use(mountpath, otherRouter);
 }
 
@@ -275,7 +275,7 @@ auto express::path() -> String { return mountpath; }
 /// @brief Returns an instance of a single route, which you can then use to
 /// handle HTTP verbs with optional middleware. Use app.route() to avoid
 /// duplicate route names (and thus typo errors).
-auto express::route(const String &path) -> Route & {
+auto express::route(const String &path) -> _Route & {
   return router_->route(path);
 }
 

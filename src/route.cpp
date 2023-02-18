@@ -28,16 +28,16 @@
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief
-Route::Route() { LOG_T(F("Route constructor")); }
+_Route::_Route() { LOG_T(F("_Route constructor")); }
 
-auto Route::splitToVector(const String &path) -> void {
+auto _Route::splitToVector(const String &path) -> void {
   splitToVector(path, indices);
 }
 
 /// @brief
 /// @param path
 /// @return
-auto Route::splitToVector(const String &path, std::vector<PosLen> &poslens)
+auto _Route::splitToVector(const String &path, std::vector<PosLen> &poslens)
     -> void {
   size_t p = 0, i = 1;
   for (; i < path.length(); i++) {
@@ -52,7 +52,7 @@ auto Route::splitToVector(const String &path, std::vector<PosLen> &poslens)
 /// @brief
 /// @param name
 /// @param callback
-auto Route::on(const String &name, const DataCallback callback) -> void {
+auto _Route::on(const String &name, const DataCallback callback) -> void {
   LOG_I(F("register data callback"), name);
   dataCallback_ = callback;
   // return *this;
@@ -61,7 +61,7 @@ auto Route::on(const String &name, const DataCallback callback) -> void {
 /// @brief
 /// @param name
 /// @param callback
-auto Route::on(const String &name, const EndDataCallback callback) -> void {
+auto _Route::on(const String &name, const EndDataCallback callback) -> void {
   LOG_I(F("register end callback"), name);
   endCallback_ = callback;
   //  return *this;

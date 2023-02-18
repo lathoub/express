@@ -32,9 +32,9 @@ BEGIN_EXPRESS_NAMESPACE
 // Forward declaration
 class Request;
 class Response;
-class Route;
+class _Route;
 class _Error;
-class router;
+class _Router;
 class express;
 
 // Callback definitions
@@ -64,7 +64,7 @@ private:
   ServerType *server{};
 
   /// @brief
-  router *router_;
+  _Router *router_;
 
 public:
   /// @brief Constructor
@@ -163,7 +163,7 @@ public:
   static auto urlencoded() -> MiddlewareCallback;
 
   ///
-  static auto Router() -> router &;
+  static auto Router() -> _Router &;
 
 #pragma endregion express
 
@@ -201,7 +201,7 @@ public:
   /// @param mount_path
   /// @param other
   /// @return
-  auto use(const String &mount_path, router &other) -> void;
+  auto use(const String &mount_path, _Router &other) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.
@@ -278,7 +278,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto head(const String &path, Args... args) -> Route & {
+  auto head(const String &path, Args... args) -> _Route & {
     return router_->head(path, args...);
   };
 
@@ -287,7 +287,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto get(const String &path, Args... args) -> Route & {
+  auto get(const String &path, Args... args) -> _Route & {
     return router_->get(path, args...);
   };
 
@@ -297,7 +297,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto post(const String &path, Args... args) -> Route & {
+  auto post(const String &path, Args... args) -> _Route & {
     return router_->post(path, args...);
   };
 
@@ -306,7 +306,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto put(const String &path, Args... args) -> Route & {
+  auto put(const String &path, Args... args) -> _Route & {
     return router_->put(path, args...);
   };
 
@@ -315,7 +315,7 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto del(const String &path, Args... args) -> Route & {
+  auto del(const String &path, Args... args) -> _Route & {
     return router_->del(path, args...);
   }
 
@@ -324,7 +324,7 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto all(const String &path, Args... args) -> Route & {
+  auto all(const String &path, Args... args) -> _Route & {
     return router_->all(path, args...);
   }
 
@@ -337,7 +337,7 @@ public:
   /// @brief Returns an instance of a single route, which you can then use to
   /// handle HTTP verbs with optional middleware. Use app.route() to avoid
   /// duplicate route names (and thus typo errors).
-  auto route(const String &path) -> Route &;
+  auto route(const String &path) -> _Route &;
 
   /// @brief
   void listen(uint16_t port, const Callback startedCallback = nullptr);
@@ -382,7 +382,7 @@ public:
   IPAddress ip{};
 
   /// @brief intermediate pointer buffer for data callback
-  Route *route = nullptr;
+  _Route *route = nullptr;
 
   /// @brief Contains a string corresponding to the HTTP method of the request:
   /// GET, POST, PUT, and so on.
@@ -585,7 +585,7 @@ public: /* Methods*/
 };
 
 /// @brief
-class Route {
+class _Route {
 public:
 private:
   static const char delimiter = '/';
@@ -608,7 +608,7 @@ public:
 
 public:
   /// @brief
-  Route();
+  _Route();
 
   /// @brief
   /// @param path
@@ -632,7 +632,7 @@ public:
 };
 
 /// @brief
-class router {
+class _Router {
 private:
   /// @brief The app.mountpath property contains the path patterns
   /// on which a sub-app was mounted.
@@ -645,19 +645,19 @@ private:
   std::vector<ErrorCallback> errorHandlers{};
 
   /// @brief
-  router *parent = nullptr;
+  _Router *parent = nullptr;
 
   /// @brief
-  std::map<String, router *> routers_{};
+  std::map<String, _Router *> routers_{};
 
   /// @brief routes
-  std::vector<Route *> routes{};
+  std::vector<_Route *> routes{};
 
   /// @brief
   static bool gotoNext;
 
 public:
-  router();
+  _Router();
 
 #pragma region HTTP_Methods
 
@@ -712,7 +712,7 @@ private:
   /// @param middleware
   /// @return
   auto METHOD(const Method, const String &path,
-              const std::vector<MiddlewareCallback>) -> Route &;
+              const std::vector<MiddlewareCallback>) -> _Route &;
 
 public:
   /// @brief
@@ -720,7 +720,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto head(const String &path, Args... args) -> Route & {
+  auto head(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
@@ -731,7 +731,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto get(const String &path, Args... args) -> Route & {
+  auto get(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::GET, path, tmpMiddlewares);
@@ -743,7 +743,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto post(const String &path, Args... args) -> Route & {
+  auto post(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::POST, path, tmpMiddlewares);
@@ -754,7 +754,7 @@ public:
   /// @param callback
   /// @return
   template <typename... Args>
-  auto put(const String &path, Args... args) -> Route & {
+  auto put(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::PUT, path, tmpMiddlewares);
@@ -765,7 +765,7 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto del(const String &path, Args... args) -> Route & {
+  auto del(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::DELETE, path, tmpMiddlewares);
@@ -776,13 +776,13 @@ public:
   /// @param path
   /// @param callback
   template <typename... Args>
-  auto all(const String &path, Args... args) -> Route & {
+  auto all(const String &path, Args... args) -> _Route & {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::ALL, path, tmpMiddlewares);
   }
 
-  template <typename... Args> Route &adder(const String &path, Args... args) {
+  template <typename... Args> _Route &adder(const String &path, Args... args) {
     tmpMiddlewares.clear();
     addMiddleware(args...);
     return METHOD(Method::HEAD, path, tmpMiddlewares);
@@ -795,7 +795,7 @@ public:
   /// @brief Returns an instance of a single route, which you can then use to
   /// handle HTTP verbs with optional middleware. Use app.route() to avoid
   /// duplicate route names (and thus typo errors).
-  Route &route(const String &path);
+  _Route &route(const String &path);
 
   /// @brief
   auto dispatch(Request &, Response &) -> void;
@@ -832,7 +832,7 @@ public:
   /// @param mount_path
   /// @param other
   /// @return
-  auto use(const String &mount_path, router &) -> void;
+  auto use(const String &mount_path, _Router &) -> void;
 
   /// @brief The app.mountpath property contains one or more path patterns on
   /// which a sub-app was mounted.
@@ -847,7 +847,7 @@ END_EXPRESS_NAMESPACE
 
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name)                                    \
   typedef express express;                                                     \
-  typedef Route route;                                                         \
+  typedef _Route route;                                                        \
   typedef Request request;                                                     \
   typedef Response response;                                                   \
   typedef _Error Error;                                                        \
