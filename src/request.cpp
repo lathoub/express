@@ -27,8 +27,8 @@
 
 BEGIN_EXPRESS_NAMESPACE
 
-_Request::_Request(_Express &_Express, ClientType &ec)
-    : app(_Express), client(ec), method(Method::UNDEFINED) {
+_Request::_Request(_Express &express, ClientType &ec)
+    : app(express), client(ec), method(Method::UNDEFINED) {
   LOG_T(F("_Request constructor"));
   parse(client);
 }
@@ -38,6 +38,21 @@ _Request::_Request(_Express &_Express, ClientType &ec)
 /// none of the specified content types is acceptable, returns false (in which
 /// case, the application should respond with 406 "Not Acceptable").
 auto _Request::accepts(const String &types) -> bool { return false; }
+
+/// @brief Returns the matching content type if the incoming request’s
+/// “Content-Type” HTTP header field matches the MIME type specified by the
+/// type parameter. If the request has no body, returns null. Returns false
+/// otherwise.
+auto _Request::is(const String &types) -> String { return F(""); }
+
+/// @brief Range header parser.
+/// The size parameter is the maximum size of the resource.
+/// The options parameter is an object that can have the following properties.
+auto _Request::range(const size_t &size) -> const _Range & {
+  range_.parse(get(F("range")));
+  // TODO
+  return range_;
+};
 
 /// @brief Returns the specified HTTP request header field (case-insensitive
 /// match).
@@ -65,7 +80,7 @@ bool _Request::parse(ClientType &client) {
 
   LOG_V(F("First line"), reqStr);
 
-  method = Method::UNDEFINED;
+  method_ = Method::UNDEFINED;
   uri = "";
   hostname = "";
   body = "";
@@ -75,7 +90,6 @@ bool _Request::parse(ClientType &client) {
 
   protocol = F("http");
   secure = (protocol == F("https"));
-  ip = client.remoteIP();
 
   // First line of HTTP request looks like "GET /path HTTP/1.1"
   // Retrieve the "/path" part by finding the spaces
@@ -84,11 +98,11 @@ bool _Request::parse(ClientType &client) {
 
   if (addr_start == -1 || addr_end == -1) {
     LOG_V(F("_parseRequest: Invalid request: "), reqStr);
-    method = Method::ERROR;
+    method_ = Method::ERROR;
     return false;
   }
 
-  auto method_str = reqStr.substring(0, addr_start);
+  method = reqStr.substring(0, addr_start);
   auto url = reqStr.substring(addr_start + 1, addr_end);
   auto version_end = reqStr.substring(addr_end + 8);
   //  version = atoi(versionEnd.c_str());
@@ -104,19 +118,19 @@ bool _Request::parse(ClientType &client) {
   if (uri == F("/"))
     uri = F("");
 
-  method = Method::GET;
-  if (method_str == F("HEAD"))
-    method = Method::HEAD;
-  else if (method_str == "POST")
-    method = Method::POST;
-  else if (method_str == "DELETE")
-    method = Method::DELETE;
-  else if (method_str == "OPTIONS")
-    method = Method::OPTIONS;
-  else if (method_str == "PUT")
-    method = Method::PUT;
-  else if (method_str == "PATCH")
-    method = Method::PATCH;
+  method_ = Method::GET;
+  if (method == F("HEAD"))
+    method_ = Method::HEAD;
+  else if (method == "POST")
+    method_ = Method::POST;
+  else if (method == "DELETE")
+    method_ = Method::DELETE;
+  else if (method == "OPTIONS")
+    method_ = Method::OPTIONS;
+  else if (method == "PUT")
+    method_ = Method::PUT;
+  else if (method == "PATCH")
+    method_ = Method::PATCH;
 
   // parse headers
   while (true) {
@@ -135,12 +149,26 @@ bool _Request::parse(ClientType &client) {
     header_name.toLowerCase();
     auto header_value = reqStr.substring(header_div + 2);
     headers[header_name] = header_value; // TODO keep all headers or just a few?
-
-    if (header_name.equalsIgnoreCase(F("Host")))
-      hostname = header_value;
   }
 
-  LOG_V(F("Method:"), method_str);
+  // always present
+  host = headers[F("host")];
+
+  if (app.disabled(F("trust proxy"))) {
+    auto index = host.indexOf(':');
+    hostname = host.substring(0, index);
+    ip = client.remoteIP();
+    // ip / ips?
+  } else {
+    auto index = headers[F("x-forwarded-for")].indexOf(':');
+    hostname = headers[F("x-forwarded-for")].substring(0, index); // left-most
+    ip = client.remoteIP();
+    // ip / ips?
+  }
+
+  LOG_V(F("Host:"), host);
+  LOG_V(F("Hostname:"), hostname);
+  LOG_V(F("Method:"), method);
   LOG_V(F("Uri:"), uri);
 
   LOG_V(F("Headers (all forced to lowercase)"));

@@ -32,7 +32,9 @@ BEGIN_EXPRESS_NAMESPACE
 _Express::_Express() {
   LOG_T(F("Express constructor"));
 
-  settings[F("env")] = F("production");
+  set(F("env"), F("production"));
+  // https://expressjs.com/en/guide/behind-proxies.html
+  disable(F("trust proxy")); // default is false
   //  settings[XPoweredBy] = F("X-Powered-By: _Express for Arduino");
 
   LOG_I(F("booting in"), settings[F("env")], F("mode"));
@@ -339,7 +341,7 @@ void _Express::run(ClientType &client) {
       // Construct request object and read/parse incoming bytes
       _Request req(*this, client);
 
-      if (req.method != Method::ERROR) {
+      if (req.method_ != Method::ERROR) {
         _Response res(*this, client);
 
         router_->dispatch(req, res);

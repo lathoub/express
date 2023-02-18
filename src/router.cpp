@@ -100,7 +100,7 @@ auto _Router::evaluate(_Request &req, _Response &res) -> bool {
   _Route::splitToVector(req.uri, req_indices);
 
   for (auto route : routes) {
-    if ((route->method == Method::ALL || req.method == route->method) &&
+    if ((route->method == Method::ALL || req.method_ == route->method) &&
         match(route->path, route->indices, req.uri, req_indices, req.params)) {
       res.status_ = HttpStatus::OK;
       req.route = route;
