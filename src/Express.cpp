@@ -48,7 +48,7 @@ _Express::_Express() {
 /// @param req
 /// @param res
 /// @return
-auto _Express::parseJson(Request &req, Response &res, const NextCallback next)
+auto _Express::parseJson(_Request &req, _Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -98,7 +98,7 @@ auto _Express::parseJson(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto _Express::parseRaw(Request &req, Response &res, const NextCallback next)
+auto _Express::parseRaw(_Request &req, _Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -149,7 +149,7 @@ auto _Express::parseRaw(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto _Express::parseText(Request &req, Response &res, const NextCallback next)
+auto _Express::parseText(_Request &req, _Response &res, const NextCallback next)
     -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -162,7 +162,7 @@ auto _Express::parseText(Request &req, Response &res, const NextCallback next)
 /// @param req
 /// @param res
 /// @return
-auto _Express::parseUrlencoded(Request &req, Response &res,
+auto _Express::parseUrlencoded(_Request &req, _Response &res,
                               const NextCallback next) -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
@@ -337,10 +337,10 @@ void _Express::run(ClientType &client) {
   while (client.connected()) {
     if (client.available()) {
       // Construct request object and read/parse incoming bytes
-      Request req(*this, client);
+      _Request req(*this, client);
 
       if (req.method != Method::ERROR) {
-        Response res(*this, client);
+        _Response res(*this, client);
 
         router_->dispatch(req, res);
 

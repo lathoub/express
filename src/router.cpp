@@ -93,7 +93,7 @@ auto _Router::match(const String &path, const std::vector<PosLen> &pathItems,
 /// @param res
 /// @param next
 /// @return
-auto _Router::evaluate(Request &req, Response &res) -> bool {
+auto _Router::evaluate(_Request &req, _Response &res) -> bool {
   LOG_V(F("_Router::evaluate, req.uri:"), req.uri, F("routes:"), routes.size());
 
   std::vector<PosLen> req_indices{};
@@ -142,7 +142,7 @@ auto _Router::evaluate(Request &req, Response &res) -> bool {
 }
 
 /// @brief
-auto _Router::dispatch(Request &req, Response &res) -> void {
+auto _Router::dispatch(_Request &req, _Response &res) -> void {
   /// @brief run the _Router wide middlewares
   gotoNext = true;
   for (const auto middleware : middlewares) {

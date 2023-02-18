@@ -11,7 +11,7 @@ public:
   static bool challenge;
 
 public:
-  static auto auth(Request &req, Response &res, const NextCallback next)
+  static auto auth(_Request &req, _Response &res, const NextCallback next)
       -> void {
     auto basicAuth = req.headers["authorization"]; // basic encodeUserPasswd
 

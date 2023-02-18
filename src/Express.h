@@ -30,8 +30,8 @@
 BEGIN_EXPRESS_NAMESPACE
 
 // Forward declaration
-class Request;
-class Response;
+class _Request;
+class _Response;
 class _Route;
 class _Error;
 class _Router;
@@ -39,9 +39,9 @@ class _Express;
 
 // Callback definitions
 using NextCallback = void (*)(const _Error *error);
-using ErrorCallback = void (*)(_Error &, Request &, Response &,
+using ErrorCallback = void (*)(_Error &, _Request &, _Response &,
                                const NextCallback next);
-using MiddlewareCallback = void (*)(Request &, Response &,
+using MiddlewareCallback = void (*)(_Request &, _Response &,
                                     const NextCallback next);
 using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
                                       const char *f);
@@ -103,7 +103,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseJson(Request &, Response &,
+  static auto parseJson(_Request &, _Response &,
                         const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
@@ -113,7 +113,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseRaw(Request &, Response &,
+  static auto parseRaw(_Request &, _Response &,
                        const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
@@ -123,7 +123,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseText(Request &, Response &,
+  static auto parseText(_Request &, _Response &,
                         const NextCallback callback = nullptr) -> void;
 
   // TODO: static options
@@ -133,7 +133,7 @@ private:
   /// @param req
   /// @param res
   /// @return
-  static auto parseUrlencoded(Request &, Response &,
+  static auto parseUrlencoded(_Request &, _Response &,
                               const NextCallback callback = nullptr) -> void;
 
   /// @brief This is a built-in middleware function in _Express. It serves
@@ -354,7 +354,7 @@ public:
 };
 
 /// @brief
-class Request {
+class _Request {
 public:
   /// @brief
   ClientType &client;
@@ -416,7 +416,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Request(_Express &, ClientType &);
+  _Request(_Express &, ClientType &);
 
   /// @brief Checks if the specified content types are acceptable, based on the
   /// request’s Accept HTTP header field. The method returns the best match, or
@@ -447,7 +447,7 @@ private:
 };
 
 /// @brief
-class Response {
+class _Response {
 private:
   static void renderFile(ClientType &, const char *f);
 
@@ -491,7 +491,7 @@ public:
 
 public: /* Methods*/
   /// @brief Constructor
-  Response(_Express &, ClientType &);
+  _Response(_Express &, ClientType &);
 
   /// @brief Appends the specified value to the HTTP response header field. If
   /// the header is not already set, it creates the header with the specified
@@ -500,7 +500,7 @@ public: /* Methods*/
   /// @param field
   /// @param value
   /// @return
-  auto append(const String &field, const String &value) -> Response &;
+  auto append(const String &field, const String &value) -> _Response &;
 
   /// @brief Performs content-negotiation on the Accept HTTP header on the
   /// request object, when present. It uses req.accepts() to select a handler
@@ -526,7 +526,7 @@ public: /* Methods*/
   /// @param encoding
   /// @return
   auto end(Buffer *data = nullptr, const String &encoding = F(""))
-      -> Response &;
+      -> _Response &;
 
   /// @brief Ends the response process
   static void end();
@@ -546,7 +546,7 @@ public: /* Methods*/
   /// @brief Sends the HTTP response.
   /// Optional parameters:
   /// @param view
-  auto send(const String &body) -> Response &;
+  auto send(const String &body) -> _Response &;
   ;
 
   /// @brief Renders a view and sends the rendered HTML string to the client.
@@ -574,14 +574,14 @@ public: /* Methods*/
   /// @param field
   /// @param value
   /// @return
-  auto set(const String &field, const String &value) -> Response &;
+  auto set(const String &field, const String &value) -> _Response &;
 
   /// @brief Sends a JSON response. This method sends a response (with the
   /// correct content-type) that is the parameter converted to a JSON string
   /// using JSON.stringify().
   /// @param body
   /// @return
-  auto status(const HttpStatus) -> Response &;
+  auto status(const HttpStatus) -> _Response &;
 };
 
 /// @brief
@@ -677,7 +677,7 @@ private:
   /// @brief
   /// @param req
   /// @param res
-  auto evaluate(Request &, Response &) -> bool;
+  auto evaluate(_Request &, _Response &) -> bool;
 
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
@@ -798,7 +798,7 @@ public:
   _Route &route(const String &path);
 
   /// @brief
-  auto dispatch(Request &, Response &) -> void;
+  auto dispatch(_Request &, _Response &) -> void;
 
 #pragma region Middleware
 
@@ -848,8 +848,8 @@ END_EXPRESS_NAMESPACE
 #define EXPRESS_CREATE_NAMED_INSTANCE(Name)                                    \
   typedef _Express express;                                                    \
   typedef _Route route;                                                        \
-  typedef Request request;                                                     \
-  typedef Response response;                                                   \
+  typedef _Request request;                                                     \
+  typedef _Response response;                                                   \
   typedef _Error Error;                                                        \
   _Express Name;
 
