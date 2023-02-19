@@ -50,6 +50,7 @@ using Callback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
 using MountCallback = void (*)(_Express *);
+using Write_Callback = void (*)(const char*, const uint&);
 
 /// @brief
 class _Error {
@@ -487,7 +488,7 @@ private:
 /// @brief
 class _Response {
 private:
-  static void renderFile(ClientType &, Options *, const char *f);
+  static void renderFile(ClientType &, Options *, const char *f, const Write_Callback);
 
 public:
   /// @brief

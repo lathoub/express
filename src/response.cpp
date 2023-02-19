@@ -40,8 +40,8 @@ _Response::_Response(_Express &_Express, ClientType &client)
 /// @brief  // default renderer. Send content in chuncks for x bytes
 /// @param client
 /// @param f
-void _Response::renderFile(ClientType &client, Options *options,
-                           const char *f) {
+void _Response::renderFile(ClientType &client, Options *options, const char *f,
+                           const Write_Callback callback) {
   LOG_V(F("default renderer"), (options) ? F("with options.") : F(""));
 
   const size_t maxChunkLen = 2048;
@@ -60,6 +60,8 @@ void _Response::renderFile(ClientType &client, Options *options,
   while (i <= until) {
     auto remaining = (i + maxChunkLen <= until) ? maxChunkLen : until - i + 1;
     LOG_V("write", i, remaining);
+    if (callback)
+      callback(f + i, remaining);
     client.write(f + i, remaining);
     i += remaining;
   }
@@ -263,8 +265,10 @@ void _Response::sendBody(ClientType &client, locals_t &locals) {
         engine(client, locals, options, contentsCallback());
     } else {
       LOG_V(F("using default renderer"));
-      renderFile(client, options,
-                 contentsCallback() /* callback */); // default renderer
+      renderFile(client, options, contentsCallback(),
+                 [](const char *buffer, const uint &len) {
+                   LOG_V(F("writing............."));
+                 }); // TODO
     }
   }
 }
