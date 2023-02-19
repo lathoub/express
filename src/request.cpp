@@ -50,7 +50,9 @@ auto _Request::is(const String &types) -> String { return F(""); }
 /// The options parameter is an object that can have the following properties.
 auto _Request::range(const size_t &size) -> const _Range & {
   range_.parse(get(F("range")));
-  // TODO
+  // cap the end 
+  if (size > 0 && range_.start + range_.end > size)
+    range_.end = range_.start + size;
   return range_;
 };
 

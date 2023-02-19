@@ -31,18 +31,44 @@ BEGIN_EXPRESS_NAMESPACE
 _Range::_Range() {
   start = 0;
   end = 0;
-}
+};
 
 /// @brief parse content:
 /// bytes=100-1023
 /// Range: bytes=0-50, 100-150 // not supported
 auto _Range::parse(const String &str) -> void {
+  type = F("bytes");
+  start = 0;
+  end = 0;
+
+  if (str.length() < 3)
+    return;
+
   auto index = str.indexOf('=');
+  if (index < 0)
+    return;
+
   type = str.substring(0, index);
   auto startEnd = str.substring(index + 1);
   index = startEnd.indexOf('-');
+  if (index < 0)
+    return;
+
   start = startEnd.substring(0, index).toInt();
-  end = startEnd.substring(index + 1).toInt();
+
+  auto endStr = startEnd.substring(index + 1);
+  endStr.trim();
+  end = (endStr.length() == 0) ? -1 : endStr.toInt();
+}
+
+auto _Range::toString() -> String {
+  String tmp = F("bytes=");
+  tmp += start;
+  tmp += F("-");
+  if (end >= 0)
+    tmp += end;
+
+  return tmp;
 }
 
 END_EXPRESS_NAMESPACE

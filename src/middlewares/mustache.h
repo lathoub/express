@@ -58,7 +58,7 @@ private:
 
 public:
   /// @brief
-  static void renderFile(ClientType &client, locals_t &locals, const char *f) {
+  static void renderFile(ClientType &client, locals_t &locals, Options *options, const char *f) {
     LOG_V(F("> renderFile"));
 
     size_t i = 0;

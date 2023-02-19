@@ -97,6 +97,7 @@ using WriteCallback = void (*)(const char *, int);
 struct File {
   String filename;
   ContentCallback contentsCallback;
+  size_t length() { return strlen(contentsCallback()); } 
 };
 
 #include "Buffer.hpp"
@@ -108,7 +109,41 @@ struct DefaultSettings {};
 
 class Options {
 public:
-  std::map<String, String> headers;
+  /// Object containing HTTP headers to serve with the file.
+  std::map<String, String> headers{};
+  /// Enable or disable accepting ranged requests.
+  bool acceptRanges = true;
+  /// Enable or disable setting Cache-Control response header
+  bool cacheControl = true;
+  /// Enable or disable the immutable directive in the Cache-Control response
+  /// header. If enabled, the maxAge option should also be specified to enable
+  /// caching. The immutable directive will prevent supported clients from
+  /// making conditional requests during the life of the maxAge option to check
+  /// if the file has changed.
+  bool immutable = false;
+  /// Option for serving dotfiles. Possible values are “allow”, “deny”,
+  /// “ignore”.
+  String dotfiles = F("ignore");
+  /// Sets the max-age property of the Cache-Control header in milliseconds or a
+  /// string in ms format
+  int maxAge = 0;
+  /// Sets the max-age property of the Cache-Control header in milliseconds or a
+  /// string in ms format
+  String root{};
+
+  /// @brief Default constructor
+  Options() {}
+
+  /// @brief Copy constructor
+  Options(Options *another) {
+    this->headers = another->headers;
+    this->acceptRanges = another->acceptRanges;
+    this->cacheControl = another->cacheControl;
+    this->immutable = another->immutable;
+    this->dotfiles = another->dotfiles;
+    this->maxAge = another->maxAge;
+    this->root = another->root;
+  }
 };
 
 struct PosLen {

@@ -44,7 +44,7 @@ using ErrorCallback = void (*)(_Error &, _Request &, _Response &,
                                const NextCallback next);
 using MiddlewareCallback = void (*)(_Request &, _Response &,
                                     const NextCallback next);
-using RenderEngineCallback = void (*)(ClientType &, locals_t &locals,
+using RenderEngineCallback = void (*)(ClientType &, locals_t &locals, Options*,
                                       const char *f);
 using Callback = void (*)();
 using DataCallback = void (*)(const Buffer &);
@@ -62,10 +62,11 @@ public:
 class _Range {
 public:
   String type; // must be 'bytes'
-  size_t start;
-  size_t end;
+  int start = 0;
+  int end = 0;
   _Range();
   void parse(const String &);
+  String toString();
 };
 
 /// @brief
@@ -486,11 +487,9 @@ private:
 /// @brief
 class _Response {
 private:
-  static void renderFile(ClientType &, const char *f);
+  static void renderFile(ClientType &, Options *, const char *f);
 
 public:
-  String body_{};
-
   /// @brief
   const ClientType &client_;
 
@@ -507,12 +506,17 @@ public:
   /// @return
   _Express &app;
 
+private:
+  String body_{};
+
   /// @brief derefered rendering
   ContentCallback contentsCallback{};
 
   locals_t renderLocals{};
 
   String filename;
+
+  Options *options = nullptr;
 
 public:
   /// @brief
@@ -599,7 +603,7 @@ public: /* Methods*/
   auto render(File &, locals_t &) -> void;
 
   /// @brief .
-  auto sendFile(File &, Options *options = nullptr) -> void;
+  auto sendFile(const File &, Options *options = nullptr) -> void;
 
   /// @brief Sets the response HTTP status code to statusCode and sends the
   ///  registered status message as the text response body. If an unknown

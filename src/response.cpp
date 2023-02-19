@@ -37,24 +37,31 @@ _Response::_Response(_Express &_Express, ClientType &client)
   LOG_T(F("_Response constructor"));
 }
 
-/// @brief  // default renderer
+/// @brief  // default renderer. Send content in chuncks for x bytes
 /// @param client
 /// @param f
-void _Response::renderFile(ClientType &client, const char *f) {
-  size_t i = 0;
-  size_t start = 0;
-  while (f[start + i] != '\0') {
-    while (f[start + i] != '\n' && f[start + i] != '\0')
-      i++;
+void _Response::renderFile(ClientType &client, Options *options,
+                           const char *f) {
+  LOG_V(F("default renderer"), (options) ? F("with options.") : F(""));
 
-    client.write(f + start, i);
-    client.write('\n');
+  const size_t maxChunkLen = 4;
 
-    if (f[start + i] == '\0')
-      break;
+  _Range range;
+  if (options && options->acceptRanges)
+    range.parse(options->headers[F("range")]);
 
-    start += i + 1;
-    i = 0;
+  const size_t until = (range.end <= 0)           ? strlen(f) - 1
+                       : (range.end >= strlen(f)) ? strlen(f) - 1
+                                                  : range.end;
+  LOG_V("until", until);
+  LOG_V("range", range.start, range.end);
+
+  size_t i = range.start;
+  while (i <= until) {
+    auto remaining = (i + maxChunkLen <= until) ? maxChunkLen : until - i + 1;
+    LOG_V("write", i, remaining);
+    client.write(f + i, remaining);
+    i += remaining;
   }
 }
 
@@ -62,7 +69,8 @@ void _Response::renderFile(ClientType &client, const char *f) {
 /// @param field
 /// @param value
 /// @return
-auto _Response::append(const String &field, const String &value) -> _Response & {
+auto _Response::append(const String &field, const String &value)
+    -> _Response & {
   for (auto [key, header] : headers) {
     if (field.equalsIgnoreCase(key)) {
       // Appends the specified value to the HTTP response header
@@ -99,7 +107,7 @@ auto _Response::cookie() -> void{
 
 /// @brief
 /// @return
-auto _Response::clearCookie(const String& name) -> void{
+auto _Response::clearCookie(const String &name) -> void{
     // TODO
 };
 
@@ -157,7 +165,8 @@ auto _Response::send(const String &body) -> _Response & {
 ///      possible error and rendered string, but does not perform an automated
 ///      response. When an error occurs, the method invokes next(err)
 ///      internally.
-/// @param view
+/// @param file
+/// @param locals
 auto _Response::render(File &file, locals_t &locals) -> void {
   // NOTE: don't render here just yet (status and headers need to be send first)
   // so store a backpointer that can be called in the sendBody function.
@@ -171,16 +180,16 @@ auto _Response::render(File &file, locals_t &locals) -> void {
 }
 
 /// @brief .
-auto _Response::sendFile(File &file, Options *options) -> void {
-  if (options) {
-    for (auto [first, second] : options->headers) {
-      LOG_V(first, second);
-      set(first, second);
-    }
-  }
+auto _Response::sendFile(const File &file, Options *options) -> void {
+  this->contentsCallback = file.contentsCallback;
+  this->filename = file.filename;
+  this->options = new Options(options);
 
-  contentsCallback = file.contentsCallback;
-  filename = file.filename;
+  LOG_V(F("sendFile options"));
+  if (options) {
+    LOG_V(F("options"), this->options->acceptRanges,
+          this->options->headers[F("range")]);
+  }
 }
 
 /// @brief Sets the response HTTP status code to statusCode and sends the
@@ -245,16 +254,18 @@ void _Response::sendBody(ClientType &client, locals_t &locals) {
     int lastDot = filename.lastIndexOf('.');
     auto ext = filename.substring(lastDot + 1);
 
-    LOG_V(F("ext"), ext);
+    LOG_V(F("file extension:"), ext);
 
     auto engineName = app.settings[F("view engine")];
-    LOG_V(F("engineName"), engineName);
     if (engineName.equals(ext)) {
       auto engine = app.engines[engineName];
       if (engine)
-        engine(client, locals, contentsCallback());
-    } else
-      renderFile(client, contentsCallback()); // default renderer
+        engine(client, locals, options, contentsCallback());
+    } else {
+      LOG_V(F("using default renderer"));
+      renderFile(client, options,
+                 contentsCallback() /* callback */); // default renderer
+    }
   }
 }
 
