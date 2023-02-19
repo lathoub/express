@@ -37,7 +37,7 @@ _Range::_Range() {
 /// bytes=100-1023
 /// Range: bytes=0-50, 100-150 // not supported
 auto _Range::parse(const String &str) -> void {
-  type = F("bytes");
+  type = F("");
   start = 0;
   end = 0;
 
@@ -59,6 +59,7 @@ auto _Range::parse(const String &str) -> void {
   auto endStr = startEnd.substring(index + 1);
   endStr.trim();
   end = (endStr.length() == 0) ? -1 : endStr.toInt();
+  type = F("bytes");
 }
 
 auto _Range::toString() -> String {

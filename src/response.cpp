@@ -44,7 +44,7 @@ void _Response::renderFile(ClientType &client, Options *options,
                            const char *f) {
   LOG_V(F("default renderer"), (options) ? F("with options.") : F(""));
 
-  const size_t maxChunkLen = 4;
+  const size_t maxChunkLen = 2048;
 
   _Range range;
   if (options && options->acceptRanges)
@@ -183,11 +183,11 @@ auto _Response::render(File &file, locals_t &locals) -> void {
 auto _Response::sendFile(const File &file, Options *options) -> void {
   this->contentsCallback = file.contentsCallback;
   this->filename = file.filename;
-  this->options = new Options(options);
+  if (options)
+    this->options = new Options(options);
 
-  LOG_V(F("sendFile options"));
   if (options) {
-    LOG_V(F("options"), this->options->acceptRanges,
+    LOG_V(F("sendFile options"), this->options->acceptRanges,
           this->options->headers[F("range")]);
   }
 }
