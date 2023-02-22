@@ -4,10 +4,8 @@
 // #define PLATFORM ESP32
 #define PLATFORM ESP32_W5500
 
-
-
-
-
+#include <Express.h>
+using namespace EXPRESS_NAMESPACE;
 
 #if PLATFORM == ESP32
 #include "arduino_secrets.h"

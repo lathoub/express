@@ -267,7 +267,7 @@ void _Response::sendBody(ClientType &client, locals_t &locals) {
       LOG_V(F("using default renderer"));
       renderFile(client, options, contentsCallback(),
                  [](const char *buffer, const uint &len) {
-                   LOG_V(F("writing............."));
+                   LOG_V(F(""));
                  }); // TODO
     }
   }

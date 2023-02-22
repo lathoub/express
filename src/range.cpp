@@ -49,17 +49,55 @@ auto _Range::parse(const String &str) -> void {
     return;
 
   type = str.substring(0, index);
-  auto startEnd = str.substring(index + 1);
-  index = startEnd.indexOf('-');
-  if (index < 0)
-    return;
+  LOG_V(".type", type);
 
-  start = startEnd.substring(0, index).toInt();
+  auto ranges = str.substring(index + 1);
+  //LOG_V(".ranges", ranges);
 
-  auto endStr = startEnd.substring(index + 1);
-  endStr.trim();
-  end = (endStr.length() == 0) ? -1 : endStr.toInt();
-  type = F("bytes");
+  index = ranges.indexOf(',');
+  //LOG_V(".index", index);
+  while (index >= 0) {
+
+    auto range = ranges.substring(0, index);
+    //LOG_V("range", range);
+
+    ranges = ranges.substring(index + 1);
+    //LOG_V("ranges", ranges);
+
+    index = range.indexOf('-');
+    if (index >= 0) {
+      auto startStr = range.substring(0, index);
+      LOG_V("startStr", startStr);
+      auto endStr = range.substring(index + 1);
+      LOG_V("endStr", endStr);
+    }
+
+    index = ranges.indexOf(',');
+    //LOG_V(":index", index);
+  }
+
+  index = ranges.indexOf('-');
+  if (index >= 0) {
+    auto startStr = ranges.substring(0, index);
+    LOG_V("startStr", startStr);
+    auto endStr = ranges.substring(index + 1);
+    LOG_V("endStr", endStr);
+  }
+
+  /*
+    //----
+    auto startEnd = str.substring(index + 1);
+    index = startEnd.indexOf('-');
+    if (index < 0)
+      return;
+
+    start = startEnd.substring(0, index).toInt();
+
+    auto endStr = startEnd.substring(index + 1);
+    endStr.trim();
+    end = (endStr.length() == 0) ? -1 : endStr.toInt();
+  */
+  // type = F("bytes");
 }
 
 auto _Range::toString() -> String {

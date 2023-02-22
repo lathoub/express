@@ -51,8 +51,8 @@ auto _Request::is(const String &types) -> String { return F(""); }
 auto _Request::range(const size_t &size) -> const _Range & {
   range_.parse(get(F("range")));
   // cap the end 
-  if (size > 0 && range_.start + range_.end > size)
-    range_.end = range_.start + size;
+ // if (size > 0 && range_.start + range_.end > size)
+ //   range_.end = range_.start + size;
   return range_;
 };
 
