@@ -111,7 +111,7 @@ auto _Router::evaluate(_Request &req, _Response &res) -> bool {
         try {
           middleware(req, res, [gotoNext](const _Error *error) {
             if (error) // reconstruct error message in new object
-              throw new _Error(error->message);
+              throw new _Error(0, error->message);
             gotoNext = true;
           });
         } catch (_Error *error) {

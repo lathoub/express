@@ -48,11 +48,46 @@ auto _Request::is(const String &types) -> String { return F(""); }
 /// @brief Range header parser.
 /// The size parameter is the maximum size of the resource.
 /// The options parameter is an object that can have the following properties.
-auto _Request::range(const size_t &size) -> const _Range & {
-  range_.parse(get(F("range")));
-  // cap the end 
- // if (size > 0 && range_.start + range_.end > size)
- //   range_.end = range_.start + size;
+auto _Request::range(const size_t &size) -> const Range & {
+  range_.ranges.clear();
+
+  auto str = get(F("range"));
+
+  if (str.length() < 3)
+    return range_;
+
+  auto index = str.indexOf('=');
+  if (index < 0)
+    return range_;
+
+  range_.type = str.substring(0, index);  // before = (type)
+  auto ranges = str.substring(index + 1); // after =
+
+  index = ranges.indexOf(',');
+  while (index >= 0) {
+    auto range = ranges.substring(0, index); // before ,
+    ranges = ranges.substring(index + 1);    // after ,
+
+    index = range.indexOf('-');
+    if (index >= 0)
+      range_.ranges.push_back({range.substring(0, index).toInt(),
+                               range.substring(index + 1).toInt()});
+
+    index = ranges.indexOf(',');
+  }
+
+  index = ranges.indexOf('-');
+  if (index >= 0)
+    range_.ranges.push_back({ranges.substring(0, index).toInt(),
+                             ranges.substring(index + 1).toInt()});
+
+  // if last end is zero, add maxint
+  if (range_.ranges.back().end == 0)
+    range_.ranges.back().end = INT_MAX;
+
+  // TODO check for overlap
+  // throw new _Error(HttpStatus::RANGE_NOT_SATISFIABLE);
+
   return range_;
 };
 

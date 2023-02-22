@@ -107,6 +107,16 @@ struct File {
 /// The max len is set here - override if needed
 struct DefaultSettings {};
 
+struct beginEnd {
+  int start;
+  int end;
+};
+
+struct Range {
+  String type;
+  std::vector<beginEnd> ranges;
+};
+
 class Options {
 public:
   /// Object containing HTTP headers to serve with the file.

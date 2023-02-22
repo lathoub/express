@@ -28,6 +28,6 @@
 BEGIN_EXPRESS_NAMESPACE
 
 /// @brief Constructor
-_Error::_Error(const String &msg) { message = msg; }
+_Error::_Error(const uint32_t &status, const String &msg) { message = msg; }
 
 END_EXPRESS_NAMESPACE

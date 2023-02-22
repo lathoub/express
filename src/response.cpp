@@ -45,8 +45,8 @@ void _Response::renderFile(ClientType &client, Options *options, const char *f,
   LOG_V(F("default renderer"), (options) ? F("with options.") : F(""));
 
   const size_t maxChunkLen = 2048;
-
-  _Range range;
+/*
+  Range range;
   if (options && options->acceptRanges)
     range.parse(options->headers[F("range")]);
 
@@ -65,6 +65,7 @@ void _Response::renderFile(ClientType &client, Options *options, const char *f,
     client.write(f + i, remaining);
     i += remaining;
   }
+  */
 }
 
 /// @brief
