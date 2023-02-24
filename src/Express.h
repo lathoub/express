@@ -34,7 +34,6 @@ class _Request;
 class _Response;
 class _Route;
 class _Error;
-class _Range;
 class _Router;
 class _Express;
 
@@ -44,30 +43,19 @@ using ErrorCallback = void (*)(_Error &, _Request &, _Response &,
                                const NextCallback next);
 using MiddlewareCallback = void (*)(_Request &, _Response &,
                                     const NextCallback next);
-using RenderEngineCallback = void (*)(ClientType &, locals_t &locals, Options*,
+using RenderEngineCallback = void (*)(ClientType &, locals_t &locals, Options *,
                                       const char *f);
 using Callback = void (*)();
 using DataCallback = void (*)(const Buffer &);
 using EndDataCallback = void (*)();
 using MountCallback = void (*)(_Express *);
-using Write_Callback = void (*)(const char*, const uint&);
+using Write_Callback = void (*)(const char *, const uint &);
 
 /// @brief
 class _Error {
 public:
   String message;
-  _Error(const String &);
-};
-
-/// @brief
-class _Range {
-public:
-  String type; // must be 'bytes'
-  int start = 0;
-  int end = 0;
-  _Range();
-  void parse(const String &);
-  String toString();
+  _Error(const String & msg = F(""));
 };
 
 /// @brief
@@ -455,13 +443,17 @@ public: /* Methods*/
   /// @brief Range header parser.
   /// The size parameter is the maximum size of the resource.
   /// The options parameter is an object that can have the following properties.
-  auto range(const size_t & = 0) -> const _Range &;
+  auto range(const size_t & = SIZE_MAX) -> const Range &;
 
   /// @brief Returns the specified HTTP request header field (case-insensitive
   /// match).
   /// @param field
   /// @return
   auto get(const String &) -> String;
+
+  /// @brief
+  /// @param data
+  static auto rangeParse(const String &, const size_t& = INT_MAX) -> const Range&;
 
 private:
   /// @brief
@@ -470,7 +462,7 @@ private:
   bool parse(ClientType &);
 
   /// @brief
-  _Range range_;
+  Range range_;
 
   /// @brief
   Method method_{};
@@ -488,7 +480,8 @@ private:
 /// @brief
 class _Response {
 private:
-  static void renderFile(ClientType &, Options *, const char *f, const Write_Callback);
+  static void renderFile(ClientType &, Options *, const char *f,
+                         const Write_Callback);
 
 public:
   /// @brief

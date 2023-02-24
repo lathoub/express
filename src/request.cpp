@@ -48,12 +48,8 @@ auto _Request::is(const String &types) -> String { return F(""); }
 /// @brief Range header parser.
 /// The size parameter is the maximum size of the resource.
 /// The options parameter is an object that can have the following properties.
-auto _Request::range(const size_t &size) -> const _Range & {
-  range_.parse(get(F("range")));
-  // cap the end 
-  if (size > 0 && range_.start + range_.end > size)
-    range_.end = range_.start + size;
-  return range_;
+auto _Request::range(const size_t &size) -> const Range & {
+  return _Request::rangeParse(get(F("range")), size);
 };
 
 /// @brief Returns the specified HTTP request header field (case-insensitive
