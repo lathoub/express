@@ -54,9 +54,8 @@ using Write_Callback = void (*)(const char *, const uint &);
 /// @brief
 class _Error {
 public:
-  uint32_t status;
   String message;
-  _Error(const uint32_t &, const String & msg = F(""));
+  _Error(const String & msg = F(""));
 };
 
 /// @brief
@@ -444,13 +443,17 @@ public: /* Methods*/
   /// @brief Range header parser.
   /// The size parameter is the maximum size of the resource.
   /// The options parameter is an object that can have the following properties.
-  auto range(const size_t & = 0) -> const Range &;
+  auto range(const size_t & = SIZE_MAX) -> const Range &;
 
   /// @brief Returns the specified HTTP request header field (case-insensitive
   /// match).
   /// @param field
   /// @return
   auto get(const String &) -> String;
+
+  /// @brief
+  /// @param data
+  static auto rangeParse(const String &, const size_t& = INT_MAX) -> const Range&;
 
 private:
   /// @brief

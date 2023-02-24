@@ -97,7 +97,7 @@ using WriteCallback = void (*)(const char *, int);
 struct File {
   String filename;
   ContentCallback contentsCallback;
-  size_t length() { return strlen(contentsCallback()); } 
+  size_t length() { return strlen(contentsCallback()); }
 };
 
 #include "Buffer.hpp"
@@ -115,6 +115,19 @@ struct beginEnd {
 struct Range {
   String type;
   std::vector<beginEnd> ranges;
+  String toString() {
+    String str(type);
+    str += F("=");
+    for (auto [start, end] : ranges) {
+      str += start;
+      str += F("-");
+      str += end;
+      str += F(",");
+    }
+    str[str.length() - 1] = '\0';
+
+    return str;
+  }
 };
 
 class Options {
@@ -128,17 +141,17 @@ public:
   /// Enable or disable the immutable directive in the Cache-Control response
   /// header. If enabled, the maxAge option should also be specified to enable
   /// caching. The immutable directive will prevent supported clients from
-  /// making conditional requests during the life of the maxAge option to check
-  /// if the file has changed.
+  /// making conditional requests during the life of the maxAge option to
+  /// check if the file has changed.
   bool immutable = false;
   /// Option for serving dotfiles. Possible values are “allow”, “deny”,
   /// “ignore”.
   String dotfiles = F("ignore");
-  /// Sets the max-age property of the Cache-Control header in milliseconds or a
-  /// string in ms format
+  /// Sets the max-age property of the Cache-Control header in milliseconds or
+  /// a string in ms format
   int maxAge = 0;
-  /// Sets the max-age property of the Cache-Control header in milliseconds or a
-  /// string in ms format
+  /// Sets the max-age property of the Cache-Control header in milliseconds or
+  /// a string in ms format
   String root{};
 
   /// @brief Default constructor
@@ -175,9 +188,9 @@ enum Method {
            // by the target resource.
   OPTIONS, // The OPTIONS method describes the communication options for the
            // target resource.
-  TRACE, // The TRACE method performs a message loop-back test along the path to
-         // the target resource.
-  PATCH, // The PATCH method applies partial modifications to a resource.
+  TRACE,   // The TRACE method performs a message loop-back test along the path
+           // to the target resource.
+  PATCH,   // The PATCH method applies partial modifications to a resource.
   ALL,
   UNDEFINED = 999,
   ERROR = 999,
