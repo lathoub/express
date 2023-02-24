@@ -57,7 +57,7 @@ void _Response::renderFile(ClientType &client, Options *options, const char *f,
     while (i < end) {
       auto remaining =
           (i + maxChunkLen <= end) ? maxChunkLen : end - i + 1; // size
-//      LOG_V("write", i, remaining);
+      //      LOG_V("write", i, remaining);
       if (callback)
         callback(f + i, remaining);
       client.write(f + i, remaining);
