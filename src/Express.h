@@ -55,7 +55,7 @@ using Write_Callback = void (*)(const char *, const uint &);
 class _Error {
 public:
   String message;
-  _Error(const String & msg = F(""));
+  _Error(const String &msg = F(""));
 };
 
 /// @brief
@@ -341,7 +341,7 @@ public:
   auto route(const String &path) -> _Route &;
 
   /// @brief
-  void listen(uint16_t port, const Callback startedCallback = nullptr);
+  void listen(uint16_t port = 0, const Callback startedCallback = nullptr);
 
   /// @brief
   auto run() -> void;
@@ -453,7 +453,8 @@ public: /* Methods*/
 
   /// @brief
   /// @param data
-  static auto rangeParse(const String &, const size_t& = INT_MAX) -> const Range&;
+  static auto rangeParse(const String &, const size_t & = INT_MAX)
+      -> const Range &;
 
 private:
   /// @brief
@@ -692,6 +693,21 @@ private:
   static bool gotoNext;
 
 public:
+  /// @brief Enable case sensitivity
+  /// Disabled by default, treating “/Foo” and “/foo” as the same.
+  bool caseSensitive = false;
+
+  /// @brief Preserve the req.params values from the parent router. If the
+  /// parent and the child have conflicting param names, the child’s value take
+  /// precedence.
+  /// false by default
+  bool mergeParams = false;
+
+  /// @brief Enable strict routing.
+  /// Disabled by default, “/foo” and “/foo/” are treated the same by the
+  /// router.
+  bool strict = false;
+
   _Router();
 
 #pragma region HTTP_Methods

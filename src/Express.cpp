@@ -32,6 +32,8 @@ BEGIN_EXPRESS_NAMESPACE
 _Express::_Express() {
   LOG_T(F("Express constructor"));
 
+  randomSeed(analogRead(0));
+
   set(F("env"), F("production"));
   // https://expressjs.com/en/guide/behind-proxies.html
   disable(F("trust proxy")); // default is false
@@ -165,7 +167,7 @@ auto _Express::parseText(_Request &req, _Response &res, const NextCallback next)
 /// @param res
 /// @return
 auto _Express::parseUrlencoded(_Request &req, _Response &res,
-                              const NextCallback next) -> void {
+                               const NextCallback next) -> void {
   if (req.body != nullptr && req.body.length() > 0) {
     LOG_I(F("Body already read"));
     next(nullptr);
@@ -195,8 +197,8 @@ auto _Express::json() -> MiddlewareCallback { return parseJson; }
 /// @return a MiddlewareCallback
 auto _Express::text() -> MiddlewareCallback { return parseText; }
 
-/// @brief This is a built-in middleware function in _Express. It parses incoming
-/// requests with urlencoded payloads and is based on body-parser.
+/// @brief This is a built-in middleware function in _Express. It parses
+/// incoming requests with urlencoded payloads and is based on body-parser.
 ///
 /// @return Returns middleware that only parses urlencoded bodies and only looks
 /// at requests where the Content-Type header matches the type option. This
@@ -300,6 +302,9 @@ void _Express::listen(uint16_t port, const Callback startedCallback) {
             "and processing continous."));
     return;
   }
+
+  if (port == 0)
+    port = random(49152, 65535); // ephemeral ports
 
   this->port = port;
 
