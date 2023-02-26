@@ -92,8 +92,6 @@ public:
   /// are valid only for the lifetime of the request.
   locals_t locals;
 
-#pragma region _Express()
-
 private:
   // bodyparser
 
@@ -165,8 +163,6 @@ public:
 
   ///
   static auto Router() -> _Router &;
-
-#pragma endregion _Express
 
 private:
 public:
@@ -267,8 +263,6 @@ public:
   /// @param callback
   auto on(const String &name, const MountCallback) -> void;
 
-#pragma region HTTP_Methods
-
 private:
   /// https://expressjs.com/en/guide/writing-middleware.html
   /// https://expressjs.com/en/guide/using-middleware.html
@@ -328,8 +322,6 @@ public:
   auto all(const String &path, Args... args) -> _Route & {
     return router_->all(path, args...);
   }
-
-#pragma endregion HTTP_Methods
 
   /// @brief Returns the canonical path of the app, a string.
   /// @return
@@ -710,8 +702,6 @@ public:
 
   _Router();
 
-#pragma region HTTP_Methods
-
 private:
   /// @brief
   /// @param path
@@ -839,8 +829,6 @@ public:
     return METHOD(Method::HEAD, path, tmpMiddlewares);
   };
 
-#pragma endregion HTTP_Methods
-
   void param(){/* NOT IMPLEMENTED */};
 
   /// @brief Returns an instance of a single route, which you can then use to
@@ -850,8 +838,6 @@ public:
 
   /// @brief
   auto dispatch(_Request &, _Response &) -> void;
-
-#pragma region Middleware
 
   /// @brief
   /// @param errorCallback
@@ -891,7 +877,6 @@ public:
   /// @return
   auto use(const String &mount_path) -> void;
 
-#pragma endregion Middleware
 };
 
 END_EXPRESS_NAMESPACE

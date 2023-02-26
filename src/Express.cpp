@@ -46,8 +46,6 @@ _Express::_Express() {
   mountpath = F(""); // TODO: check: could also be /
 }
 
-#pragma region _Express()
-
 /// @brief
 /// @param req
 /// @param res
@@ -212,10 +210,6 @@ auto _Express::Router() -> _Router & {
   return *_router;
 }
 
-#pragma endregion _Express
-
-#pragma region Middleware
-
 /// @brief
 /// @param middleware
 /// @return
@@ -270,8 +264,6 @@ auto _Express::use(const String &mountpath, _Router &otherRouter) -> void {
 /// @return
 auto _Express::use(const String &mountpath) -> void { router_->use(mountpath); }
 
-#pragma endregion Middleware
-
 /// @brief Returns the canonical path of the app, a string.
 /// @return
 auto _Express::path() -> String { return mountpath; }
@@ -283,14 +275,10 @@ auto _Express::route(const String &path) -> _Route & {
   return router_->route(path);
 }
 
-#pragma region Events
-
 /// @brief
 /// @param name
 /// @param callback
 auto _Express::on(const String &name, const MountCallback callback) -> void {}
-
-#pragma endregion Events
 
 /// @brief
 /// @param port

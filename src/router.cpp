@@ -156,8 +156,6 @@ auto _Router::dispatch(_Request &req, _Response &res) -> void {
     evaluate(req, res);
 }
 
-#pragma region Middleware
-
 /// @brief
 /// @tparam ArrayType
 /// @tparam ArraySize
@@ -260,7 +258,5 @@ auto _Router::use(const String &mountpath, _Router &otherRouter) -> void {
 auto _Router::use(const String &mountpath) -> void {
   this->mountpath = mountpath;
 }
-
-#pragma endregion Middleware
 
 END_EXPRESS_NAMESPACE
