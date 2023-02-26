@@ -16,13 +16,12 @@ void setup() {
 
   ethernet_setup();
 
-  // app.use(express::json());
+ // app.use(express::json());
 
-  app.post("/", express::json(),
-           [](request &req, response &res, const NextCallback next) {
-             res.send(req.body);
-           });
-
+  app.post(F("/"), express::json(), [](request& req, response& res, const NextCallback next) {
+    res.send(req.body);
+  });
+       
   app.listen(80, []() { LOG_I(F("Example app listening on port"), app.port); });
 }
 

@@ -22,28 +22,28 @@ void setup() {
   // inspired by
   // https://github.com/expressjs/express/blob/master/examples/multi-router/index.js
 
-  app.use("/");
-  app.use("/api/v2", apiv2);
-  app.use("/api/v3", apiv3);
+  app.use(F("/"));
+  app.use(F("/api/v2"), apiv2);
+  app.use(F("/api/v3"), apiv3);
 
   // /user will be mounted on /v1/user
-  app.get("/", [](request &req, response &res, const NextCallback next) {
+  app.get(F("/"), [](request &req, response &res, const NextCallback next) {
     res.status(HttpStatus::OK).send("Hello from root route");
   });
 
-  apiv2.get("/", [](request &req, response &res, const NextCallback next) {
+  apiv2.get(F("/"), [](request &req, response &res, const NextCallback next) {
     res.status(HttpStatus::OK).send("Hello from APIv2 root route.");
   });
 
-  apiv2.get("/users", [](request &req, response &res, const NextCallback next) {
+  apiv2.get(F("/users"), [](request &req, response &res, const NextCallback next) {
     res.status(HttpStatus::OK).send("List of APIv2 users.");
   });
 
-  apiv3.get("/", [](request &req, response &res, const NextCallback next) {
+  apiv3.get(F("/"), [](request &req, response &res, const NextCallback next) {
     res.status(HttpStatus::OK).send("Hello from APIv3 root route.");
   });
 
-  apiv3.get("/users", [](request &req, response &res, const NextCallback next) {
+  apiv3.get(F("/users"), [](request &req, response &res, const NextCallback next) {
     res.status(HttpStatus::OK).send("List of APIv3 users");
   });
 
