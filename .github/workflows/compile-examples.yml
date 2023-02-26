@@ -64,6 +64,8 @@ jobs:
             # Install the library from the local path.
             - source-path: ./
             ${{ matrix.libraries }}
+            # Install library dependencies.
+            - name: Ethernet
           sketch-paths: |
             - examples
           enable-deltas-report: true
