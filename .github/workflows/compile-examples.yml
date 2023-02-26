@@ -65,7 +65,7 @@ jobs:
             - source-path: ./
             ${{ matrix.libraries }}
             # Install library dependencies.
-            - name: Ethernet
+            - name: Ethernet, Base64
           sketch-paths: |
             - examples
           enable-deltas-report: true
