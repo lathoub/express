@@ -1,7 +1,9 @@
 ![68747470733a2f2f692e636c6f756475702e636f6d2f7a6659366c4c376546612d3330303078333030302e706e67 (1)](https://user-images.githubusercontent.com/4082369/221396875-3191a433-a5cf-4174-9188-02c06efdd0be.png)
 
 # express for ESP32 using Arduino IDE
-Fast, unopinionated, (subset of a) minimalist web framework for Arduino
+Fast, unopinionated, (subset of a) minimalist web framework for ESP32 Arduino.
+
+*looking for help* I'm looking for Arduino drop-in replacements for std::map and std::vector (understanding the memory contraints and possible issues in a ltd memory environment).
 
 ## Getting started
 
@@ -37,7 +39,7 @@ void loop() {
 Ethernet library (for ESP32 with W5500).
 
 ## Use of Containers
-This lib uses 2 types of containers: vector and map.
+This lib uses 2 types of containers: vector and map and work fine in the ESP32 environment. Not do much so in the Arduino environment and I'm looking for drop-in replacements. Anyone?
 
 ## ESP32 with W5500 
 When you combine an ESP32 with the W5500 chip, you need to patch Server.h as reported [here](https://github.com/PaulStoffregen/Ethernet/issues/42).
