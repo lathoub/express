@@ -341,9 +341,6 @@ public:
   /// @brief
   /// @param client
   void run(ClientType &client);
-
-  /// @brief
-  static void dada() { LOG_V(F("dada")); }
 };
 
 /// @brief

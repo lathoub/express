@@ -6,16 +6,49 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Ethernet	KEYWORD1	Ethernet
+express KEYWORD1
+route   KEYWORD1
+request KEYWORD1
+response    KEYWORD1
+File    KEYWORD1
+DefaultSettings KEYWORD1
+Range   KEYWORD1
+Options KEYWORD1
+PosLen  KEYWORD1
+Method  KEYWORD1
+HttpStatus  KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-use	KEYWORD2
+use KEYWORD2
+disable KEYWORD2
+disabled    KEYWORD2
+enable  KEYWORD2
+enabled KEYWORD2
+get KEYWORD2
+set KEYWORD2
+engine  KEYWORD2
+on  KEYWORD2
+head    KEYWORD2
+post    KEYWORD2
+put KEYWORD2
+del KEYWORD2
+all KEYWORD2
+path    KEYWORD2
+route   KEYWORD2
+listen  KEYWORD2
+run KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 
-EthernetLinkStatus	LITERAL1
+ContentType LITERAL1
+ContentLength   LITERAL1
+XPoweredBy  LITERAL1
+ApplicationJson LITERAL1
+True    LITERAL1
+False   LITERAL1
+__dirname   LITERAL1

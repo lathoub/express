@@ -46,23 +46,41 @@ void _Response::renderFile(ClientType &client, Options *options, const char *f,
 
   const size_t maxChunkLen = 2048;
 
-  Range range;
-  if (options && options->acceptRanges)
-    range = _Request::rangeParse(options->headers[F("range")]);
+  if (options && options->headers.count(F("range")) > 0) {
 
-  auto fileSize = strlen(f);
+    LOG_V(F("range renderFile"));
 
-  for (auto [start, end] : range.ranges) {
-    size_t i = start;
-    while (i < end) {
-      auto remaining =
-          (i + maxChunkLen <= end) ? maxChunkLen : end - i + 1; // size
-      //      LOG_V("write", i, remaining);
-      if (callback)
-        callback(f + i, remaining);
-      client.write(f + i, remaining);
-      i += remaining;
+    auto range = _Request::rangeParse(options->headers[F("range")]);
+
+    auto fileSize = strlen(f);
+
+    for (auto [start, end] : range.ranges) {
+      size_t i = start;
+      while (i < end) {
+        auto remaining =
+            (i + maxChunkLen <= end) ? maxChunkLen : end - i + 1; // size
+        //      LOG_V("write", i, remaining);
+        if (callback)
+          callback(f + i, remaining);
+        client.write(f + i, remaining);
+        i += remaining;
+      }
     }
+    return;
+  }
+
+  size_t i = 0;
+  size_t end = strlen(f);
+
+  LOG_V(F("vanilla renderFile"), i, end);
+
+  while (i < end) {
+    auto remaining =
+        (i + maxChunkLen <= end) ? maxChunkLen : end - i + 1; // size
+    if (callback)
+      callback(f + i, remaining);
+    client.write(f + i, remaining);
+    i += remaining;
   }
 }
 
@@ -187,10 +205,11 @@ auto _Response::sendFile(const File &file, Options *options) -> void {
   if (options)
     this->options = new Options(options);
 
-  if (contentsCallback && options) {
-
+  if (contentsCallback && options &&
+      options->headers.count(F("range")) > 0) {
+    auto rangeHeader = options->headers[F("range")];
     auto fileSize = strlen(contentsCallback());
-    auto range = _Request::rangeParse(options->headers[F("range")]);
+    auto range = _Request::rangeParse(rangeHeader);
     size_t sum = 0;
 
     std::vector<beginEnd> ranges{};
@@ -216,6 +235,11 @@ auto _Response::sendFile(const File &file, Options *options) -> void {
 
     LOG_V(F("sendFile options"), this->options->acceptRanges,
           this->options->headers[F("range")]);
+  } else if (contentsCallback && options) {
+    for (auto [key, header] : options->headers) {
+      this->set(key, header);
+    }
+    this->set(F("Content-Length"), String(strlen(contentsCallback())) );
   }
 }
 
@@ -290,9 +314,10 @@ void _Response::sendBody(ClientType &client, locals_t &locals) {
         engine(client, locals, options, contentsCallback());
     } else {
       LOG_V(F("using default renderer"));
-      renderFile(
-          client, options, contentsCallback(),
-          [](const char *buffer, const uint &len) { LOG_V(F("")); }); // TODO
+      renderFile(client, options, contentsCallback(),
+                 [](const char *buffer, const uint &len) {
+                   LOG_V(F(""));
+                 }); // TODO using callback (so not to send client)
     }
   }
 }
