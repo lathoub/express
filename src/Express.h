@@ -336,6 +336,12 @@ public:
   void listen(uint16_t port = 0, const Callback startedCallback = nullptr);
 
   /// @brief
+  void listenAsync(uint16_t port = 0, const Callback startedCallback = nullptr, int core = 1, int taskStack = 10000, int priority = 3);
+
+  Callback startedCallback_;
+  static void serverTask( void * parameter );
+
+  /// @brief
   auto run() -> void;
 
   /// @brief
