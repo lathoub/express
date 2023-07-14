@@ -587,6 +587,9 @@ public: /* Methods*/
   auto render(File &, locals_t &) -> void;
 
   /// @brief .
+  auto sendFile(FS &fs, const char *filePath) -> void;
+
+  /// @brief .
   auto sendFile(const File &, Options *options = nullptr) -> void;
 
   /// @brief Sets the response HTTP status code to statusCode and sends the
