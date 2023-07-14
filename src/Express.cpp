@@ -319,6 +319,36 @@ void _Express::listen(uint16_t port, const Callback startedCallback) {
     startedCallback();
 }
 
+void _Express::listenAsync(uint16_t port, const Callback startedCallback, int core, int taskStack, int priority) {
+    startedCallback_ = startedCallback;
+    if (nullptr != server) {
+        LOG_E(F(
+            "The listen method can only be called once! This call is ignored "
+            "and processing continous."));
+        return;
+    }
+    if (port == 0) {
+        port = random(49152, 65535);
+    }
+    this->port = port;
+
+    server = new ServerType(port);
+    server->begin();
+    
+    xTaskCreatePinnedToCore(this->serverTask, "serverTask", taskStack, this, priority, NULL, core);
+}
+
+void _Express::serverTask(void *parameter) {
+    _Express *thisApp = (_Express *)parameter;
+    if (thisApp->startedCallback_) {
+        thisApp->startedCallback_();
+    }
+    for (;;) {
+        thisApp->run();
+        vTaskDelay(1);
+    }
+}
+
 /// @brief
 /// @return
 auto _Express::run() -> void {

@@ -24,6 +24,7 @@
  */
 
 #include "Express.h"
+#include "mimeType/mimeType.h"
 
 BEGIN_EXPRESS_NAMESPACE
 
@@ -196,6 +197,41 @@ auto _Response::render(File &file, locals_t &locals) -> void {
   filename = file.filename;
 
   set(ContentType, F("text/html"));
+}
+
+/**
+ * @brief Send the contents of a file from the file system as the response.
+ *
+ * @param filePath The path of the file to send.
+ */
+auto _Response::sendFile(FS &fs, const char *filePath) -> void {
+    fs::File file = fs.open(filePath);
+    if (file) {
+        size_t fileSize = file.size();
+
+        // Allocate a buffer with file size + 1
+        char *buffer = new char[fileSize + 1];
+
+        // Read the file contents directly into the buffer
+        file.readBytes(buffer, fileSize);
+
+        // Close the file
+        file.close();
+
+        // Set the response headers
+        this->set(ContentType, mimeType.getType(filePath));
+        this->set(ContentLength, String(fileSize+1));
+        status(HttpStatus::OK);
+
+        // Add null terminator at the end of the buffer
+        buffer[fileSize] = '\0';
+        
+        body_ = buffer;
+
+        delete[] buffer;
+    } else {
+        status(HttpStatus::NOT_FOUND);
+    }
 }
 
 /// @brief .
