@@ -305,12 +305,12 @@ void _Express::listen(uint16_t port, const Callback startedCallback) {
   //      "virtual void begin(uint16_t port=0) =0;" to " virtual void begin()
   //      =0;"
 
-#if PLATFORM == ESP32
+#if PLATFORM_ESP32
   server = new ServerType(port);
   server->begin();
 #endif
 
-#if PLATFORM == ESP32_W5500
+#if PLATFORM_ESP32_W5500
   server = new ServerType(port);
   server->begin();
 #endif
@@ -343,7 +343,7 @@ void _Express::run(ClientType &client) {
       }
 
       // Arduino Ethernet stop() is potentially slow, this makes it faster
-#if PLATFORM == ESP32_W5500
+#if PLATFORM_ESP32_W5500
       client.setConnectionTimeout(5);
 #endif
       client.stop();

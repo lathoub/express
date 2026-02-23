@@ -32,7 +32,7 @@
 typedef uint8_t byte;
 #endif
 
-#if PLATFORM == ESP32_W5500
+#if PLATFORM_ESP32_W5500
 #include <Ethernet.h>
 // Note: see https://github.com/PaulStoffregen/Ethernet/issues/42
 // change in ESP32 server.h
@@ -47,7 +47,7 @@ typedef uint8_t byte;
 #endif
 
 // TODO: using templates
-#if PLATFORM == ESP32
+#if PLATFORM_ESP32
 #include <WiFi.h>
 #define ServerType WiFiServer
 #define ClientType WiFiClient

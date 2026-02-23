@@ -1,8 +1,8 @@
 #define LOGGER Serial
 #define LOG_LOGLEVEL LOG_LOGLEVEL_VERBOSE
 
-// #define PLATFORM ESP32
-#define PLATFORM ESP32_W5500
+// #define PLATFORM_ESP32
+#define PLATFORM_ESP32_W5500 1
 
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;

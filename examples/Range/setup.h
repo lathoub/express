@@ -7,15 +7,15 @@
 #include <Express.h>
 using namespace EXPRESS_NAMESPACE;
 
-#if PLATFORM == ESP32
+#ifdef PLATFORM_ESP32
 #include "arduino_secrets.h"
 #endif
 
-#if PLATFORM == ESP32_W5500
+#ifdef PLATFORM_ESP32_W5500
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 #endif
 
-#if PLATFORM == ESP32_W5500
+#ifdef PLATFORM_ESP32_W5500
 void ethernet_setup() {
   Ethernet.init(5);
   Ethernet.begin(mac);
@@ -24,7 +24,7 @@ void ethernet_setup() {
 }
 #endif
 
-#if PLATFORM == ESP32
+#ifdef PLATFORM_ESP32
 void ethernet_setup() {
   WiFi.begin(SECRET_SSID, SECRET_PASS);
   while (WiFi.status() != WL_CONNECTED) {
