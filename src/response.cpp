@@ -296,9 +296,10 @@ void _Response::evaluateHeaders(ClientType &client) {
 void _Response::sendBody(ClientType &client, locals_t &locals) {
   LOG_V(F("sendBody"));
 
-  // if we already have a body, send that over
+  // if we already have a body, send that over (use print, not println:
+  // Content-Length must match exactly; println would add \r\n)
   if (body_ && body_ != F(""))
-    client.println(body_.c_str());
+    client.print(body_.c_str());
   else if (contentsCallback) {
     // a request to generate the body was issued earlier,
     // execute it here.
